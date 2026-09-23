@@ -34,6 +34,14 @@ export const MedicalReportModal: React.FC<MedicalReportModalProps> = ({
     window.print();
   };
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   const handleCopyText = () => {
     const text = `
 【EGPA リハビリ・自覚症状サマリー (HISA-CARAT Log)】
@@ -70,7 +78,12 @@ ${latestDock ? latestDock.kazuhiroAdvice : '順調な回復傾向'}
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-200 relative text-left">
         {/* Header Bar */}
         <div className="sticky top-0 bg-white/95 backdrop-blur-md p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between z-10 rounded-t-3xl no-print">

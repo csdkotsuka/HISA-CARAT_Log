@@ -84,8 +84,21 @@ export const CaratLoungeModal: React.FC<CaratLoungeModalProps> = ({
     triggerFullCelebration();
   };
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div className="bg-gradient-to-br from-[#FFF5F6] via-white to-[#EFF4FC] rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border-2 border-white relative text-left">
         {/* Header Bar */}
         <div className="sticky top-0 bg-white/80 backdrop-blur-md p-4 sm:p-5 border-b border-pink-100 flex items-center justify-between z-10 rounded-t-3xl">

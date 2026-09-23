@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle2, Award, Calendar, UserCheck, History } from 'lucide-react';
+import { CheckCircle2, Award, Calendar, UserCheck, History, Clock, ChevronDown, ChevronUp, ShieldCheck } from 'lucide-react';
 import type { PTEvalDock } from '../types';
 import { FootSoleMap } from './FootSoleMap';
 import { triggerFullCelebration } from '../utils/confetti';
@@ -45,6 +45,18 @@ export const PTEvalTab: React.FC<PTEvalTabProps> = ({ onSaveDock, ptDocks }) => 
   const [kazuhiroAdvice, setKazuhiroAdvice] = useState<string>('');
   const [nextGoal, setNextGoal] = useState<string>('CS-30テストで15回以上。コンサートで足裏を気にせず楽しむ！');
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [showHusbandGuide, setShowHusbandGuide] = useState(false);
+
+  // Calculate days since latest dock
+  const daysSinceLastCheck = latestDock
+    ? Math.max(
+        0,
+        Math.floor(
+          (new Date(todayStr).getTime() - new Date(latestDock.date).getTime()) /
+            (1000 * 60 * 60 * 24)
+        )
+      )
+    : null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,6 +112,188 @@ export const PTEvalTab: React.FC<PTEvalTabProps> = ({ onSaveDock, ptDocks }) => 
           </div>
         </div>
       </div>
+
+      {/* Periodic Check Reminder Banner */}
+      <div
+        className={`glass-card rounded-3xl p-4 sm:p-5 border shadow-sm transition-all ${
+          daysSinceLastCheck === null
+            ? 'bg-gradient-to-r from-purple-50/80 to-pink-50/80 border-purple-200'
+            : daysSinceLastCheck >= 30 && daysSinceLastCheck <= 45
+            ? 'bg-gradient-to-r from-[#F7CAC9]/40 via-purple-50/60 to-[#92A8D1]/40 border-pink-300 shadow-md ring-2 ring-pink-300/40'
+            : daysSinceLastCheck > 45
+            ? 'bg-gradient-to-r from-amber-50/90 to-pink-50/80 border-amber-300 shadow-sm'
+            : 'bg-white/80 border-slate-200'
+        }`}
+      >
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-left">
+          <div className="flex items-start gap-3">
+            <div
+              className={`p-2.5 rounded-2xl flex-shrink-0 ${
+                daysSinceLastCheck !== null && daysSinceLastCheck >= 30
+                  ? 'bg-gradient-to-tr from-pink-500 to-purple-500 text-white animate-pulse'
+                  : 'bg-purple-100 text-purple-600'
+              }`}
+            >
+              <Clock className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
+                    daysSinceLastCheck === null
+                      ? 'bg-purple-200 text-purple-800'
+                      : daysSinceLastCheck >= 30 && daysSinceLastCheck <= 45
+                      ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white'
+                      : daysSinceLastCheck > 45
+                      ? 'bg-amber-200 text-amber-900'
+                      : 'bg-slate-200 text-slate-700'
+                  }`}
+                >
+                  {daysSinceLastCheck === null
+                    ? '初回測定おすすめ 🩺'
+                    : daysSinceLastCheck >= 30 && daysSinceLastCheck <= 45
+                    ? `🌟 測定おすすめ時期！（前回から${daysSinceLastCheck}日経過）`
+                    : daysSinceLastCheck > 45
+                    ? `🩺 定期チェック推奨（前回から${daysSinceLastCheck}日経過）`
+                    : `測定済み（前回から${daysSinceLastCheck}日経過 ✨）`}
+                </span>
+                <span className="text-[11px] text-slate-500 font-medium">
+                  推奨ペース: 30〜45日おき（約1ヶ月〜1ヶ月半）
+                </span>
+              </div>
+              <h3 className="text-sm sm:text-base font-extrabold text-slate-800 mt-1">
+                {daysSinceLastCheck === null
+                  ? '旦那さんと一緒に、初回のからだチェックを記録してみましょう！'
+                  : daysSinceLastCheck >= 30 && daysSinceLastCheck <= 45
+                  ? 'そろそろ評価してみよう！旦那さんと一緒に定期チェックしませんか？ 🩺✨'
+                  : daysSinceLastCheck > 45
+                  ? `前回の測定から${daysSinceLastCheck}日経過。からだの推移を確かめる良いタイミングです 🌟`
+                  : `次回チェックの目安まであと約${Math.max(1, 30 - daysSinceLastCheck)}日。毎日のセルフケアを焦らず続けましょう 🥰`}
+              </h3>
+              <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
+                {daysSinceLastCheck === null
+                  ? 'EGPAの末梢神経回復や筋力維持を追跡するための基準データになります。'
+                  : daysSinceLastCheck >= 30
+                  ? '末梢神経（前脛骨筋・足裏深部感覚）の再生や下肢筋力は月単位で少しずつ変化します。前回の記録と比較してみましょう！'
+                  : '毎日・毎週測るよりも、30〜45日おきに測ることで疲労や日内変動に惑わされず、着実な回復傾向がわかります。'}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowHusbandGuide(!showHusbandGuide)}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-white border border-purple-200 text-purple-700 text-xs font-bold shadow-xs hover:bg-purple-50 active:scale-95 transition-all self-end sm:self-center flex-shrink-0"
+          >
+            <ShieldCheck className="w-4 h-4 text-purple-600" />
+            <span>旦那さんサポートガイド</span>
+            {showHusbandGuide ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Husband Measurement Guide (Collapsible) */}
+      {showHusbandGuide && (
+        <div className="glass-card rounded-3xl p-5 sm:p-6 border-2 border-purple-200 bg-gradient-to-br from-white via-purple-50/40 to-pink-50/50 shadow-md animate-fade-in text-left">
+          <div className="flex items-center justify-between pb-3 border-b border-purple-100 mb-4">
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl">👨‍💼</span>
+              <div>
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-purple-600">
+                  PT HUSBAND GUIDE
+                </span>
+                <h4 className="text-sm sm:text-base font-extrabold text-slate-800">
+                  旦那さんのための測定サポート手順 ＆ コツ（安全第一！）
+                </h4>
+              </div>
+            </div>
+            <span className="text-xs text-purple-600 font-bold bg-purple-100 px-2.5 py-1 rounded-full">
+              理学療法士直伝 💡
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* CS-30 */}
+            <div className="bg-white/90 p-4 rounded-2xl border border-purple-100 shadow-2xs space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-lg bg-pink-100 text-pink-600 font-extrabold text-xs flex items-center justify-center">
+                  1
+                </span>
+                <h5 className="text-xs sm:text-sm font-bold text-slate-800">
+                  30秒立ち座りテスト（CS-30）
+                </h5>
+              </div>
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                ・<b>準備</b>: 座面高約40cmの椅子を壁につけて滑らないように固定。
+                <br />
+                ・<b>姿勢</b>: 腕は胸の前でクロス、背筋を伸ばして座る。
+                <br />
+                ・<b>測定</b>: スマホのタイマーで30秒。「用意、スタート！」で完全に立ち上がり、しっかり座る回数を数えます。
+                <br />
+                ・<b>コツ＆見守り</b>: 立ち上がった時に膝と股関節がしっかり伸びているか確認。ふらついた時にすぐ支えられる真横に立ちます。
+              </p>
+            </div>
+
+            {/* Heel Raise */}
+            <div className="bg-white/90 p-4 rounded-2xl border border-purple-100 shadow-2xs space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-600 font-extrabold text-xs flex items-center justify-center">
+                  2
+                </span>
+                <h5 className="text-xs sm:text-sm font-bold text-slate-800">
+                  片足かかと上げテスト（Heel Raise）
+                </h5>
+              </div>
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                ・<b>目的</b>: ふくらはぎ（腓腹筋・ヒラメ筋）の蹴り出し力・持久力。
+                <br />
+                ・<b>やり方</b>: 壁やテーブルに指先を添えて軽くバランスを取り、片足立ちでかかとを限界まで高く上げ下げします。
+                <br />
+                ・<b>測定</b>: 左右それぞれの回数を数えます。
+                <br />
+                ・<b>コツ</b>: かかとが浮いている高さが落ちてきたら終了の合図です。
+              </p>
+            </div>
+
+            {/* Romberg Balance */}
+            <div className="bg-white/90 p-4 rounded-2xl border border-rose-200 shadow-2xs space-y-1.5 bg-rose-50/30">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-lg bg-rose-100 text-rose-600 font-extrabold text-xs flex items-center justify-center">
+                  3
+                </span>
+                <h5 className="text-xs sm:text-sm font-bold text-rose-900 flex items-center gap-1.5">
+                  <span>目を閉じて直立（ロンベルグ平衡）</span>
+                  <span className="text-[10px] bg-rose-500 text-white px-1.5 py-0.5 rounded-full font-bold">転倒注意！</span>
+                </h5>
+              </div>
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                ・<b>目的</b>: 足裏の深部感覚（位置覚）と前庭バランス機能。
+                <br />
+                ・<b>やり方</b>: 両足を揃えて直立し、胸の前で腕を組んで目を閉じ、30秒キープ。
+                <br />
+                ・<b>⚠️ 旦那さんの最重要アクション</b>: 目を閉じると突然大きくぐらつく危険があります。<b>必ず両手を広げて、いつでも抱きとめられる姿勢で真横に密着して立ってください！</b>
+              </p>
+            </div>
+
+            {/* Calf Circumference & Encouragement */}
+            <div className="bg-white/90 p-4 rounded-2xl border border-purple-100 shadow-2xs space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-lg bg-purple-100 text-purple-600 font-extrabold text-xs flex items-center justify-center">
+                  4
+                </span>
+                <h5 className="text-xs sm:text-sm font-bold text-slate-800">
+                  ふくらはぎ周囲径 ＆ 声かけの魔法
+                </h5>
+              </div>
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                ・<b>ふくらはぎ周囲径</b>: メジャーで一番太い部分を水平に測定（左右）。締め付けず肌に優しく密着させて目盛りを読みます。
+                <br />
+                ・<b>💖 旦那さんからの声かけ</b>: 「前より立ち上がりが安定してきたね」「足の指がしっかり床を掴めてるよ！」と具体的に伝えてあげてください。何よりのリハビリ薬になります！🥰
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Date & Evaluator */}

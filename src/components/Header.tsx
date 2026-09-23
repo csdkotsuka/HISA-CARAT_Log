@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Heart, RefreshCw, FileText, Music2, Cloud, CloudCheck } from 'lucide-react';
+import { Heart, RefreshCw, FileText, Music2, Cloud, CloudCheck, Sparkles } from 'lucide-react';
 import { HANI_QUOTES } from '../data/haniQuotes';
 import type { HaniQuote } from '../types';
 import { triggerSparkleConfetti } from '../utils/confetti';
+import type { AvatarStyle } from '../utils/storage';
+import { getAvatarImagePath } from '../utils/streak';
 
 interface HeaderProps {
   onOpenCaratLounge: () => void;
@@ -11,6 +13,8 @@ interface HeaderProps {
   totalLogsCount: number;
   cloudStatus?: 'synced' | 'syncing' | 'offline';
   onSyncNow?: () => void;
+  activeAvatarStyle?: AvatarStyle;
+  onOpenEvolutionModal?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -20,6 +24,8 @@ export const Header: React.FC<HeaderProps> = ({
   totalLogsCount,
   cloudStatus = 'synced',
   onSyncNow,
+  activeAvatarStyle = 'dot',
+  onOpenEvolutionModal,
 }) => {
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isRotating, setIsRotating] = useState(false);
@@ -56,17 +62,36 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="relative flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Title Area */}
           <div className="flex items-center gap-3.5 text-left w-full md:w-auto">
-            {/* Jeonghan Illustrated Avatar */}
+            {/* Jeonghan Dynamic Avatar */}
             <div className="relative group cursor-pointer" onClick={handleAvatarClick} title="タップするとジョンハンからハニへ〜！👼">
               <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl p-1 bg-gradient-to-tr from-[#F7CAC9] via-[#E8D1E6] to-[#92A8D1] shadow-md group-hover:scale-105 transition-all">
                 <div className="w-full h-full rounded-xl bg-white/95 overflow-hidden relative shadow-inner">
                   <img
-                    src="/jeonghan_avatar.jpg"
+                    src={getAvatarImagePath(activeAvatarStyle)}
                     alt="Jeonghan"
                     className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-300"
                   />
                 </div>
               </div>
+
+              {/* Evolution badge */}
+              {onOpenEvolutionModal && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenEvolutionModal();
+                  }}
+                  className="absolute -top-2 -left-2 px-1.5 py-0.5 rounded-full bg-slate-900/90 text-white text-[9px] font-extrabold shadow-sm border border-pink-300 flex items-center gap-0.5 hover:scale-105 active:scale-95 transition-all"
+                  title="アバター進化ルームを開く"
+                >
+                  <Sparkles className="w-2.5 h-2.5 text-amber-300" />
+                  <span>
+                    {activeAvatarStyle === 'photo' ? 'Lv.3 📸' : activeAvatarStyle === 'illust' ? 'Lv.2 🎨' : 'Lv.1 👾'}
+                  </span>
+                </button>
+              )}
+
               <div className="absolute -bottom-1 -right-1 bg-pink-500 text-white rounded-full p-1 shadow-sm">
                 <Heart className="w-3 h-3 fill-white" />
               </div>

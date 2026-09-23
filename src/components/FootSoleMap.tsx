@@ -19,12 +19,17 @@ export const FootSoleMap: React.FC<FootSoleMapProps> = ({
   onChange,
   readOnly = false,
 }) => {
+  // Only count zones that match predefined zone IDs
+  const validSelected = (selectedZones || []).filter((id) =>
+    ZONES.some((z) => z.id === id)
+  );
+
   const toggleZone = (zoneId: string) => {
     if (readOnly) return;
-    if (selectedZones.includes(zoneId)) {
-      onChange(selectedZones.filter((id) => id !== zoneId));
+    if (validSelected.includes(zoneId)) {
+      onChange(validSelected.filter((id) => id !== zoneId));
     } else {
-      onChange([...selectedZones, zoneId]);
+      onChange([...validSelected, zoneId]);
     }
   };
 
@@ -34,14 +39,14 @@ export const FootSoleMap: React.FC<FootSoleMapProps> = ({
         <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
           <span className="text-base">🦶</span> 感覚低下・アロディニア（過敏痛）のある部位
         </span>
-        <span className="text-[11px] text-pink-500 font-medium">
-          {selectedZones.length} 箇所 選択中
+        <span className={`text-[11px] font-bold ${validSelected.length > 0 ? 'text-pink-500' : 'text-slate-400'}`}>
+          {validSelected.length > 0 ? `${validSelected.length} 箇所 選択中` : '選択なし（正常）'}
         </span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {ZONES.map((zone) => {
-          const isSelected = selectedZones.includes(zone.id);
+          const isSelected = validSelected.includes(zone.id);
           return (
             <button
               type="button"
@@ -62,7 +67,7 @@ export const FootSoleMap: React.FC<FootSoleMapProps> = ({
                 <div className="text-[10px] text-slate-400 ml-3.5">{zone.desc}</div>
               </div>
               <span className="text-xs font-semibold">
-                {isSelected ? '⚠️ 有' : '⚪︎ 無'}
+                {isSelected ? '⚠️ 違和感あり' : '⚪︎ 正常'}
               </span>
             </button>
           );
