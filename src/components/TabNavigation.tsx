@@ -24,10 +24,10 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
     },
     {
       id: 'pt-eval' as ActiveTab,
-      label: '和宏先生の評価ドック',
-      sub: '定期PTカルテ',
+      label: 'からだの定期チェック',
+      sub: '筋力・バランス測定',
       icon: ClipboardCheck,
-      badge: `${ptDocksCount}回実施`,
+      badge: `${ptDocksCount}回記録`,
       color: 'from-purple-400 to-indigo-400',
     },
     {

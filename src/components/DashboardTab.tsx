@@ -230,7 +230,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
         {/* CS-30 Stat */}
         <div className="glass-card rounded-3xl p-4 border border-indigo-100 shadow-sm text-left">
           <div className="flex items-center justify-between text-indigo-500 mb-1">
-            <span className="text-[11px] font-bold">和宏先生 CS-30</span>
+            <span className="text-[11px] font-bold">CS-30 (立ち座り)</span>
             <TrendingUp className="w-4 h-4" />
           </div>
           <div className="text-2xl font-extrabold text-slate-800">
@@ -290,14 +290,14 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
           <div>
             <h2 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
               <span className="p-1.5 rounded-xl bg-indigo-100 text-indigo-600">📈</span>
-              <span>運動機能回復トレンド（和宏先生のCS-30＆カーフレイズ）</span>
+              <span>からだの機能回復トレンド（CS-30＆カーフレイズ）</span>
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
               30秒椅子立ち座り回数と片足かかと上げの経過。下肢の抗重力筋力の着実な向上がひと目で分かります。
             </p>
           </div>
           <span className="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-2.5 py-1 rounded-full font-bold self-start sm:self-auto">
-            評価ドック推移
+            定期チェック推移
           </span>
         </div>
 
@@ -306,7 +306,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
             <Line data={ptChartData} options={ptChartOptions} />
           ) : (
             <div className="h-full flex items-center justify-center text-xs text-slate-400">
-              まだPT評価ドックデータがありません
+              まだ定期チェックデータがありません
             </div>
           )}
         </div>
@@ -345,7 +345,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
         <div>
           <h2 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
             <Download className="w-4 h-4 text-pink-600" />
-            <span>データ出力 ＆ 先生提出用レポート</span>
+            <span>データ出力 ＆ 医師提出用レポート</span>
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
             Excel互換のCSVダウンロードや、診察室・リハビリ室でサッと見せられる要約を作成できます。
@@ -368,7 +368,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
             className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-purple-200 text-xs font-bold text-slate-700 shadow-xs hover:bg-purple-50 hover:text-purple-600 transition-all"
           >
             <FileSpreadsheet className="w-3.5 h-3.5 text-purple-600" />
-            <span>PTドックCSV</span>
+            <span>定期測定CSV</span>
           </button>
 
           <button
@@ -377,7 +377,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
             className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs font-bold shadow-xs hover:shadow-md transition-all"
           >
             <FileText className="w-3.5 h-3.5" />
-            <span>提出用サマリー 🩺</span>
+            <span>受診・主治医提出用サマリー 🩺</span>
           </button>
         </div>
       </div>
@@ -391,7 +391,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
               <span>記録タイムライン履歴</span>
             </h2>
             <p className="text-xs text-slate-500">
-              日々のセルフチェックと和宏先生の評価ドックを時系列で確認できます。
+              日々のセルフチェックと定期チェックを時系列で確認できます。
             </p>
           </div>
 
@@ -419,7 +419,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                 filterType === 'pt' ? 'bg-purple-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              PT評価 ({ptDocks.length})
+              定期チェック ({ptDocks.length})
             </button>
           </div>
         </div>
@@ -509,7 +509,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2 pb-2 border-b border-purple-100">
                     <div className="flex items-center gap-2">
                       <span className="font-extrabold text-xs text-white bg-purple-600 px-2.5 py-0.5 rounded-lg shadow-xs">
-                        🩺 PT評価 {dock.date}
+                        🩺 定期チェック {dock.date}
                       </span>
                       <span className="text-xs font-bold text-purple-900">{dock.evaluator}</span>
                     </div>
@@ -524,7 +524,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                       <button
                         onClick={() => onDeletePTDock(dock.id)}
                         className="text-slate-400 hover:text-rose-500 p-1 rounded-md transition-colors"
-                        title="この評価ドックを削除"
+                        title="このチェック記録を削除"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -532,7 +532,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                   </div>
 
                   <div className="text-xs text-slate-700 bg-purple-50/60 p-2.5 rounded-xl border border-purple-100">
-                    <b className="text-purple-800 font-bold block mb-0.5">💬 和宏先生のアドバイス:</b>
+                    <b className="text-purple-800 font-bold block mb-0.5">💬 評価メモ・アドバイス:</b>
                     {dock.kazuhiroAdvice}
                   </div>
                 </div>

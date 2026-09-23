@@ -56,14 +56,15 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="relative flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Title Area */}
           <div className="flex items-center gap-3.5 text-left w-full md:w-auto">
-            {/* Jeonghan Angel Avatar */}
+            {/* Jeonghan Illustrated Avatar */}
             <div className="relative group cursor-pointer" onClick={handleAvatarClick} title="タップするとジョンハンからハニへ〜！👼">
-              <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl p-1 bg-gradient-to-tr from-[#F7CAC9] via-[#E8D1E6] to-[#92A8D1] shadow-md group-hover:scale-105 transition-all">
-                <div className="w-full h-full rounded-xl bg-white/95 flex flex-col items-center justify-center relative overflow-hidden">
-                  <span className="text-3xl sm:text-4xl animate-float">👼</span>
-                  <span className="text-[9px] font-bold text-pink-500 tracking-tighter -mt-1">
-                    JEONGHAN
-                  </span>
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl p-1 bg-gradient-to-tr from-[#F7CAC9] via-[#E8D1E6] to-[#92A8D1] shadow-md group-hover:scale-105 transition-all">
+                <div className="w-full h-full rounded-xl bg-white/95 overflow-hidden relative shadow-inner">
+                  <img
+                    src="/jeonghan_avatar.jpg"
+                    alt="Jeonghan"
+                    className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-300"
+                  />
                 </div>
               </div>
               <div className="absolute -bottom-1 -right-1 bg-pink-500 text-white rounded-full p-1 shadow-sm">
@@ -115,7 +116,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
               </h1>
               <p className="text-xs text-slate-500 mt-0.5">
-                ひさこのEGPAリハビリ＆和宏先生の評価ドック
+                ひさこのEGPAリハビリ＆セルフケア手帳（受診・定期測定共有対応）
               </p>
             </div>
           </div>
@@ -135,7 +136,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-2xl bg-white/90 text-slate-700 text-xs font-bold shadow-sm hover:bg-white hover:shadow-md hover:scale-[1.02] active:scale-95 transition-all border border-slate-200"
             >
               <FileText className="w-3.5 h-3.5 text-indigo-500" />
-              <span>先生提出レポート 🩺</span>
+              <span>受診サマリー 🩺</span>
             </button>
           </div>
         </div>

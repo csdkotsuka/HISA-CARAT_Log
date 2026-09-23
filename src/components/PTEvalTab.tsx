@@ -23,7 +23,7 @@ export const PTEvalTab: React.FC<PTEvalTabProps> = ({ onSaveDock, ptDocks }) => 
   const todayStr = new Date().toISOString().slice(0, 10);
 
   const [date, setDate] = useState(todayStr);
-  const [evaluator, setEvaluator] = useState('和宏先生 (担当理学療法士)');
+  const [evaluator, setEvaluator] = useState('かずくん (PT) / 定期測定');
   const [mmt, setMmt] = useState({
     tibialisAnterior: latestDock ? latestDock.mmt.tibialisAnterior : 4,
     extensorHallucisLongus: latestDock ? latestDock.mmt.extensorHallucisLongus : 3,
@@ -87,15 +87,15 @@ export const PTEvalTab: React.FC<PTEvalTabProps> = ({ onSaveDock, ptDocks }) => 
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-extrabold uppercase tracking-wider bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full">
-                Periodic Physical Therapy Check
+                Periodic Physical Assessment
               </span>
-              <span className="text-xs text-slate-500">数ヶ月に1度の専門評価</span>
+              <span className="text-xs text-slate-500">数ヶ月ごとの測定記録（医師・リハビリ共有用）</span>
             </div>
             <h2 className="text-xl font-extrabold text-slate-800 mt-1">
-              和宏先生の評価ドック（理学療法カルテ）
+              からだの定期チェック（筋力・バランス測定）
             </h2>
             <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-              EGPAによる末梢神経障害（腓骨神経麻痺・下垂足）の回復状況、MMT徒手筋力検査、30秒立ち座り（CS-30）、下腿周囲径、感覚障害ゾーンを専門的に記録・追跡します。
+              EGPAによる足の筋力回復（前脛骨筋・下垂足）や、30秒立ち座り（CS-30）、下腿周囲径、バランス機能を記録します。主治医の診察時やリハビリ相談の際に見せると、回復経過が客観的にひと目で伝わります。
             </p>
           </div>
         </div>
@@ -110,7 +110,7 @@ export const PTEvalTab: React.FC<PTEvalTabProps> = ({ onSaveDock, ptDocks }) => 
             </div>
             <div>
               <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-                評価実施日
+                測定・チェック日
               </label>
               <input
                 type="date"
@@ -127,13 +127,14 @@ export const PTEvalTab: React.FC<PTEvalTabProps> = ({ onSaveDock, ptDocks }) => 
             </div>
             <div className="w-full sm:w-auto">
               <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-                担当理学療法士
+                測定・確認メモ（例: かずくん / 病院PT / 自己測定）
               </label>
               <input
                 type="text"
                 value={evaluator}
                 onChange={(e) => setEvaluator(e.target.value)}
-                className="font-bold text-slate-800 bg-white border border-purple-200 rounded-xl px-3 py-1.5 text-sm focus:outline-purple-400 w-full sm:w-60"
+                placeholder="例: かずくん / 病院PT / 自宅チェック"
+                className="font-bold text-slate-800 bg-white border border-purple-200 rounded-xl px-3 py-1.5 text-sm focus:outline-purple-400 w-full sm:w-64"
               />
             </div>
           </div>
@@ -144,7 +145,7 @@ export const PTEvalTab: React.FC<PTEvalTabProps> = ({ onSaveDock, ptDocks }) => 
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
               <span className="p-1.5 rounded-xl bg-purple-100 text-purple-600">💪</span>
-              <span>1. MMT徒手筋力検査 (0〜5段階)</span>
+              <span>1. 筋力テスト (MMT 0〜5段階)</span>
             </h3>
             <span className="text-xs text-purple-600 font-bold">下肢主要筋群</span>
           </div>
@@ -455,26 +456,26 @@ export const PTEvalTab: React.FC<PTEvalTabProps> = ({ onSaveDock, ptDocks }) => 
           </div>
         </div>
 
-        {/* 4. PT Advice & Next Goal */}
+        {/* 4. Advice & Next Goal */}
         <div className="glass-card rounded-3xl p-5 sm:p-6 border border-purple-100 shadow-sm">
           <h3 className="text-base font-extrabold text-slate-800 flex items-center gap-2 mb-2">
             <span className="p-1.5 rounded-xl bg-purple-100 text-purple-600">📝</span>
-            <span>4. 和宏先生の評価コメント ＆ 次回目標</span>
+            <span>4. 評価メモ ＆ 次回目標</span>
           </h3>
           <p className="text-xs text-slate-500 mb-3">
-            理学療法士からの評価所見、自主トレへのアドバイス、次回までのモチベーションを記入します。
+            測定時の所見、自主トレへのアドバイス、次回までのモチベーションを記入します。
           </p>
 
           <div className="space-y-3">
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">
-                和宏先生からのアドバイス・理学療法所見:
+                リハビリメモ・専門所見（アドバイス）:
               </label>
               <textarea
                 value={kazuhiroAdvice}
                 onChange={(e) => setKazuhiroAdvice(e.target.value)}
                 rows={3}
-                placeholder="例: 前脛骨筋の収縮力がMMT4へと向上し、歩行時のつま先の引っ掛かりが明らかに改善されています。ご主人の包み込みケアを継続しつつ、立ち上がり回数を伸ばしていきましょう！"
+                placeholder="例: 前脛骨筋の収縮力が向上し、歩行時のつま先の引っ掛かりが明らかに改善。ご主人の包み込みケアを継続しつつ、立ち座り回数を伸ばしていきましょう！"
                 className="w-full bg-white border border-purple-200 rounded-2xl p-3.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-purple-400 shadow-inner"
               />
             </div>
@@ -501,23 +502,23 @@ export const PTEvalTab: React.FC<PTEvalTabProps> = ({ onSaveDock, ptDocks }) => 
             className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-purple-500 via-indigo-500 to-pink-500 text-white text-base font-extrabold shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-98 transition-all flex items-center justify-center gap-2 border-2 border-white/60"
           >
             <Award className="w-5 h-5 text-amber-300 animate-pulse" />
-            <span>和宏先生の評価ドックを保存する 🩺</span>
+            <span>定期チェック結果を保存する 🩺</span>
           </button>
 
           {savedSuccess && (
             <div className="mt-3 p-3 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold text-center shadow-md animate-fade-in flex items-center justify-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>和宏先生の評価ドックを正常に登録しました！着実に回復していますね 👏✨</span>
+              <span>定期チェック結果を正常に保存しました！着実に回復していますね 👏✨</span>
             </div>
           )}
         </div>
       </form>
 
-      {/* Past PT Dock History List */}
+      {/* Past History List */}
       <div className="mt-8 pt-6 border-t border-purple-100">
         <h3 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
           <History className="w-4 h-4 text-purple-600" />
-          <span>過去の和宏先生 評価ドック記録一覧 ({ptDocks.length}件)</span>
+          <span>過去の定期チェック・測定記録一覧 ({ptDocks.length}件)</span>
         </h3>
 
         <div className="space-y-3">
@@ -550,7 +551,7 @@ export const PTEvalTab: React.FC<PTEvalTabProps> = ({ onSaveDock, ptDocks }) => 
               </div>
 
               <p className="text-xs text-slate-700 bg-purple-50/50 p-2.5 rounded-xl border border-purple-100 mb-1.5 leading-relaxed">
-                <b className="text-purple-700 font-bold block mb-0.5">💬 和宏先生のアドバイス:</b>
+                <b className="text-purple-700 font-bold block mb-0.5">💬 評価メモ・アドバイス:</b>
                 {dock.kazuhiroAdvice}
               </p>
 

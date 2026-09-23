@@ -175,7 +175,7 @@ export const INITIAL_PT_DOCKS: PTEvalDock[] = [
   {
     id: 'dock-1',
     date: '2026-03-15',
-    evaluator: '和宏先生 (担当理学療法士)',
+    evaluator: 'かずくん (PT) / 定期測定',
     mmt: {
       tibialisAnterior: 3,
       extensorHallucisLongus: 2,
@@ -194,14 +194,14 @@ export const INITIAL_PT_DOCKS: PTEvalDock[] = [
     },
     sensoryZones: ['toes', 'midfoot', 'heel', 'ankle'],
     allodyniaScore: 6,
-    kazuhiroAdvice: 'EGPA発症後の下垂足と足底アロディニアがみられます。長母趾伸筋の収縮を意識しつつ、椅子からの立ち上がり動作で下肢全体の抗重力筋を賦活化していきましょう。ご主人の優しいタッチケアを継続してください。',
-    nextGoal: 'CS-30テストで10回を目指す。足指のタオル引き寄せを毎日習慣化！',
+    kazuhiroAdvice: '発症後の下垂足と足底アロディニアの経過確認。長母趾伸筋の収縮を意識しつつ、椅子立ち上がりで下肢全体の抗重力筋を賦活化。ご主人の優しいタッチケアを継続しましょう。',
+    nextGoal: 'CS-30テストで10回を目指す。足指のタオル引き寄せをマイペースに習慣化！',
     createdAt: '2026-03-15T15:00:00Z',
   },
   {
     id: 'dock-2',
     date: '2026-06-20',
-    evaluator: '和宏先生 (担当理学療法士)',
+    evaluator: 'かずくん (PT) / 定期測定',
     mmt: {
       tibialisAnterior: 4,
       extensorHallucisLongus: 3,
@@ -220,14 +220,14 @@ export const INITIAL_PT_DOCKS: PTEvalDock[] = [
     },
     sensoryZones: ['toes', 'midfoot'],
     allodyniaScore: 4,
-    kazuhiroAdvice: '前脛骨筋のMMTが4レベルまで回復！歩行時のつま先の引っ掛かりが明らかに減少しています。CS-30も11回と大きく向上。足底の感覚過敏ゾーンやかかとの痛みが引いてきています。素晴らしい前進です！',
+    kazuhiroAdvice: '前脛骨筋のMMTが4レベルまで向上！歩行時のつま先の引っ掛かりが明らかに減少しています。CS-30も11回と大きく向上。足底の感覚過敏ゾーンやかかとの痛みが引いてきています。順調な前進！',
     nextGoal: 'カーフレイズ左右とも5回以上安定させる。コンサートで長く立てる下肢持久力作り！',
     createdAt: '2026-06-20T16:00:00Z',
   },
   {
     id: 'dock-3',
     date: '2026-09-15',
-    evaluator: '和宏先生 (担当理学療法士)',
+    evaluator: 'かずくん (PT) / 定期測定',
     mmt: {
       tibialisAnterior: 4,
       extensorHallucisLongus: 4,
@@ -246,7 +246,7 @@ export const INITIAL_PT_DOCKS: PTEvalDock[] = [
     },
     sensoryZones: ['toes'],
     allodyniaScore: 2,
-    kazuhiroAdvice: 'ロンベルグ試験は閉眼でもぐらつかず完全Pass！左右の下腿周囲径の差も0.5cm以内に縮まり、筋萎縮の回復が顕著です。CS-30はなんと15回達成！同年代の標準値に肉薄しています。推し活エネルギーと日々の地道なケアの成果ですね。',
+    kazuhiroAdvice: 'ロンベルグ試験は閉眼でもぐらつかず完全Pass！左右の下腿周囲径の差も0.5cm以内に縮まり、筋萎縮の回復が顕著。CS-30はなんと15回達成！同年代の標準値に肉薄しています。毎日の地道なケアの成果ですね。',
     nextGoal: '次回目標：CS-30で17回。セブチのライブで思いっきり楽しむためのスタミナ維持！',
     createdAt: '2026-09-15T15:30:00Z',
   },

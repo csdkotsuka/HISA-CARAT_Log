@@ -251,7 +251,7 @@ export const App: React.FC = () => {
             <span>Rose Quartz & Serenity</span>
           </div>
           <p className="text-[11px] text-slate-400">
-            ひさこのEGPAリハビリ ＆ 和宏先生の評価ドック with ジョンハン👼💎 (Firebase Cloud Sync Enabled 🔥)
+            ひさこのEGPAリハビリ ＆ セルフケア手帳 with ジョンハン👼💎（受診・定期測定共有対応）
           </p>
         </footer>
       </div>

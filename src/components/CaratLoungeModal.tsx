@@ -116,13 +116,14 @@ export const CaratLoungeModal: React.FC<CaratLoungeModalProps> = ({
           {/* Jeonghan Special Angel Card */}
           <div className="glass-card rounded-3xl p-5 sm:p-6 border-2 border-pink-200 shadow-md relative overflow-hidden bg-gradient-to-r from-pink-50 via-purple-50 to-blue-50">
             <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
-              <div className="relative">
-                <div className="w-24 h-24 rounded-3xl p-1 bg-gradient-to-tr from-[#F7CAC9] via-[#E8D1E6] to-[#92A8D1] shadow-lg">
-                  <div className="w-full h-full rounded-2xl bg-white flex flex-col items-center justify-center">
-                    <span className="text-5xl animate-float">👼</span>
-                    <span className="text-[10px] font-black text-pink-600 tracking-wider">
-                      JEONGHAN
-                    </span>
+              <div className="relative flex-shrink-0">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl p-1 bg-gradient-to-tr from-[#F7CAC9] via-[#E8D1E6] to-[#92A8D1] shadow-lg">
+                  <div className="w-full h-full rounded-2xl overflow-hidden shadow-inner">
+                    <img
+                      src="/jeonghan_avatar.jpg"
+                      alt="Jeonghan"
+                      className="w-full h-full object-cover object-center"
+                    />
                   </div>
                 </div>
                 <span className="absolute -bottom-2 -right-2 bg-gradient-to-r from-pink-500 to-rose-400 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-sm">

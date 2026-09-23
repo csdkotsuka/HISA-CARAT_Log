@@ -31,7 +31,7 @@ export const HANI_QUOTES: HaniQuote[] = [
   },
   {
     id: 'quote-5',
-    quote: '和宏先生との評価ドック、前より確実に強くなってる！ひさこさんの頑張り、僕が一番褒めてあげる！👏🎉',
+    quote: 'からだの定期チェック、前より確実に強くなってる！ひさこさんの日々の頑張り、僕が一番褒めてあげる！👏🎉',
     subtext: '努力は絶対裏切らないよ〜！',
     emoji: '🌟',
     category: 'rehab',

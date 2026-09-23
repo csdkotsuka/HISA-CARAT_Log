@@ -40,7 +40,7 @@ export const MedicalReportModal: React.FC<MedicalReportModalProps> = ({
 患者名: ひさこ様 (50代女性)
 主疾患: 好酸球性多発血管炎性肉芽腫症 (EGPA)
 記録期間: 直近 ${dailyLogs.length} 日間
-担当PT: 和宏先生
+測定・確認: かずくん (PT) / 自己測定
 
 ■ 現在のバイタル・服薬
 - プレドニン (PSL) 投与量: ${latestDaily ? latestDaily.pslDoseMg : 6} mg
@@ -48,7 +48,7 @@ export const MedicalReportModal: React.FC<MedicalReportModalProps> = ({
 - アロディニア (触覚過敏): レベル ${latestDaily ? latestDaily.allodyniaLevel : 1}
 - 朝の体温推移: 36.4〜36.7℃ (微熱・炎症燃焼なし)
 
-■ 和宏先生による理学療法評価 (最新: ${latestDock ? latestDock.date : 'N/A'})
+■ 定期測定・機能評価推移 (最新: ${latestDock ? latestDock.date : 'N/A'})
 - CS-30 (30秒椅子立ち座り): ${latestDock ? latestDock.functional.cs30Count : '--'} 回 (初期: ${firstDock ? firstDock.functional.cs30Count : '--'} 回より着実に向上)
 - ロンベルグ試験 (深部感覚・バランス): ${latestDock && latestDock.functional.rombergTest === 'pass' ? '陰性 (Pass / 安定保持)' : '軽度動揺'}
 - 下腿MMT: 前脛骨筋 MMT ${latestDock ? latestDock.mmt.tibialisAnterior : 4} / 長母趾伸筋 MMT ${latestDock ? latestDock.mmt.extensorHallucisLongus : 4}
@@ -60,7 +60,7 @@ export const MedicalReportModal: React.FC<MedicalReportModalProps> = ({
 - ご主人の包み込みケア (足裏脱感作): 毎日継続実施
 - 低周波TENS療法: 継続中
 
-■ 和宏先生からの所見
+■ 評価メモ・所見
 ${latestDock ? latestDock.kazuhiroAdvice : '順調な回復傾向'}
     `.trim();
 
@@ -80,10 +80,10 @@ ${latestDock ? latestDock.kazuhiroAdvice : '順調な回復傾向'}
             </div>
             <div>
               <h2 className="text-base font-extrabold text-slate-800">
-                主治医・理学療法士 提出用経過サマリー
+                主治医・医療者 提出用経過サマリー
               </h2>
               <p className="text-xs text-slate-500">
-                診察時やリハビリ評価ドックの面談時にご提示ください
+                定期受診やリハビリ相談の際にそのままご提示いただけます
               </p>
             </div>
           </div>
@@ -120,7 +120,7 @@ ${latestDock ? latestDock.kazuhiroAdvice : '順調な回復傾向'}
           <div className="border-b-2 border-slate-800 pb-3 flex justify-between items-end">
             <div>
               <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest block">
-                EGPA Rehabilitation Progress Report
+                EGPA Self-Management & Rehabilitation Progress Report
               </span>
               <h1 className="text-xl sm:text-2xl font-black text-slate-900">
                 好酸球性多発血管炎性肉芽腫症（EGPA）経過報告書
@@ -138,8 +138,8 @@ ${latestDock ? latestDock.kazuhiroAdvice : '順調な回復傾向'}
               <span className="font-bold text-slate-800">ひさこ 様 (50代女性)</span>
             </div>
             <div>
-              <span className="text-slate-400 block text-[10px]">担当PT</span>
-              <span className="font-bold text-slate-800">和宏 先生</span>
+              <span className="text-slate-400 block text-[10px]">測定・確認</span>
+              <span className="font-bold text-slate-800">かずくん (PT) / 自己測定</span>
             </div>
             <div>
               <span className="text-slate-400 block text-[10px]">現在ステロイド量</span>
@@ -154,7 +154,7 @@ ${latestDock ? latestDock.kazuhiroAdvice : '順調な回復傾向'}
           {/* 1. PT Dock Evaluation Progression */}
           <div>
             <h2 className="text-sm font-extrabold text-slate-800 mb-2 border-l-4 border-indigo-600 pl-2">
-              1. 理学療法評価ドック推移（和宏先生評価）
+              1. 定期測定・機能評価推移（CS-30・MMT・バランス）
             </h2>
 
             <div className="overflow-x-auto">
@@ -196,7 +196,7 @@ ${latestDock ? latestDock.kazuhiroAdvice : '順調な回復傾向'}
 
             {latestDock && (
               <div className="mt-3 p-3 bg-indigo-50/60 rounded-xl border border-indigo-200 text-xs text-slate-700">
-                <span className="font-bold text-indigo-900 block mb-0.5">理学療法士 和宏先生の所見:</span>
+                <span className="font-bold text-indigo-900 block mb-0.5">評価メモ・所見:</span>
                 {latestDock.kazuhiroAdvice}
               </div>
             )}
@@ -239,7 +239,7 @@ ${latestDock ? latestDock.kazuhiroAdvice : '順調な回復傾向'}
           {/* Doctor note section */}
           <div className="border-t border-slate-200 pt-4">
             <span className="text-[11px] text-slate-400 font-bold block mb-1">
-              主治医・PT先生記入欄 / コメントメモ:
+              主治医・医療者記入欄 / 診察メモ:
             </span>
             <div className="h-16 border border-dashed border-slate-300 rounded-xl bg-slate-50/50" />
           </div>
