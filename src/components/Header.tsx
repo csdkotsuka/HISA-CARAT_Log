@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, RefreshCw, FileText, Music2 } from 'lucide-react';
+import { Heart, RefreshCw, FileText, Music2, Cloud, CloudCheck } from 'lucide-react';
 import { HANI_QUOTES } from '../data/haniQuotes';
 import type { HaniQuote } from '../types';
 import { triggerSparkleConfetti } from '../utils/confetti';
@@ -9,6 +9,8 @@ interface HeaderProps {
   onOpenMedicalReport: () => void;
   currentPslDose?: number;
   totalLogsCount: number;
+  cloudStatus?: 'synced' | 'syncing' | 'offline';
+  onSyncNow?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -16,6 +18,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenMedicalReport,
   currentPslDose = 6,
   totalLogsCount,
+  cloudStatus = 'synced',
+  onSyncNow,
 }) => {
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isRotating, setIsRotating] = useState(false);
@@ -83,6 +87,26 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="text-xs text-slate-500 font-medium">
                   記録日数: <span className="font-bold text-pink-600">{totalLogsCount}日目</span>
                 </span>
+                {/* Cloud Sync Status */}
+                {onSyncNow ? (
+                  <button
+                    onClick={onSyncNow}
+                    className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/80 border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-300 transition-colors"
+                    title="クリックしてFirebase Firestoreと同期"
+                  >
+                    {cloudStatus === 'syncing' ? (
+                      <>
+                        <Cloud className="w-3 h-3 text-amber-500 animate-pulse" />
+                        <span className="text-amber-600">同期中...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CloudCheck className="w-3 h-3 text-emerald-500" />
+                        <span className="text-emerald-700">クラウド同期済</span>
+                      </>
+                    )}
+                  </button>
+                ) : null}
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-0.5">
                 <span className="svt-gradient-text">HISA-CARAT Log</span>

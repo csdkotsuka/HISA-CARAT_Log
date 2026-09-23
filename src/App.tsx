@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
 import { TabNavigation } from './components/TabNavigation';
 import type { ActiveTab } from './components/TabNavigation';
@@ -17,6 +17,17 @@ import {
   saveConcertGoal,
 } from './utils/storage';
 import type { ConcertGoal } from './utils/storage';
+import {
+  subscribeDailyLogs,
+  saveDailyLogToFirestore,
+  deleteDailyLogFromFirestore,
+  subscribePTDocks,
+  savePTDockToFirestore,
+  deletePTDockFromFirestore,
+  subscribeConcertGoal,
+  saveConcertGoalToFirestore,
+  seedFirestoreIfEmpty,
+} from './firebase/firestoreService';
 
 export const App: React.FC = () => {
   const [dailyLogs, setDailyLogs] = useState<DailyLog[]>([]);
@@ -25,16 +36,63 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('daily');
   const [isCaratLoungeOpen, setIsCaratLoungeOpen] = useState(false);
   const [isMedicalReportOpen, setIsMedicalReportOpen] = useState(false);
+  const [cloudStatus, setCloudStatus] = useState<'synced' | 'syncing' | 'offline'>('syncing');
 
-  // Initialize from storage
+  // Load from LocalStorage first, then attach Firestore real-time listeners
   useEffect(() => {
+    // 1. Initial Local Cache
     setDailyLogs(getDailyLogs());
     setPtDocks(getPTDocks());
     setConcertGoal(getConcertGoal());
+
+    // 2. Auto-seed Firestore if collection is empty
+    seedFirestoreIfEmpty().then(() => {
+      setCloudStatus('synced');
+    }).catch(() => {
+      setCloudStatus('offline');
+    });
+
+    // 3. Firestore Real-time Subscriptions
+    const unsubDaily = subscribeDailyLogs(
+      (remoteLogs) => {
+        if (remoteLogs.length > 0) {
+          setDailyLogs(remoteLogs);
+          saveDailyLogs(remoteLogs);
+        }
+        setCloudStatus('synced');
+      },
+      () => setCloudStatus('offline')
+    );
+
+    const unsubPT = subscribePTDocks(
+      (remoteDocks) => {
+        if (remoteDocks.length > 0) {
+          setPtDocks(remoteDocks);
+          savePTDocks(remoteDocks);
+        }
+        setCloudStatus('synced');
+      },
+      () => setCloudStatus('offline')
+    );
+
+    const unsubGoal = subscribeConcertGoal(
+      (remoteGoal) => {
+        setConcertGoal(remoteGoal);
+        saveConcertGoal(remoteGoal);
+        setCloudStatus('synced');
+      },
+      () => setCloudStatus('offline')
+    );
+
+    return () => {
+      unsubDaily();
+      unsubPT();
+      unsubGoal();
+    };
   }, []);
 
-  // Save handlers
-  const handleSaveDailyLog = (newLog: DailyLog) => {
+  // Save handlers (updates LocalStorage immediately + syncs to Firestore)
+  const handleSaveDailyLog = async (newLog: DailyLog) => {
     const existingIndex = dailyLogs.findIndex((l) => l.date === newLog.date);
     let updated: DailyLog[];
     if (existingIndex >= 0) {
@@ -45,34 +103,96 @@ export const App: React.FC = () => {
     }
     setDailyLogs(updated);
     saveDailyLogs(updated);
-  };
 
-  const handleSavePTDock = (newDock: PTEvalDock) => {
-    const updated = [...ptDocks, newDock];
-    setPtDocks(updated);
-    savePTDocks(updated);
-  };
-
-  const handleDeleteDailyLog = (id: string) => {
-    if (window.confirm('この日の日常記録を削除してもよろしいですか？')) {
-      const updated = dailyLogs.filter((l) => l.id !== id);
-      setDailyLogs(updated);
-      saveDailyLogs(updated);
+    try {
+      setCloudStatus('syncing');
+      await saveDailyLogToFirestore(newLog);
+      setCloudStatus('synced');
+    } catch (e) {
+      console.warn('Failed to sync daily log to Firestore:', e);
+      setCloudStatus('offline');
     }
   };
 
-  const handleDeletePTDock = (id: string) => {
+  const handleSavePTDock = async (newDock: PTEvalDock) => {
+    const updated = [...ptDocks, newDock];
+    setPtDocks(updated);
+    savePTDocks(updated);
+
+    try {
+      setCloudStatus('syncing');
+      await savePTDockToFirestore(newDock);
+      setCloudStatus('synced');
+    } catch (e) {
+      console.warn('Failed to sync PT dock to Firestore:', e);
+      setCloudStatus('offline');
+    }
+  };
+
+  const handleDeleteDailyLog = async (id: string) => {
+    if (window.confirm('この日の日常記録を削除してもよろしいですか？')) {
+      const target = dailyLogs.find((l) => l.id === id);
+      const updated = dailyLogs.filter((l) => l.id !== id);
+      setDailyLogs(updated);
+      saveDailyLogs(updated);
+
+      if (target) {
+        try {
+          await deleteDailyLogFromFirestore(target.date);
+        } catch (e) {
+          console.warn('Failed to delete from Firestore:', e);
+        }
+      }
+    }
+  };
+
+  const handleDeletePTDock = async (id: string) => {
     if (window.confirm('この和宏先生の評価ドックを削除してもよろしいですか？')) {
       const updated = ptDocks.filter((p) => p.id !== id);
       setPtDocks(updated);
       savePTDocks(updated);
+
+      try {
+        await deletePTDockFromFirestore(id);
+      } catch (e) {
+        console.warn('Failed to delete PT dock from Firestore:', e);
+      }
     }
   };
 
-  const handleSaveGoal = (goal: ConcertGoal) => {
+  const handleSaveGoal = async (goal: ConcertGoal) => {
     setConcertGoal(goal);
     saveConcertGoal(goal);
+
+    try {
+      setCloudStatus('syncing');
+      await saveConcertGoalToFirestore(goal);
+      setCloudStatus('synced');
+    } catch (e) {
+      console.warn('Failed to save concert goal to Firestore:', e);
+      setCloudStatus('offline');
+    }
   };
+
+  const handleManualSync = useCallback(async () => {
+    setCloudStatus('syncing');
+    try {
+      await seedFirestoreIfEmpty();
+      for (const log of dailyLogs) {
+        await saveDailyLogToFirestore(log);
+      }
+      for (const dock of ptDocks) {
+        await savePTDockToFirestore(dock);
+      }
+      await saveConcertGoalToFirestore(concertGoal);
+      setCloudStatus('synced');
+      alert('クラウド (Firebase Firestore) と正常に同期しました！✨');
+    } catch (e) {
+      console.error('Manual sync failed:', e);
+      setCloudStatus('offline');
+      alert('同期エラー: Firestoreのセキュリティルール設定をご確認ください。');
+    }
+  }, [dailyLogs, ptDocks, concertGoal]);
 
   const latestDaily = dailyLogs.length > 0 ? dailyLogs[0] : undefined;
 
@@ -85,6 +205,8 @@ export const App: React.FC = () => {
           onOpenMedicalReport={() => setIsMedicalReportOpen(true)}
           currentPslDose={latestDaily?.pslDoseMg ?? 6}
           totalLogsCount={dailyLogs.length}
+          cloudStatus={cloudStatus}
+          onSyncNow={handleManualSync}
         />
 
         {/* Tab Navigation */}
@@ -129,7 +251,7 @@ export const App: React.FC = () => {
             <span>Rose Quartz & Serenity</span>
           </div>
           <p className="text-[11px] text-slate-400">
-            ひさこのEGPAリハビリ ＆ 和宏先生の評価ドック with ジョンハン👼💎
+            ひさこのEGPAリハビリ ＆ 和宏先生の評価ドック with ジョンハン👼💎 (Firebase Cloud Sync Enabled 🔥)
           </p>
         </footer>
       </div>
