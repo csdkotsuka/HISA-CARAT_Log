@@ -623,29 +623,31 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
                       </span>
                     </td>
 
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                    <td className="py-3 px-4 text-right whitespace-nowrap">
+                      <div className="flex flex-col items-stretch sm:items-end gap-1 w-24 sm:w-28 ml-auto">
                         <button
+                          type="button"
                           onClick={() => {
                             onSelectTenant(tenant.id);
                             onOpenProviderPage(tenant.id);
                           }}
-                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 font-bold transition-all"
+                          className="flex items-center justify-center gap-1 px-2.5 py-1 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 font-bold transition-all text-xs cursor-pointer"
                           title="この業者の管理設定画面を開く"
                         >
-                          <Settings className="w-3.5 h-3.5 text-amber-600" />
+                          <Settings className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                           <span>業者設定</span>
                         </button>
 
                         <button
+                          type="button"
                           onClick={() => {
                             onSelectTenant(tenant.id);
                             onOpenCustomerPage(tenant.id);
                           }}
-                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 font-bold transition-all"
+                          className="flex items-center justify-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 font-bold transition-all text-xs cursor-pointer"
                           title="この業者の顧客画面を開く"
                         >
-                          <ExternalLink className="w-3.5 h-3.5 text-emerald-600" />
+                          <ExternalLink className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                           <span>顧客画面</span>
                         </button>
                       </div>
