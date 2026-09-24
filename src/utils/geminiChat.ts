@@ -18,6 +18,9 @@ export interface ChatMessage {
   role: 'user' | 'model';
   text: string;
   timestamp: string;
+  modelUsed?: string;
+  isAi?: boolean;
+  isError?: boolean;
 }
 
 // Check if Vercel environment variable is set
@@ -143,14 +146,44 @@ const generateSimulatedResponse = (
   return `${name}、お話ししてくれて嬉しいよ！今日の調子はどう？いつでも何でも話してね！✨`;
 };
 
-// Send message to Gemini with full persona context
+// Format conversation strictly for Gemini API requirements:
+// 1. First turn MUST be 'user'
+// 2. Turns must strictly alternate 'user' -> 'model' -> 'user' -> 'model'
+export const formatConversationForGemini = (
+  conversation: ChatMessage[]
+): { role: 'user' | 'model'; parts: { text: string }[] }[] => {
+  // Discard any initial 'model' messages (like initial greetings)
+  const nonLeading = [...conversation];
+  while (nonLeading.length > 0 && nonLeading[0].role === 'model') {
+    nonLeading.shift();
+  }
+
+  if (nonLeading.length === 0) {
+    return [{ role: 'user', parts: [{ text: 'こんにちは！' }] }];
+  }
+
+  const alternating: { role: 'user' | 'model'; parts: { text: string }[] }[] = [];
+  for (const m of nonLeading) {
+    const role: 'user' | 'model' = m.role === 'model' ? 'model' : 'user';
+    const last = alternating[alternating.length - 1];
+    if (last && last.role === role) {
+      last.parts[0].text += `\n${m.text}`;
+    } else {
+      alternating.push({ role, parts: [{ text: m.text }] });
+    }
+  }
+
+  return alternating;
+};
+
+// Send message to Gemini with full persona context and intelligent fallbacks
 export const sendChatMessageToGemini = async (
   conversation: ChatMessage[],
   tenant: Tenant,
   customer: Customer
-): Promise<string> => {
+): Promise<{ text: string; modelUsed: string; isAi: boolean }> => {
   const apiKey = getGeminiApiKey();
-  const model = getGeminiModel();
+  const configuredModel = getGeminiModel();
   const p = tenant.aiPersona;
   const customerName = customer.nickname || customer.name || 'ユーザー';
   const customerGoal = customer.customGoal || '日々の習慣化と自己実現';
@@ -159,7 +192,11 @@ export const sendChatMessageToGemini = async (
   if (!apiKey) {
     const lastUserMsg = conversation[conversation.length - 1]?.text || '';
     const simulated = generateSimulatedResponse(lastUserMsg, tenant, customer);
-    return simulated + '\n\n（※Cheer Master画面でGemini APIキーを設定すると、完全自由なリアルタイムAI対話が有効化されます）';
+    return {
+      text: simulated + '\n\n（※Cheer Master画面またはVercelでGemini APIキーを設定すると、完全自由なリアルタイムAI対話が有効化されます）',
+      modelUsed: 'simulation',
+      isAi: false,
+    };
   }
 
   // Construct System Instruction to impersonate the persona
@@ -170,7 +207,7 @@ export const sendChatMessageToGemini = async (
 【あなたのプロフィール】
 - 名前: ${p.name}
 - 役割・立場: ${p.role}
-- 性格・バックストーリー: ${p.chatPersonality || '相手の努力を誰よりも認め、親身に伴走する心優しい存在'}
+- 性格・バックストーリー: ${p.chatPersonality || '相手の努力を誰重にも認め、親身に伴走する心優しい存在'}
 - 一人称: ${p.chatFirstPerson || '私'}
 - 相手の呼び方: 「${p.chatSecondPerson || `${customerName}さん`}」
 - 話し方のトーン: ${p.tone} (温かく、自然で、親密な会話口調)
@@ -188,51 +225,91 @@ export const sendChatMessageToGemini = async (
 - 日本語で返答してください。
 `.trim();
 
-  // Convert conversation to Gemini format (user / model turns)
-  const contents = conversation.map((msg) => ({
-    role: msg.role === 'model' ? 'model' : 'user',
-    parts: [{ text: msg.text }],
-  }));
+  const formattedContents = formatConversationForGemini(conversation);
 
-  try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-      model
-    )}:generateContent?key=${encodeURIComponent(apiKey)}`;
+  // List of candidate models to try (primary chosen model first, then fallback models if 404 occurs)
+  const candidateModels = Array.from(
+    new Set([configuredModel, 'gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'])
+  );
 
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        system_instruction: {
-          parts: [{ text: systemInstructionText }],
-        },
-        contents,
-        generationConfig: {
-          temperature: 0.8,
-          maxOutputTokens: 300,
-        },
-      }),
-    });
+  let lastErrorMsg = '';
 
-    if (!res.ok) {
-      console.warn('Gemini API call failed with status:', res.status);
-      const lastUserMsg = conversation[conversation.length - 1]?.text || '';
-      return generateSimulatedResponse(lastUserMsg, tenant, customer);
+  for (const modelToTry of candidateModels) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
+        modelToTry
+      )}:generateContent?key=${encodeURIComponent(apiKey.trim())}`;
+
+      // 1. Try standard request with system_instruction
+      let res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: {
+            parts: [{ text: systemInstructionText }],
+          },
+          contents: formattedContents,
+          generationConfig: {
+            temperature: 0.8,
+            maxOutputTokens: 500,
+          },
+        }),
+      });
+
+      // 2. If 400 Bad Request, retry by embedding system instructions into the first user turn
+      if (res.status === 400) {
+        const embeddedContents = formattedContents.map((c, idx) => {
+          if (idx === 0) {
+            return {
+              role: c.role,
+              parts: [{ text: `【設定指示】\n${systemInstructionText}\n\n【ユーザー発言】\n${c.parts[0].text}` }],
+            };
+          }
+          return c;
+        });
+
+        res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: embeddedContents,
+            generationConfig: {
+              temperature: 0.8,
+              maxOutputTokens: 500,
+            },
+          }),
+        });
+      }
+
+      if (res.status === 404) {
+        const errData = await res.json().catch(() => ({}));
+        lastErrorMsg = errData.error?.message || `Model ${modelToTry} not found (404)`;
+        console.warn(`Gemini model ${modelToTry} returned 404, attempting fallback...`);
+        continue;
+      }
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        const errMsg = errData.error?.message || `HTTP ${res.status}: ${res.statusText}`;
+        throw new Error(`Gemini APIエラー: ${errMsg}`);
+      }
+
+      const data = await res.json();
+      const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (replyText && replyText.trim()) {
+        return {
+          text: replyText.trim(),
+          modelUsed: modelToTry,
+          isAi: true,
+        };
+      }
+    } catch (e: any) {
+      if (e.message?.includes('Gemini APIエラー')) {
+        throw e;
+      }
+      lastErrorMsg = e.message || String(e);
     }
-
-    const data = await res.json();
-    const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (replyText && replyText.trim()) {
-      return replyText.trim();
-    }
-
-    const lastUserMsg = conversation[conversation.length - 1]?.text || '';
-    return generateSimulatedResponse(lastUserMsg, tenant, customer);
-  } catch (error) {
-    console.error('Error in sendChatMessageToGemini:', error);
-    const lastUserMsg = conversation[conversation.length - 1]?.text || '';
-    return generateSimulatedResponse(lastUserMsg, tenant, customer);
   }
+
+  throw new Error(`Gemini通信エラー: ${lastErrorMsg || 'すべてのモデル候補で通信に失敗しました。APIキーまたはモデル権限をご確認ください。'}`);
 };

@@ -146,73 +146,73 @@ export const CustomerPortalView: React.FC<CustomerPortalViewProps> = ({
             />
           )}
         </main>
+      </div>
 
-        {/* Modals */}
-        <CaratLoungeModal
-          isOpen={isLoungeOpen}
-          onClose={() => setIsLoungeOpen(false)}
-          concertGoal={concertGoal}
-          onSaveConcertGoal={onSaveConcertGoal}
-        />
+      {/* Modals (placed outside no-print container so report printing is visible) */}
+      <CaratLoungeModal
+        isOpen={isLoungeOpen}
+        onClose={() => setIsLoungeOpen(false)}
+        concertGoal={concertGoal}
+        onSaveConcertGoal={onSaveConcertGoal}
+      />
 
-        {/* Dedicated 1-Page A4 Periodic Summary Report */}
-        <PeriodicSummaryReportModal
-          isOpen={isReportOpen}
-          onClose={() => setIsReportOpen(false)}
-          tenant={tenant}
-          customer={customer}
-          dailyLogs={dailyLogs}
-          evalRecords={evalRecords}
-          legacyDailyLogs={displayDailyLogs}
-          legacyPtDocks={legacyPtDocks}
-        />
+      {/* Dedicated 1-Page A4 Periodic Summary Report */}
+      <PeriodicSummaryReportModal
+        isOpen={isReportOpen}
+        onClose={() => setIsReportOpen(false)}
+        tenant={tenant}
+        customer={customer}
+        dailyLogs={dailyLogs}
+        evalRecords={evalRecords}
+        legacyDailyLogs={displayDailyLogs}
+        legacyPtDocks={legacyPtDocks}
+      />
 
-        {/* Interactive AI Chat with Partner (Gemini) */}
-        <AIChatModal
-          isOpen={isChatOpen}
-          onClose={() => setIsChatOpen(false)}
-          tenant={tenant}
-          customer={customer}
-        />
+      {/* Interactive AI Chat with Partner (Gemini) */}
+      <AIChatModal
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        tenant={tenant}
+        customer={customer}
+      />
 
-        <AvatarEvolutionModal
-          isOpen={isAvatarModalOpen}
-          onClose={() => setIsAvatarModalOpen(false)}
-          streakInfo={streakInfo}
-          onSelectAvatar={onSelectAvatarStyle}
-        />
+      <AvatarEvolutionModal
+        isOpen={isAvatarModalOpen}
+        onClose={() => setIsAvatarModalOpen(false)}
+        streakInfo={streakInfo}
+        onSelectAvatar={onSelectAvatarStyle}
+      />
 
-        {/* Floating AI Chat Trigger Button */}
-        <div className="fixed bottom-6 right-6 z-40 no-print">
-          <button
-            onClick={() => setIsChatOpen(true)}
-            className="group flex items-center gap-2.5 px-4 py-2.5 rounded-full text-white shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer border-2 border-white/60"
-            style={{
-              background: `linear-gradient(135deg, ${tenant.theme.primaryColor}, ${tenant.theme.accentColor})`,
-            }}
-            title={`${tenant.aiPersona.name}とチャット`}
-          >
-            <div className="w-8 h-8 rounded-full border-2 border-white overflow-hidden shadow-xs flex-shrink-0 bg-white">
-              <img
-                src={tenant.aiPersona.avatarUrl}
-                alt={tenant.aiPersona.name}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src =
-                    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
-                }}
-              />
+      {/* Floating AI Chat Trigger Button */}
+      <div className="fixed bottom-6 right-6 z-40 no-print">
+        <button
+          onClick={() => setIsChatOpen(true)}
+          className="group flex items-center gap-2.5 px-4 py-2.5 rounded-full text-white shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer border-2 border-white/60"
+          style={{
+            background: `linear-gradient(135deg, ${tenant.theme.primaryColor}, ${tenant.theme.accentColor})`,
+          }}
+          title={`${tenant.aiPersona.name}とチャット`}
+        >
+          <div className="w-8 h-8 rounded-full border-2 border-white overflow-hidden shadow-xs flex-shrink-0 bg-white">
+            <img
+              src={tenant.aiPersona.avatarUrl}
+              alt={tenant.aiPersona.name}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src =
+                  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
+              }}
+            />
+          </div>
+          <div className="text-left pr-1">
+            <div className="text-[10px] text-white/90 font-medium leading-none">
+              本人と会話
             </div>
-            <div className="text-left pr-1">
-              <div className="text-[10px] text-white/90 font-medium leading-none">
-                本人と会話
-              </div>
-              <div className="text-xs font-black drop-shadow-xs leading-tight">
-                {tenant.aiPersona.name}とおしゃべり 💬
-              </div>
+            <div className="text-xs font-black drop-shadow-xs leading-tight">
+              {tenant.aiPersona.name}とおしゃべり 💬
             </div>
-          </button>
-        </div>
+          </div>
+        </button>
       </div>
     </div>
   );

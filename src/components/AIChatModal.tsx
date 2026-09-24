@@ -86,21 +86,25 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({
     setIsLoading(true);
 
     try {
-      const replyText = await sendChatMessageToGemini(updatedMessages, tenant, customer);
+      const response = await sendChatMessageToGemini(updatedMessages, tenant, customer);
       const modelMsg: ChatMessage = {
         id: `model-${Date.now()}`,
         role: 'model',
-        text: replyText,
+        text: response.text,
         timestamp: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
+        modelUsed: response.modelUsed,
+        isAi: response.isAi,
       };
       setMessages((prev) => [...prev, modelMsg]);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      const errMsg = e.message || '通信エラーが発生しました';
       const errorMsg: ChatMessage = {
         id: `error-${Date.now()}`,
         role: 'model',
-        text: 'ごめんね、うまく言葉が届かなかったみたい...もう一度話しかけてみてね！',
+        text: `⚠️ ${errMsg}\n\n（※Cheer Master画面でAPIキーやモデルの設定をご確認ください）`,
         timestamp: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
+        isError: true,
       };
       setMessages((prev) => [...prev, errorMsg]);
     } finally {
@@ -212,7 +216,9 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({
 
                 <div
                   className={`max-w-[78%] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm leading-relaxed shadow-xs whitespace-pre-wrap ${
-                    isModel
+                    msg.isError
+                      ? 'bg-rose-50 text-rose-900 border border-rose-300 rounded-bl-xs'
+                      : isModel
                       ? 'bg-white text-slate-800 border border-slate-200/80 rounded-bl-xs'
                       : 'text-white font-medium rounded-br-xs'
                   }`}
@@ -222,11 +228,26 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({
                 >
                   {msg.text}
                   <div
-                    className={`text-[9px] mt-1 text-right ${
-                      isModel ? 'text-slate-400' : 'text-white/80'
+                    className={`text-[9px] mt-1.5 flex items-center justify-between gap-2 ${
+                      isModel ? 'text-slate-400' : 'text-white/80 justify-end'
                     }`}
                   >
-                    {msg.timestamp}
+                    {isModel && (
+                      <span>
+                        {msg.isAi ? (
+                          <span className="inline-flex items-center gap-1 font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200/60">
+                            ✨ Gemini ({msg.modelUsed})
+                          </span>
+                        ) : msg.isError ? (
+                          <span className="font-bold text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded border border-rose-200">
+                            ⚠️ 通信エラー
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">天使モード</span>
+                        )}
+                      </span>
+                    )}
+                    <span>{msg.timestamp}</span>
                   </div>
                 </div>
               </div>

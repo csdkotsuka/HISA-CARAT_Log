@@ -41,7 +41,7 @@ export const RoleNavigationHeader: React.FC<RoleNavigationHeaderProps> = ({
   // If customer role, do NOT show the admin/provider switching bar at all! Only show sleek personal header bar
   if (userRole === 'customer') {
     return (
-      <div className="w-full bg-slate-900/95 backdrop-blur-md text-white border-b border-slate-800 shadow-sm sticky top-0 z-50 text-xs">
+      <div className="w-full bg-slate-900/95 backdrop-blur-md text-white border-b border-slate-800 shadow-sm sticky top-0 z-50 text-xs no-print">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 flex items-center justify-between gap-2">
           {/* Left: App Logo & User space name */}
           <div className="flex items-center gap-2">
@@ -88,7 +88,7 @@ export const RoleNavigationHeader: React.FC<RoleNavigationHeaderProps> = ({
 
   // Provider or Admin Role View
   return (
-    <div className="w-full bg-slate-900 text-white border-b border-slate-800 shadow-md sticky top-0 z-50 transition-all text-xs">
+    <div className="w-full bg-slate-900 text-white border-b border-slate-800 shadow-md sticky top-0 z-50 transition-all text-xs no-print">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 flex flex-col md:flex-row items-center justify-between gap-2.5">
         
         {/* Left: Role Navigation Tabs with Permissions */}
