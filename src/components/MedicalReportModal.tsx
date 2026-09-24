@@ -15,9 +15,18 @@ export const MedicalReportModal: React.FC<MedicalReportModalProps> = ({
   dailyLogs,
   ptDocks,
 }) => {
-  if (!isOpen) return null;
-
   const [copied, setCopied] = useState(false);
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
 
   const sortedDaily = [...dailyLogs].sort((a, b) => b.date.localeCompare(a.date));
   const sortedDocks = [...ptDocks].sort((a, b) => b.date.localeCompare(a.date));
@@ -33,14 +42,6 @@ export const MedicalReportModal: React.FC<MedicalReportModalProps> = ({
   const handlePrint = () => {
     window.print();
   };
-
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
 
   const handleCopyText = () => {
     const text = `

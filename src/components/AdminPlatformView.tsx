@@ -1,0 +1,497 @@
+import React, { useState } from 'react';
+import {
+  ShieldCheck,
+  Building2,
+  Users,
+  PlusCircle,
+  Settings,
+  Search,
+  CheckCircle2,
+  Layers,
+  TrendingUp,
+  ExternalLink,
+} from 'lucide-react';
+import type { Tenant, Customer, IndustryType } from '../types/tenant';
+import { COLOR_THEMES } from '../data/tenantPresets';
+
+interface AdminPlatformViewProps {
+  tenants: Tenant[];
+  customers: Customer[];
+  onSelectTenant: (tenantId: string) => void;
+  onOpenProviderPage: (tenantId: string) => void;
+  onOpenCustomerPage: (tenantId: string, customerId?: string) => void;
+  onCreateTenant: (newTenant: Tenant) => void;
+  activeTenantId: string;
+}
+
+export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
+  tenants,
+  customers,
+  onSelectTenant,
+  onOpenProviderPage,
+  onOpenCustomerPage,
+  onCreateTenant,
+  activeTenantId,
+}) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedIndustry, setSelectedIndustry] = useState<string>('all');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // New tenant form states
+  const [newName, setNewName] = useState('');
+  const [newId, setNewId] = useState('');
+  const [newIndustry, setNewIndustry] = useState<IndustryType>('fitness');
+  const [newHeaderTitle, setNewHeaderTitle] = useState('');
+
+  const filteredTenants = tenants.filter((t) => {
+    const matchesSearch =
+      t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.headerTitle.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesIndustry = selectedIndustry === 'all' || t.industry === selectedIndustry;
+    return matchesSearch && matchesIndustry;
+  });
+
+  const handleOpenCreateModal = () => {
+    const randomSuffix = Math.floor(100 + Math.random() * 900);
+    setNewId(`tenant-org-${randomSuffix}`);
+    setNewName('');
+    setNewIndustry('fitness');
+    setNewHeaderTitle('');
+    setIsCreateModalOpen(true);
+  };
+
+  const handleCreateTenant = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName.trim() || !newId.trim()) return;
+
+    // Pick matching default theme
+    const theme = COLOR_THEMES.find((th) => th.industry === newIndustry) || COLOR_THEMES[1];
+
+    const createdTenant: Tenant = {
+      id: newId.trim().toLowerCase(),
+      adminId: 'admin-master',
+      name: newName.trim(),
+      industry: newIndustry,
+      headerTitle: newHeaderTitle.trim() || `${newName} ポータルLog`,
+      headerSubtitle: '毎日の習慣化・成果向上を支える専用パートナー手帳',
+      badgeText: `${newIndustry.toUpperCase()} PRO ✨`,
+      theme,
+      aiPersona: {
+        name: '専属AIパートナー',
+        role: '専属アドバイザー',
+        tone: 'friendly',
+        avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
+        avatarType: 'preset',
+        speechBubbleText: '✨ 今日も一歩ずつ前進！一緒に頑張りましょう！',
+        encouragementQuotes: [
+          { id: 'q1', quote: '小さな積み重ねが、大きな成果を作ります！', subtext: 'AIパートナーより', emoji: '🌟' },
+          { id: 'q2', quote: '今日もご自身のペースで無理なく続けましょう。', subtext: 'デイリーメッセージ', emoji: '🌱' },
+        ],
+      },
+      dailyConfig: {
+        title: '毎日のセルフログ',
+        enableCondition: true,
+        conditionLabel: '本日のコンディション',
+        enableWeather: true,
+        checkItems: [
+          { id: 'task1', label: '基本ルーティン実施', icon: '✅', defaultChecked: false },
+          { id: 'task2', label: '水分・栄養補給', icon: '💧', defaultChecked: false },
+          { id: 'task3', label: '振り返り・ストレッチ', icon: '🧘', defaultChecked: false },
+        ],
+        sliders: [
+          { id: 'satisfaction', label: '今日の充実感・達成度', min: 1, max: 5, step: 1, minLabel: '低め', maxLabel: '大満足', defaultValue: 3 },
+        ],
+        numericFields: [
+          { id: 'activityTime', label: '活動時間', unit: '分', placeholder: '30', defaultValue: 30 },
+        ],
+        energyLabel: 'モチベーション充実度',
+        energyIcon: '✨',
+        enableEnergy: true,
+        memoLabel: 'メモ・日記',
+        memoPlaceholder: '今日の気づきや成果をメモしましょう...',
+        quickTags: ['順調に完了！', '少し疲れたけれど達成', 'アドバイス通り実践できた'],
+      },
+      evalConfig: {
+        enabled: true,
+        title: '定期ステップ評価チェック',
+        evaluatorLabel: '担当スタッフ / 専門職',
+        metrics: [
+          { id: 'evalScore', label: '総合スコア達成度', category: '評価', unit: '点', target: 100, type: 'number' },
+        ],
+        adviceLabel: 'スタッフからのアドバイス',
+        goalLabel: '次回までの目標',
+      },
+      customerIds: [],
+      status: 'active',
+      createdAt: new Date().toISOString().slice(0, 10),
+      updatedAt: new Date().toISOString().slice(0, 10),
+    };
+
+    onCreateTenant(createdTenant);
+    setIsCreateModalOpen(false);
+  };
+
+  return (
+    <div className="w-full max-w-7xl mx-auto space-y-6 pb-16">
+      {/* Header Banner */}
+      <div className="glass-card rounded-3xl p-6 sm:p-8 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white relative overflow-hidden shadow-2xl border border-indigo-500/30">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-bold mb-3">
+              <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Platform Super Admin / 自社管理者ポータル</span>
+            </div>
+            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
+              多業界対応 汎用SaaS基盤 管理コンソール
+            </h1>
+            <p className="text-sm text-slate-300 mt-2 max-w-2xl leading-relaxed">
+              推し活・パーソナルジム・教育スクール・サークル・医療など、各提携業者（テナント）の発行とID紐付け、利用状況を統合管理します。
+            </p>
+          </div>
+
+          <button
+            onClick={handleOpenCreateModal}
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-sm font-bold shadow-lg hover:shadow-indigo-500/25 hover:scale-[1.02] active:scale-95 transition-all"
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>新規業者アカウントを発行</span>
+          </button>
+        </div>
+
+        {/* Stats Row */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-8 pt-6 border-t border-slate-800">
+          <div className="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/60">
+            <div className="flex items-center justify-between text-slate-400 text-xs font-medium">
+              <span>登録業者数</span>
+              <Building2 className="w-4 h-4 text-amber-400" />
+            </div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
+              {tenants.length} <span className="text-xs text-slate-400 font-normal">社</span>
+            </div>
+            <div className="text-[11px] text-emerald-400 flex items-center gap-1 mt-1">
+              <TrendingUp className="w-3 h-3" />
+              <span>全テナント正常稼働中</span>
+            </div>
+          </div>
+
+          <div className="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/60">
+            <div className="flex items-center justify-between text-slate-400 text-xs font-medium">
+              <span>紐付く総顧客数</span>
+              <Users className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
+              {customers.length} <span className="text-xs text-slate-400 font-normal">名</span>
+            </div>
+            <div className="text-[11px] text-indigo-300 mt-1">全業者でID完全連携</div>
+          </div>
+
+          <div className="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/60">
+            <div className="flex items-center justify-between text-slate-400 text-xs font-medium">
+              <span>対応業種プリセット</span>
+              <Layers className="w-4 h-4 text-purple-400" />
+            </div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
+              10 <span className="text-xs text-slate-400 font-normal">パターン</span>
+            </div>
+            <div className="text-[11px] text-purple-300 mt-1">カラー＆AIペルソナ連動</div>
+          </div>
+
+          <div className="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/60">
+            <div className="flex items-center justify-between text-slate-400 text-xs font-medium">
+              <span>システムステータス</span>
+              <CheckCircle2 className="w-4 h-4 text-sky-400" />
+            </div>
+            <div className="text-xl sm:text-2xl font-bold text-emerald-300 mt-1">
+              Optimal
+            </div>
+            <div className="text-[11px] text-slate-400 mt-1">Firestore & Local同期</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tenants Table & Management Section */}
+      <div className="glass-card rounded-3xl p-6 border border-slate-200/80 bg-white/90 shadow-sm space-y-4">
+        {/* Filter & Search Bar */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="relative flex-1 max-w-md">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="業者名、業者ID、ヘッダー名で検索..."
+              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 text-xs">
+            <button
+              onClick={() => setSelectedIndustry('all')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                selectedIndustry === 'all'
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              すべて ({tenants.length})
+            </button>
+            <button
+              onClick={() => setSelectedIndustry('idol')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                selectedIndustry === 'idol'
+                  ? 'bg-pink-600 text-white'
+                  : 'bg-pink-50 text-pink-700 hover:bg-pink-100'
+              }`}
+            >
+              推し活・アイドル
+            </button>
+            <button
+              onClick={() => setSelectedIndustry('fitness')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                selectedIndustry === 'fitness'
+                  ? 'bg-orange-600 text-white'
+                  : 'bg-orange-50 text-orange-700 hover:bg-orange-100'
+              }`}
+            >
+              フィットネス
+            </button>
+            <button
+              onClick={() => setSelectedIndustry('education')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                selectedIndustry === 'education'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+              }`}
+            >
+              教育・先生
+            </button>
+            <button
+              onClick={() => setSelectedIndustry('community')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                selectedIndustry === 'community'
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+              }`}
+            >
+              仲間・コミュニティ
+            </button>
+          </div>
+        </div>
+
+        {/* Tenants List */}
+        <div className="overflow-x-auto border border-slate-200 rounded-2xl">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="bg-slate-100/80 text-slate-600 font-bold border-b border-slate-200">
+                <th className="py-3 px-4">業者ID (Tenant ID)</th>
+                <th className="py-3 px-4">事業者名 / 屋号</th>
+                <th className="py-3 px-4">業種 / テーマ</th>
+                <th className="py-3 px-4">顧客画面ヘッダー名</th>
+                <th className="py-3 px-4 text-center">顧客数</th>
+                <th className="py-3 px-4 text-center">ステータス</th>
+                <th className="py-3 px-4 text-right">階層アクション</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 bg-white">
+              {filteredTenants.map((tenant) => {
+                const tenantCustomerCount = customers.filter((c) => c.tenantId === tenant.id).length;
+                const isCurrent = tenant.id === activeTenantId;
+
+                return (
+                  <tr
+                    key={tenant.id}
+                    className={`hover:bg-slate-50/80 transition-colors ${
+                      isCurrent ? 'bg-indigo-50/40' : ''
+                    }`}
+                  >
+                    <td className="py-3.5 px-4 font-mono font-bold text-slate-800">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: tenant.theme.primaryColor }} />
+                        <span>{tenant.id}</span>
+                        {isCurrent && (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] bg-indigo-100 text-indigo-700 font-sans font-bold">
+                            選択中
+                          </span>
+                        )}
+                      </div>
+                    </td>
+
+                    <td className="py-3.5 px-4 font-bold text-slate-800">
+                      <div className="text-sm">{tenant.name}</div>
+                      <div className="text-[11px] text-slate-400 font-normal">
+                        AI: {tenant.aiPersona.name} ({tenant.aiPersona.role})
+                      </div>
+                    </td>
+
+                    <td className="py-3.5 px-4">
+                      <span className="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold shadow-xs" style={{
+                        backgroundColor: `${tenant.theme.primaryColor}25`,
+                        color: '#1E293B',
+                        border: `1px solid ${tenant.theme.primaryColor}60`
+                      }}>
+                        {tenant.theme.name.split('(')[0]}
+                      </span>
+                    </td>
+
+                    <td className="py-3.5 px-4 font-medium text-slate-700">
+                      <div className="font-bold">{tenant.headerTitle}</div>
+                      <div className="text-[10px] text-slate-400 truncate max-w-xs">{tenant.badgeText}</div>
+                    </td>
+
+                    <td className="py-3.5 px-4 text-center">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-extrabold bg-slate-100 text-slate-700">
+                        {tenantCustomerCount} 名
+                      </span>
+                    </td>
+
+                    <td className="py-3.5 px-4 text-center">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        <span>有効</span>
+                      </span>
+                    </td>
+
+                    <td className="py-3.5 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => {
+                            onSelectTenant(tenant.id);
+                            onOpenProviderPage(tenant.id);
+                          }}
+                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 font-bold transition-all"
+                          title="この業者の管理設定画面を開く"
+                        >
+                          <Settings className="w-3.5 h-3.5 text-amber-600" />
+                          <span>業者設定</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            onSelectTenant(tenant.id);
+                            onOpenCustomerPage(tenant.id);
+                          }}
+                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 font-bold transition-all"
+                          title="この業者の顧客画面を開く"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>顧客画面</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Create Tenant Modal */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-slate-200 space-y-5 animate-scaleUp">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-xl font-bold shadow-md">
+                  🏢
+                </div>
+                <div>
+                  <h3 className="text-lg font-extrabold text-slate-800">新規業者 (テナント) の発行</h3>
+                  <p className="text-xs text-slate-500">自社管理下へ新しい事業者アカウントを発行・連携します</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsCreateModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 text-lg font-bold p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateTenant} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  業者ID (テナントID / 半角英数字)
+                </label>
+                <input
+                  type="text"
+                  value={newId}
+                  onChange={(e) => setNewId(e.target.value)}
+                  required
+                  placeholder="tenant-fitness-01"
+                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  事業者名 / 屋号
+                </label>
+                <input
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  required
+                  placeholder="例: RISE パーソナルトレーニング"
+                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  業種カテゴリー
+                </label>
+                <select
+                  value={newIndustry}
+                  onChange={(e) => setNewIndustry(e.target.value as IndustryType)}
+                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer"
+                >
+                  <option value="fitness">🏋️ フィットネス・パーソナルジム (トレーナー)</option>
+                  <option value="education">✏️ 教育・個別指導・学習スクール (先生)</option>
+                  <option value="idol">💎 推し活・アイドル・ファンコミュニティ</option>
+                  <option value="community">🤝 仲間・サークル・コミュニティ</option>
+                  <option value="healthcare">🩺 医療・クリニック・リハビリ</option>
+                  <option value="beauty">💄 ビューティ・エステ・サロン</option>
+                  <option value="coaching">👔 ビジネス・メンター・コーチング</option>
+                  <option value="wellness">🌿 ヨガ・ウェルネス</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  顧客画面のヘッダータイトル (初期値)
+                </label>
+                <input
+                  type="text"
+                  value={newHeaderTitle}
+                  onChange={(e) => setNewHeaderTitle(e.target.value)}
+                  placeholder="例: RISE Training Log"
+                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-slate-600 bg-slate-100 hover:bg-slate-200 text-xs font-bold transition-all"
+                >
+                  キャンセル
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md transition-all flex items-center gap-1.5"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>業者アカウントを発行して登録</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

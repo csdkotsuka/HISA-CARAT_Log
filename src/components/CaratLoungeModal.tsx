@@ -52,13 +52,28 @@ export const CaratLoungeModal: React.FC<CaratLoungeModalProps> = ({
   concertGoal,
   onSaveConcertGoal,
 }) => {
-  if (!isOpen) return null;
-
   const [activeQuoteIndex, setActiveQuoteIndex] = useState(0);
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [eventName, setEventName] = useState(concertGoal.eventName);
   const [targetDate, setTargetDate] = useState(concertGoal.targetDate);
   const [targetMotto, setTargetMotto] = useState(concertGoal.targetMotto);
+
+  React.useEffect(() => {
+    setEventName(concertGoal.eventName);
+    setTargetDate(concertGoal.targetDate);
+    setTargetMotto(concertGoal.targetMotto);
+  }, [concertGoal]);
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
 
   // Calculate days remaining to concert
   const today = new Date();
@@ -83,14 +98,6 @@ export const CaratLoungeModal: React.FC<CaratLoungeModalProps> = ({
     setIsEditingGoal(false);
     triggerFullCelebration();
   };
-
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
 
   return (
     <div
