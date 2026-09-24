@@ -3,6 +3,7 @@ import { LogIn, Mail, Lock, ShieldCheck, Building2, User, Sparkles, ArrowRight }
 import type { AuthUser } from '../types/auth';
 import { DEMO_ACCOUNTS, ROLE_DEFINITIONS } from '../types/auth';
 import { triggerSparkleConfetti } from '../utils/confetti';
+import { getTenants, getCustomers } from '../utils/tenantStorage';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -27,21 +28,51 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     e.preventDefault();
     if (!email.trim()) return;
 
-    const matched = DEMO_ACCOUNTS.find((u) => u.email.toLowerCase() === email.trim().toLowerCase());
+    const normalized = email.trim().toLowerCase();
+    const matched = DEMO_ACCOUNTS.find((u) => u.email.toLowerCase() === normalized);
     if (matched) {
       onLogin(matched);
     } else {
-      // Dynamic user creation
-      const newUser: AuthUser = {
-        id: `user-${Date.now()}`,
-        email: email.trim().toLowerCase(),
-        name: email.split('@')[0],
-        role: 'customer',
-        tenantId: 'tenant-carat-hisa',
-        customerId: 'cust-hisa-01',
-        description: '一般メンバーアカウント',
-      };
-      onLogin(newUser);
+      // Check registered tenants
+      const tenants = getTenants();
+      const matchedTenant = tenants.find((t) => t.email?.toLowerCase() === normalized);
+      if (matchedTenant) {
+        onLogin({
+          id: `user-provider-${matchedTenant.id}`,
+          email: normalized,
+          name: matchedTenant.name,
+          role: 'provider',
+          tenantId: matchedTenant.id,
+          description: `${matchedTenant.name} アカウント`,
+        });
+      } else {
+        // Check registered customers
+        const customers = getCustomers();
+        const matchedCust = customers.find((c) => c.email?.toLowerCase() === normalized);
+        if (matchedCust) {
+          onLogin({
+            id: `user-cust-${matchedCust.id}`,
+            email: normalized,
+            name: matchedCust.name,
+            role: 'customer',
+            tenantId: matchedCust.tenantId,
+            customerId: matchedCust.id,
+            description: `${matchedCust.name} 専用アカウント`,
+          });
+        } else {
+          // Dynamic user creation
+          const newUser: AuthUser = {
+            id: `user-${Date.now()}`,
+            email: normalized,
+            name: email.split('@')[0],
+            role: 'customer',
+            tenantId: 'tenant-carat-hisa',
+            customerId: 'cust-hisa-01',
+            description: '一般メンバーアカウント',
+          };
+          onLogin(newUser);
+        }
+      }
     }
     triggerSparkleConfetti();
     onClose();

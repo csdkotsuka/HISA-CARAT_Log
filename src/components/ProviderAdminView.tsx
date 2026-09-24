@@ -75,6 +75,7 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
   // New customer form state
   const [isNewCustomerModalOpen, setIsNewCustomerModalOpen] = useState(false);
   const [newCustName, setNewCustName] = useState('');
+  const [newCustEmail, setNewCustEmail] = useState('');
   const [newCustNickname, setNewCustNickname] = useState('');
   const [newCustGoal, setNewCustGoal] = useState('');
   const [newCustMedicalCondition, setNewCustMedicalCondition] = useState('');
@@ -182,6 +183,7 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
       id: `cust-${currentTenant.id.replace('tenant-', '')}-${randomSuffix}`,
       tenantId: currentTenant.id,
       name: newCustName.trim(),
+      email: newCustEmail.trim() || undefined,
       nickname: newCustNickname.trim() || newCustName.trim(),
       joinedDate: new Date().toISOString().slice(0, 10),
       customGoal: newCustGoal.trim() || '毎日の記録を続けて健康＆目標達成！',
@@ -196,6 +198,7 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
     }));
     setIsNewCustomerModalOpen(false);
     setNewCustName('');
+    setNewCustEmail('');
     setNewCustNickname('');
     setNewCustGoal('');
     setNewCustMedicalCondition('');
@@ -429,6 +432,54 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
       {/* SUB TAB 1: BRANDING & THEME */}
       {activeSubTab === 'branding' && (
         <div className="space-y-6">
+          {/* Business Account & Login Settings */}
+          <div className="glass-card rounded-3xl p-6 bg-white border border-slate-200 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                <span className="text-amber-500">🏢</span>
+                <span>事業者アカウント情報 (Pro Partner ログイン設定)</span>
+              </h3>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-mono font-bold">
+                ID: {currentTenant.id}
+              </span>
+            </div>
+            <p className="text-xs text-slate-500">
+              Pro Partnerとしての屋号名およびログイン認証用アカウントメールアドレスを設定・変更します。
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  事業者名 / 屋号
+                </label>
+                <input
+                  type="text"
+                  value={currentTenant.name}
+                  onChange={(e) =>
+                    setCurrentTenant({ ...currentTenant, name: e.target.value })
+                  }
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  ログイン用メールアドレス (Pro Partner アカウント)
+                </label>
+                <input
+                  type="email"
+                  value={currentTenant.email || ''}
+                  onChange={(e) =>
+                    setCurrentTenant({ ...currentTenant, email: e.target.value })
+                  }
+                  placeholder="例: kotsuka@creativesd.net"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-mono font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                />
+                <p className="text-[10px] text-slate-400 mt-1">※この業者の管理者がログイン認証するメールアドレス</p>
+              </div>
+            </div>
+          </div>
+
           {/* Header Texts */}
           <div className="glass-card rounded-3xl p-6 bg-white border border-slate-200 space-y-4">
             <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
@@ -1632,6 +1683,7 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
                   <tr className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
                     <th className="py-3 px-4">顧客ID</th>
                     <th className="py-3 px-4">顧客氏名 / 呼称</th>
+                    <th className="py-3 px-4">アカウントメール</th>
                     <th className="py-3 px-4">主疾患・健康課題・注力テーマ</th>
                     <th className="py-3 px-4">顧客の個別目標</th>
                     <th className="py-3 px-4">登録日</th>
@@ -1650,6 +1702,16 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
                           <span className="text-slate-400 font-normal ml-1.5">
                             ({cust.nickname})
                           </span>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4 font-mono text-slate-700 whitespace-nowrap">
+                        {cust.email ? (
+                          <div className="flex items-center gap-1 text-slate-800 font-medium">
+                            <span className="text-[11px] text-pink-500">✉️</span>
+                            <span>{cust.email}</span>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 italic text-[11px]">未設定</span>
                         )}
                       </td>
                       <td className="py-3.5 px-4">
@@ -1740,6 +1802,20 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
               </div>
 
               <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  ログイン用メールアドレス (My Lounge アカウント)
+                </label>
+                <input
+                  type="email"
+                  value={newCustEmail}
+                  onChange={(e) => setNewCustEmail(e.target.value)}
+                  placeholder="例: hisako@example.com"
+                  className="w-full px-3 py-2 bg-slate-50 border rounded-xl text-xs font-mono focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
+                <p className="text-[10px] text-slate-400 mt-0.5">※メンバーがログインするメールアドレス（後から変更可能）</p>
+              </div>
+
+              <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">呼称 / ニックネーム</label>
                 <input
                   type="text"
@@ -1824,6 +1900,22 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
                   required
                   className="w-full px-3 py-2 bg-slate-50 border rounded-xl text-xs font-bold focus:outline-none focus:ring-1 focus:ring-amber-500"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  ログイン用メールアドレス (My Lounge アカウント)
+                </label>
+                <input
+                  type="email"
+                  value={editingCustomer.email || ''}
+                  onChange={(e) =>
+                    setEditingCustomer({ ...editingCustomer, email: e.target.value })
+                  }
+                  placeholder="例: hisako@example.com"
+                  className="w-full px-3 py-2 bg-slate-50 border rounded-xl text-xs font-mono focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
+                <p className="text-[10px] text-slate-400 mt-0.5">※メンバーがログインするメールアドレス（確認後に設定可能）</p>
               </div>
 
               <div>

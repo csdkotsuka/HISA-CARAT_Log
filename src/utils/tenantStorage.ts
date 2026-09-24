@@ -23,15 +23,21 @@ export const getTenants = (): Tenant[] => {
     const parsed: Tenant[] = JSON.parse(raw);
     if (!parsed || parsed.length === 0) return INITIAL_TENANTS;
 
-    // Ensure chat settings are populated for default tenants
+    // Ensure chat settings and email are populated for default tenants
     let modified = false;
     const migrated = parsed.map((t) => {
+      let updated = { ...t };
+      const init = INITIAL_TENANTS.find((i) => i.id === t.id);
+      if (!updated.email && init?.email) {
+        updated.email = init.email;
+        modified = true;
+      }
       if (t.id === 'tenant-carat-hisa') {
         const needsChat = !t.aiPersona.chatPersonality || t.headerTitle === 'MY-CARAT Log';
         if (needsChat) {
           modified = true;
-          return {
-            ...t,
+          updated = {
+            ...updated,
             headerTitle: 'HISA-CARAT Log',
             headerSubtitle: 'ひさこのEGPAリハビリ＆セルフケア手帳（受診・定期測定共有対応）',
             badgeText: 'CARAT 💎 EGPA Care',
@@ -46,7 +52,7 @@ export const getTenants = (): Tenant[] => {
           };
         }
       }
-      return t;
+      return updated;
     });
 
     if (modified) {
@@ -78,10 +84,15 @@ export const getCustomers = (): Customer[] => {
     const parsed: Customer[] = JSON.parse(raw);
     if (!parsed || parsed.length === 0) return INITIAL_CUSTOMERS;
 
-    // Ensure cust-hisa-01 is preserved as Hisako and has EGPA medicalCondition
+    // Ensure cust-hisa-01 is preserved as Hisako and has EGPA medicalCondition and email
     let modified = false;
     const migrated = parsed.map((c) => {
       let updated = { ...c };
+      const init = INITIAL_CUSTOMERS.find((i) => i.id === c.id);
+      if (!updated.email && init?.email) {
+        updated.email = init.email;
+        modified = true;
+      }
       if (c.id === 'cust-hisa-01') {
         if (c.name === 'あおい') {
           updated.name = 'ひさこ';
@@ -93,7 +104,6 @@ export const getCustomers = (): Customer[] => {
           modified = true;
         }
       } else if (!c.medicalCondition) {
-        const init = INITIAL_CUSTOMERS.find((i) => i.id === c.id);
         if (init?.medicalCondition) {
           updated.medicalCondition = init.medicalCondition;
           modified = true;

@@ -80,6 +80,7 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
   // New tenant form states
   const [newName, setNewName] = useState('');
   const [newId, setNewId] = useState('');
+  const [newEmail, setNewEmail] = useState('');
   const [newIndustry, setNewIndustry] = useState<IndustryType>('fitness');
   const [newHeaderTitle, setNewHeaderTitle] = useState('');
 
@@ -87,6 +88,7 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
     const matchesSearch =
       t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (t.email && t.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
       t.headerTitle.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesIndustry =
       selectedIndustry === 'all' ||
@@ -98,6 +100,7 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
     const randomSuffix = Math.floor(100 + Math.random() * 900);
     setNewId(`tenant-org-${randomSuffix}`);
     setNewName('');
+    setNewEmail('');
     setNewIndustry('fitness');
     setNewHeaderTitle('');
     setIsCreateModalOpen(true);
@@ -114,6 +117,7 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
       id: newId.trim().toLowerCase(),
       adminId: 'admin-master',
       name: newName.trim(),
+      email: newEmail.trim() || undefined,
       industry: newIndustry,
       headerTitle: newHeaderTitle.trim() || `${newName} ポータルLog`,
       headerSubtitle: '毎日の習慣化・成果向上を支える専用パートナー手帳',
@@ -183,7 +187,7 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-bold mb-3">
               <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
-              <span>Platform Super Admin / 自社管理者ポータル</span>
+              <span>Platform Super Admin (Cheer Master: kotsuka@creativesd.net)</span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
               多業界対応 汎用SaaS基盤 管理コンソール
@@ -541,6 +545,7 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
               <tr className="bg-slate-100/80 text-slate-600 font-bold border-b border-slate-200">
                 <th className="py-3 px-4">業者ID (Tenant ID)</th>
                 <th className="py-3 px-4">事業者名 / 屋号</th>
+                <th className="py-3 px-4">アカウントメール</th>
                 <th className="py-3 px-4">業種 / テーマ</th>
                 <th className="py-3 px-4">顧客画面ヘッダー名</th>
                 <th className="py-3 px-4 text-center">顧客数</th>
@@ -577,6 +582,17 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
                       <div className="text-[11px] text-slate-400 font-normal">
                         AI: {tenant.aiPersona.name} ({tenant.aiPersona.role})
                       </div>
+                    </td>
+
+                    <td className="py-3.5 px-4 font-mono text-slate-700">
+                      {tenant.email ? (
+                        <div className="flex items-center gap-1 text-slate-800 font-medium">
+                          <span className="text-[11px] text-indigo-500">✉️</span>
+                          <span>{tenant.email}</span>
+                        </div>
+                      ) : (
+                        <span className="text-slate-400 italic text-[11px]">未設定</span>
+                      )}
                     </td>
 
                     <td className="py-3.5 px-4">
@@ -691,6 +707,20 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
                   placeholder="例: RISE パーソナルトレーニング"
                   className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  事業者ログイン用メールアドレス (Pro Partner アカウント)
+                </label>
+                <input
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="例: partner@example.com"
+                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                />
+                <p className="text-[10px] text-slate-400 mt-1">※この業者の管理者がログイン認証するメールアドレス</p>
               </div>
 
               <div>

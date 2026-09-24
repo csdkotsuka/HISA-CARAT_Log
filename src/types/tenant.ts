@@ -129,6 +129,7 @@ export interface Tenant {
   id: string;                 // 業者ID (例: 'tenant-carat', 'tenant-fitness')
   adminId: string;            // 管理者ID ('admin-master')
   name: string;               // 業者名・屋号
+  email?: string;             // ログイン・事業者アカウントメールアドレス (例: 'kotsuka@creativesd.net')
   industry: IndustryType;
   // 顧客ページ（ヘッダー・ブランディング）
   headerTitle: string;        // 顧客ページの見出し (例: 'HISA-CARAT Log', 'POWER-FIT Gym', 'STEP 学習手帳')
@@ -149,6 +150,7 @@ export interface Customer {
   id: string;                 // 顧客ID (例: 'cust-hisa-01', 'cust-tanaka-02')
   tenantId: string;           // 所属する業者ID
   name: string;               // 顧客氏名
+  email?: string;             // ログイン・メンバーアカウントメールアドレス (例: 'hisako@user.cheer.app')
   nickname?: string;          // 呼称 (例: 'ひさこさん', '田中さん')
   joinedDate: string;
   customGoal?: string;        // 顧客の個別目標
