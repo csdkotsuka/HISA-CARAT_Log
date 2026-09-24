@@ -143,13 +143,13 @@ export const DynamicHeader: React.FC<DynamicHeaderProps> = ({
                 <Heart className="w-3 h-3 fill-white" />
               </div>
 
-              {/* Speech bubble on tap (Fully visible and elevated above header) */}
+              {/* Speech bubble on tap (Shifted right on mobile to avoid left truncation) */}
               {showAvatarSpeech && (
-                <div className="absolute left-1/2 -translate-x-1/2 -top-14 sm:-top-16 z-50 bg-slate-900/95 backdrop-blur-md text-white text-xs font-bold py-2.5 px-4 rounded-2xl whitespace-nowrap shadow-2xl border border-white/20 animate-fade-in pointer-events-none">
+                <div className="absolute left-1 sm:left-1/2 sm:-translate-x-1/2 -top-14 sm:-top-16 z-50 bg-slate-900/95 backdrop-blur-md text-white text-xs font-bold py-2.5 px-4 rounded-2xl whitespace-nowrap shadow-2xl border border-white/20 animate-fade-in pointer-events-none">
                   {tenant.aiPersona.speechBubbleText
                     .replace('ひさこさん', customer.nickname || customer.name || 'あなた')
                     .replace('あおいさん', customer.nickname || customer.name || 'あなた')}
-                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 w-2.5 h-2.5 bg-slate-900 rotate-45" />
+                  <div className="absolute bottom-0 left-6 sm:left-1/2 sm:-translate-x-1/2 translate-y-1 w-2.5 h-2.5 bg-slate-900 rotate-45" />
                 </div>
               )}
             </div>

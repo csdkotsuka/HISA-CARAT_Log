@@ -183,17 +183,18 @@ export const CustomerPortalView: React.FC<CustomerPortalViewProps> = ({
         onSelectAvatar={onSelectAvatarStyle}
       />
 
-      {/* Floating AI Chat Trigger Button */}
-      <div className="fixed bottom-6 right-6 z-40 no-print">
+      {/* Floating AI Chat Trigger Button (Positioned lower and compact for mobile) */}
+      <div className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-40 no-print">
         <button
+          type="button"
           onClick={() => setIsChatOpen(true)}
-          className="group flex items-center gap-2.5 px-4 py-2.5 rounded-full text-white shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer border-2 border-white/60"
+          className="group flex items-center gap-1.5 sm:gap-2.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer border border-white/70"
           style={{
             background: `linear-gradient(135deg, ${tenant.theme.primaryColor}, ${tenant.theme.accentColor})`,
           }}
           title={`${tenant.aiPersona.name}とチャット`}
         >
-          <div className="w-8 h-8 rounded-full border-2 border-white overflow-hidden shadow-xs flex-shrink-0 bg-white">
+          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-white overflow-hidden shadow-xs flex-shrink-0 bg-white">
             <img
               src={tenant.aiPersona.avatarUrl}
               alt={tenant.aiPersona.name}
@@ -204,12 +205,12 @@ export const CustomerPortalView: React.FC<CustomerPortalViewProps> = ({
               }}
             />
           </div>
-          <div className="text-left pr-1">
-            <div className="text-[10px] text-white/90 font-medium leading-none">
+          <div className="text-left pr-0.5 sm:pr-1">
+            <div className="text-[9px] text-white/90 font-medium leading-none hidden sm:block">
               本人と会話
             </div>
-            <div className="text-xs font-black drop-shadow-xs leading-tight">
-              {tenant.aiPersona.name}とおしゃべり 💬
+            <div className="text-[11px] sm:text-xs font-black drop-shadow-xs leading-tight">
+              {tenant.aiPersona.name.split(' ')[0]}とチャット 💬
             </div>
           </div>
         </button>

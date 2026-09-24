@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Building2, User, LogOut, ArrowRightLeft, RefreshCw } from 'lucide-react';
+import { ShieldCheck, Building2, User, LogOut, LogIn, ArrowRightLeft, RefreshCw, Key } from 'lucide-react';
 import type { AppMode } from '../utils/tenantStorage';
 import type { Tenant, Customer } from '../types/tenant';
 import type { AuthUser } from '../types/auth';
@@ -16,6 +16,7 @@ interface RoleNavigationHeaderProps {
   onSelectCustomer?: (customerId: string) => void;
   currentUser: AuthUser | null;
   onOpenLoginModal?: () => void;
+  onOpenPasswordModal?: () => void;
   onLogout: () => void;
   cloudStatus?: 'synced' | 'syncing' | 'offline';
   onSyncFirestore?: () => void;
@@ -27,6 +28,8 @@ export const RoleNavigationHeader: React.FC<RoleNavigationHeaderProps> = ({
   onSwitchMode,
   activeCustomer,
   currentUser,
+  onOpenLoginModal,
+  onOpenPasswordModal,
   onLogout,
   cloudStatus = 'synced',
   onSyncFirestore,
@@ -71,18 +74,41 @@ export const RoleNavigationHeader: React.FC<RoleNavigationHeaderProps> = ({
 
               <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-[9px]">
                 <span className={`w-1.5 h-1.5 rounded-full ${cloudStatus === 'synced' ? 'bg-emerald-400 animate-pulse' : cloudStatus === 'syncing' ? 'bg-amber-400 animate-spin' : 'bg-rose-400'}`} />
-                <span className="text-slate-300 font-medium">{currentUser?.email}</span>
+                <span className="text-slate-300 font-medium">{currentUser?.email || '未ログイン (ゲスト)'}</span>
               </div>
             </div>
 
-            <button
-              onClick={onLogout}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-950/60 border border-slate-700 hover:border-rose-500 text-slate-400 hover:text-rose-300 text-[11px] font-bold transition-all"
-              title="ログアウト"
-            >
-              <LogOut className="w-3 h-3" />
-              <span>ログアウト</span>
-            </button>
+            {currentUser && onOpenPasswordModal && (
+              <button
+                type="button"
+                onClick={onOpenPasswordModal}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white text-[11px] font-bold transition-all shadow-xs cursor-pointer"
+                title="パスワード変更"
+              >
+                <Key className="w-3 h-3 text-amber-400" />
+                <span>パスワード</span>
+              </button>
+            )}
+
+            {currentUser ? (
+              <button
+                onClick={onLogout}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-950/60 border border-slate-700 hover:border-rose-500 text-slate-400 hover:text-rose-300 text-[11px] font-bold transition-all shadow-xs cursor-pointer"
+                title="ログアウト"
+              >
+                <LogOut className="w-3 h-3" />
+                <span>ログアウト</span>
+              </button>
+            ) : (
+              <button
+                onClick={onOpenLoginModal}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gradient-to-r from-pink-500 to-indigo-600 hover:opacity-90 text-white text-[11px] font-bold transition-all shadow-sm cursor-pointer"
+                title="ログイン"
+              >
+                <LogIn className="w-3 h-3" />
+                <span>ログイン</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -184,6 +210,19 @@ export const RoleNavigationHeader: React.FC<RoleNavigationHeaderProps> = ({
             </span>
             <span className="text-[10px] text-slate-400 font-mono">{currentUser?.email}</span>
           </div>
+
+          {/* Password Change Button */}
+          {onOpenPasswordModal && (
+            <button
+              type="button"
+              onClick={onOpenPasswordModal}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white font-bold transition-all shadow-xs text-xs"
+              title="パスワード設定・変更"
+            >
+              <Key className="w-3.5 h-3.5 text-amber-400" />
+              <span>パスワード</span>
+            </button>
+          )}
 
           {/* Logout Button */}
           <button

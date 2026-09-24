@@ -4,6 +4,7 @@ import { AdminPlatformView } from './components/AdminPlatformView';
 import { ProviderAdminView } from './components/ProviderAdminView';
 import { CustomerPortalView } from './components/CustomerPortalView';
 import { LoginModal } from './components/LoginModal';
+import { PasswordChangeModal } from './components/PasswordChangeModal';
 import { ProPartnerLandingPage } from './components/pages/ProPartnerLandingPage';
 import { MyLoungeGuidePage } from './components/pages/MyLoungeGuidePage';
 import type { Tenant, Customer, GenericDailyLog, GenericEvalRecord } from './types/tenant';
@@ -62,7 +63,8 @@ import {
 export const App: React.FC = () => {
   // Current Authenticated User
   const [currentUser, setCurrentUserState] = useState<AuthUser | null>(getCurrentUser());
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(() => !getCurrentUser());
+  const [isPasswordChangeModalOpen, setIsPasswordChangeModalOpen] = useState(false);
 
   // Subpage for PR/Guides: 'none' | 'pr-partner' | 'guide-lounge'
   const [subPage, setSubPage] = useState<'none' | 'pr-partner' | 'guide-lounge'>(() => {
@@ -284,14 +286,12 @@ export const App: React.FC = () => {
     if (user.role === 'customer') {
       setAppMode('customer');
       saveAppMode('customer');
-      if (user.tenantId) {
-        setActiveTenantId(user.tenantId);
-        saveActiveTenantId(user.tenantId);
-      }
-      if (user.customerId) {
-        setActiveCustomerId(user.customerId);
-        saveActiveCustomerId(user.customerId);
-      }
+      const targetTenantId = user.tenantId || 'tenant-carat-hisa';
+      const targetCustomerId = user.customerId || 'cust-hisa-01';
+      setActiveTenantId(targetTenantId);
+      saveActiveTenantId(targetTenantId);
+      setActiveCustomerId(targetCustomerId);
+      saveActiveCustomerId(targetCustomerId);
     } else if (user.role === 'provider') {
       setAppMode('provider');
       saveAppMode('provider');
@@ -308,6 +308,17 @@ export const App: React.FC = () => {
   const handleLogout = () => {
     logout();
     setCurrentUserState(null);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('mode');
+      url.searchParams.delete('tenant');
+      url.searchParams.delete('customer');
+      url.searchParams.delete('user');
+      url.searchParams.delete('page');
+      window.history.replaceState({}, '', url.pathname);
+    } catch {}
+    setAppMode('customer');
+    saveAppMode('customer');
     setIsLoginModalOpen(true);
   };
 
@@ -565,9 +576,11 @@ export const App: React.FC = () => {
   };
 
   // Enforce access control for current effective render
-  const effectiveMode = currentUser?.role === 'customer'
+  const effectiveMode = !currentUser
     ? 'customer'
-    : currentUser?.role === 'provider' && appMode === 'admin'
+    : currentUser.role === 'customer'
+    ? 'customer'
+    : currentUser.role === 'provider' && appMode === 'admin'
     ? 'provider'
     : appMode;
 
@@ -594,6 +607,7 @@ export const App: React.FC = () => {
         onSelectCustomer={handleSelectCustomer}
         currentUser={currentUser}
         onOpenLoginModal={() => setIsLoginModalOpen(true)}
+        onOpenPasswordModal={() => setIsPasswordChangeModalOpen(true)}
         onLogout={handleLogout}
         cloudStatus={cloudStatus}
         onSyncFirestore={handleManualSyncFirestore}
@@ -666,6 +680,13 @@ export const App: React.FC = () => {
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
         onLogin={handleLogin}
+        currentUser={currentUser}
+      />
+
+      {/* 4. Password Change Modal */}
+      <PasswordChangeModal
+        isOpen={isPasswordChangeModalOpen}
+        onClose={() => setIsPasswordChangeModalOpen(false)}
         currentUser={currentUser}
       />
     </div>
