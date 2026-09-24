@@ -5,12 +5,12 @@ export const GEMINI_MODEL_STORAGE = 'cheer_gemini_model';
 export const DEFAULT_GEMINI_MODEL = 'gemini-3.8-flash';
 
 export const AVAILABLE_GEMINI_MODELS = [
-  { id: 'gemini-3.8-flash', label: 'gemini-3.8-flash (最新・超高速・推奨)' },
+  { id: 'gemini-3.8-flash', label: 'gemini-3.8-flash (テキストチャット最新・超高速思考・推奨)' },
   { id: 'gemini-3.8-pro', label: 'gemini-3.8-pro (最新・高度推論)' },
-  { id: 'gemini-3.8-live', label: 'gemini-3.8-live (音声チャット・リアルタイム対話)' },
-  { id: 'gemini-2.0-flash', label: 'gemini-2.0-flash (安定稼働版)' },
+  { id: 'gemini-2.5-flash', label: 'gemini-2.5-flash (安定高速版)' },
+  { id: 'gemini-2.0-flash', label: 'gemini-2.0-flash (標準安定版)' },
   { id: 'gemini-1.5-flash', label: 'gemini-1.5-flash (軽量高速)' },
-  { id: 'gemini-1.5-pro', label: 'gemini-1.5-pro (多言語・高精度)' },
+  { id: 'gemini-3.8-live', label: 'gemini-3.8-live (※音声WebSocket専用 / チャット時は自動で3.8-flash連携)' },
 ];
 
 export interface ChatMessage {
@@ -75,9 +75,12 @@ export const testGeminiConnection = async (
     return { success: false, message: 'APIキーが入力されていません。' };
   }
 
+  // Live models require WebSocket; test with flash for REST validation
+  const testModel = model.includes('-live') ? 'gemini-3.8-flash' : (model || DEFAULT_GEMINI_MODEL);
+
   try {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-      model || DEFAULT_GEMINI_MODEL
+      testModel
     )}:generateContent?key=${encodeURIComponent(apiKey.trim())}`;
 
     const res = await fetch(url, {
@@ -103,6 +106,12 @@ export const testGeminiConnection = async (
     const data = await res.json();
     const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     if (reply) {
+      if (model.includes('-live')) {
+        return {
+          success: true,
+          message: `接続成功！APIキーは有効です。（※「${model}」は音声WebSocket用モデルのため、テキストチャット時は「gemini-3.8-flash」としてスムーズに対話します）`,
+        };
+      }
       return { success: true, message: `接続成功！モデル「${model}」から正常に応答がありました。` };
     }
     return { success: false, message: '応答テキストが空でした。' };
@@ -227,9 +236,14 @@ export const sendChatMessageToGemini = async (
 
   const formattedContents = formatConversationForGemini(conversation);
 
-  // List of candidate models to try (primary chosen model first, then fallback models if 404 occurs)
+  // Map -live models to text-optimized models for standard HTTP REST chat
+  const effectivePrimaryModel = configuredModel.includes('-live')
+    ? 'gemini-3.8-flash'
+    : configuredModel;
+
+  // List of candidate models to try (primary chosen model first, then fallback models if 404/live error occurs)
   const candidateModels = Array.from(
-    new Set([configuredModel, 'gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'])
+    new Set([effectivePrimaryModel, 'gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'])
   );
 
   let lastErrorMsg = '';
@@ -256,8 +270,19 @@ export const sendChatMessageToGemini = async (
         }),
       });
 
-      // 2. If 400 Bad Request, retry by embedding system instructions into the first user turn
+      // 2. If 400 Bad Request, check if it's due to system_instruction or live model
       if (res.status === 400) {
+        const errData = await res.clone().json().catch(() => ({}));
+        const errMsg = errData.error?.message || '';
+
+        // If the model only supports live WebSocket streaming, continue to next candidate
+        if (errMsg.includes('bidiGenerateContent') || errMsg.includes('WebSocket') || errMsg.includes('bidirectional streaming')) {
+          console.warn(`Model ${modelToTry} requires WebSocket streaming, falling back to text model...`);
+          lastErrorMsg = errMsg;
+          continue;
+        }
+
+        // Retry by embedding system instructions into the first user turn
         const embeddedContents = formattedContents.map((c, idx) => {
           if (idx === 0) {
             return {
@@ -291,6 +316,9 @@ export const sendChatMessageToGemini = async (
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
         const errMsg = errData.error?.message || `HTTP ${res.status}: ${res.statusText}`;
+        if (errMsg.includes('bidiGenerateContent') || errMsg.includes('WebSocket')) {
+          continue;
+        }
         throw new Error(`Gemini APIエラー: ${errMsg}`);
       }
 

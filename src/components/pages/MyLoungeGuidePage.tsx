@@ -7,6 +7,7 @@ import {
   Zap,
   Smartphone,
   ChevronRight,
+  Sparkles,
 } from 'lucide-react';
 
 interface MyLoungeGuidePageProps {
@@ -290,19 +291,150 @@ export const MyLoungeGuidePage: React.FC<MyLoungeGuidePageProps> = ({
         </div>
       </section>
 
-      {/* How to add to home screen */}
-      <section className="max-w-2xl mx-auto px-4 py-4">
-        <div className="bg-white rounded-3xl p-5 border border-pink-200/80 shadow-xs flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-pink-50 text-pink-600 flex items-center justify-center text-2xl flex-shrink-0">
-            📱
+      {/* Secret Mystery Reward Teaser */}
+      <section className="max-w-4xl mx-auto px-4 py-8">
+        <div className="relative rounded-3xl p-6 sm:p-8 bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 text-white shadow-xl overflow-hidden border border-purple-500/30">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="space-y-2.5 text-center md:text-left">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-500/20 border border-pink-400/40 text-pink-300 text-xs font-black uppercase">
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <span>秘密のサプライズ特典</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black tracking-tight">
+                「……ちゃんと続けたら、いいことあるよ？💎」
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
+                最初はちょっぴり懐かしいレトロな【ぽこぽこドット絵】からスタート。<br />
+                でも、毎日のセルフケアや記録をコツコツ続けていくと……？<br />
+                「あれ？左上のアバターの様子がいつもと違う……！？」<br />
+                3日連続、7日連続、そしてその先へ。努力を重ねたあなただけに解禁される特別な進化姿や、パートナーからの限定シークレットメッセージが待っています。<br />
+                どんな姿に育つかは、毎日のあなたとパートナーだけの秘密のお楽しみです……👼✨
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 flex-shrink-0">
+              <div className="text-center">
+                <div className="w-14 h-14 rounded-2xl bg-slate-950 border border-pink-400/50 flex items-center justify-center text-2xl shadow-inner mx-auto mb-1">
+                  👾
+                </div>
+                <span className="text-[10px] text-pink-300 font-bold">Lv.1 ドット絵</span>
+              </div>
+              <span className="text-slate-400 font-mono text-lg">➔</span>
+              <div className="text-center">
+                <div className="w-14 h-14 rounded-2xl bg-slate-950 border border-purple-400/50 flex items-center justify-center text-2xl shadow-inner mx-auto mb-1">
+                  🎨
+                </div>
+                <span className="text-[10px] text-purple-300 font-bold">Lv.2 水彩画</span>
+              </div>
+              <span className="text-slate-400 font-mono text-lg">➔</span>
+              <div className="text-center">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-pink-500 to-amber-400 p-0.5 shadow-md mx-auto mb-1">
+                  <div className="w-full h-full rounded-[14px] bg-slate-950 flex items-center justify-center text-2xl">
+                    📸
+                  </div>
+                </div>
+                <span className="text-[10px] text-amber-300 font-extrabold">Lv.3 完全体</span>
+              </div>
+            </div>
           </div>
-          <div className="flex-1">
-            <h4 className="text-xs font-bold text-slate-800">
-              スマホのホーム画面に追加してアプリのように使えます
-            </h4>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              SafariやChromeのメニューから「ホーム画面に追加」をタップするだけで、いつでもワンタップで開けます。
-            </p>
+        </div>
+      </section>
+
+      {/* Detailed PWA Home Screen Guide */}
+      <section className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold">
+            <Smartphone className="w-3.5 h-3.5" />
+            <span>アプリ化でもっと快適に（PWA対応）</span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-800">
+            スマホのホーム画面に追加して、本物のアプリのように使う方法
+          </h2>
+          <p className="text-xs text-slate-500 max-w-lg mx-auto">
+            ブラウザのアドレスバーが消えて全画面表示に！毎朝・毎晩ワンタップで瞬時に起動できます。
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* iPhone / Safari Card */}
+          <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-sm space-y-3.5">
+            <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3">
+              <span className="text-2xl">🍎</span>
+              <div>
+                <h3 className="text-sm font-extrabold text-slate-800">iPhone / iPad (Safari)</h3>
+                <p className="text-[11px] text-slate-500">標準ブラウザ Safari で開いている場合</p>
+              </div>
+            </div>
+
+            <ol className="space-y-3 text-xs text-slate-600">
+              <li className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-pink-100 text-pink-700 font-black text-[11px] flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+                <div>
+                  画面下部（iPadは右上）の <strong className="text-slate-800">「共有ボタン」</strong> (四角から矢印が飛び出しているアイコン ⎋) をタップします。
+                </div>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-pink-100 text-pink-700 font-black text-[11px] flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+                <div>
+                  表示されたメニューを少し下にスクロールして、<strong className="text-slate-800">「ホーム画面に追加」</strong> (➕アイコン) をタップします。
+                </div>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-pink-100 text-pink-700 font-black text-[11px] flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+                <div>
+                  右上の <strong className="text-pink-600">「追加」</strong> を押すと完了！ホーム画面に専用アイコンが配置され、アプリとして全画面で開けます。
+                </div>
+              </li>
+            </ol>
+          </div>
+
+          {/* Android / Chrome Card */}
+          <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-sm space-y-3.5">
+            <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3">
+              <span className="text-2xl">🤖</span>
+              <div>
+                <h3 className="text-sm font-extrabold text-slate-800">Android (Chrome)</h3>
+                <p className="text-[11px] text-slate-500">Google Chrome で開いている場合</p>
+              </div>
+            </div>
+
+            <ol className="space-y-3 text-xs text-slate-600">
+              <li className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 font-black text-[11px] flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+                <div>
+                  画面右上の <strong className="text-slate-800">「︙」</strong> (縦の三点リーダーメニュー) をタップします。
+                </div>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 font-black text-[11px] flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+                <div>
+                  メニュー内の <strong className="text-slate-800">「ホーム画面に追加」</strong> または <strong className="text-slate-800">「アプリをインストール」</strong> をタップします。
+                </div>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 font-black text-[11px] flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+                <div>
+                  確認ダイアログで <strong className="text-indigo-600">「インストール」</strong> または「追加」を押すと、ホーム画面にアプリが追加されます。
+                </div>
+              </li>
+            </ol>
+          </div>
+        </div>
+
+        {/* Benefits banner */}
+        <div className="p-4 bg-gradient-to-r from-pink-50 via-purple-50 to-indigo-50 rounded-2xl border border-pink-200/80 text-xs text-slate-700 flex flex-col sm:flex-row items-center justify-around gap-3 text-center sm:text-left">
+          <div className="flex items-center gap-2">
+            <span className="text-emerald-600 font-bold">✓</span>
+            <span>アドレスバーなしの全画面体験</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-emerald-600 font-bold">✓</span>
+            <span>ワンタップで瞬時に起動</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-emerald-600 font-bold">✓</span>
+            <span>オフライン・電波微弱時も安心</span>
           </div>
         </div>
       </section>

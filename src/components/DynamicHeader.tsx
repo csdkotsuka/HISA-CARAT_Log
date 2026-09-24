@@ -65,22 +65,25 @@ export const DynamicHeader: React.FC<DynamicHeaderProps> = ({
   return (
     <header className="relative w-full mb-6">
       {/* Top Banner */}
+      {/* Top Banner */}
       <div
-        className="glass-card rounded-3xl p-4 sm:p-6 relative overflow-hidden border-2 shadow-glass"
+        className="glass-card rounded-3xl p-4 sm:p-6 relative border-2 shadow-glass"
         style={{
           borderColor: `${tenant.theme.primaryColor}50`,
           boxShadow: `0 8px 32px 0 ${tenant.theme.primaryColor}30`,
         }}
       >
-        {/* Decorative background blurs with theme colors */}
-        <div
-          className="absolute -top-12 -right-12 w-52 h-52 rounded-full blur-3xl pointer-events-none opacity-40"
-          style={{ background: tenant.theme.primaryColor }}
-        />
-        <div
-          className="absolute -bottom-10 -left-10 w-48 h-48 rounded-full blur-2xl pointer-events-none opacity-30"
-          style={{ background: tenant.theme.secondaryColor }}
-        />
+        {/* Decorative background blurs with theme colors (contained in inner overflow-hidden wrapper so speech bubbles are never clipped) */}
+        <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
+          <div
+            className="absolute -top-12 -right-12 w-52 h-52 rounded-full blur-3xl pointer-events-none opacity-40"
+            style={{ background: tenant.theme.primaryColor }}
+          />
+          <div
+            className="absolute -bottom-10 -left-10 w-48 h-48 rounded-full blur-2xl pointer-events-none opacity-30"
+            style={{ background: tenant.theme.secondaryColor }}
+          />
+        </div>
 
         {/* Top bar: Avatar, Title & Action buttons */}
         <div className="relative flex flex-col md:flex-row items-center justify-between gap-4">
@@ -104,7 +107,7 @@ export const DynamicHeader: React.FC<DynamicHeaderProps> = ({
                     alt={tenant.aiPersona.name}
                     className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-300"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/jeonghan_photo.jpg';
+                      (e.target as HTMLImageElement).src = '/jeonghan_dot.jpg';
                     }}
                   />
                 </div>
@@ -118,7 +121,7 @@ export const DynamicHeader: React.FC<DynamicHeaderProps> = ({
                     e.stopPropagation();
                     onOpenEvolutionModal();
                   }}
-                  className="absolute -top-2 -left-2 px-1.5 py-0.5 rounded-full bg-slate-900/90 text-white text-[9px] font-extrabold shadow-sm border border-pink-300 flex items-center gap-0.5 hover:scale-105 active:scale-95 transition-all"
+                  className="absolute -top-2 -left-2 px-1.5 py-0.5 rounded-full bg-slate-900/90 text-white text-[9px] font-extrabold shadow-sm border border-pink-300 flex items-center gap-0.5 hover:scale-105 active:scale-95 transition-all cursor-pointer"
                   title="アバター進化ルームを開く"
                 >
                   <Sparkles className="w-2.5 h-2.5 text-amber-300" />
@@ -140,9 +143,9 @@ export const DynamicHeader: React.FC<DynamicHeaderProps> = ({
                 <Heart className="w-3 h-3 fill-white" />
               </div>
 
-              {/* Speech bubble on tap */}
+              {/* Speech bubble on tap (Fully visible and elevated above header) */}
               {showAvatarSpeech && (
-                <div className="absolute left-1/2 -translate-x-1/2 -top-16 sm:-top-18 z-40 bg-slate-900/95 backdrop-blur-md text-white text-xs py-2 px-3.5 rounded-2xl whitespace-nowrap shadow-2xl border border-white/20 animate-bounce">
+                <div className="absolute left-1/2 -translate-x-1/2 -top-14 sm:-top-16 z-50 bg-slate-900/95 backdrop-blur-md text-white text-xs font-bold py-2.5 px-4 rounded-2xl whitespace-nowrap shadow-2xl border border-white/20 animate-fade-in pointer-events-none">
                   {tenant.aiPersona.speechBubbleText
                     .replace('ひさこさん', customer.nickname || customer.name || 'あなた')
                     .replace('あおいさん', customer.nickname || customer.name || 'あなた')}

@@ -110,7 +110,7 @@ export const App: React.FC = () => {
   const [legacyPtDocks, setLegacyPtDocks] = useState<PTEvalDock[]>(getPTDocks());
   const [concertGoal, setConcertGoal] = useState<ConcertGoal>(getConcertGoal());
   const [selectedAvatarStyle, setSelectedAvatarStyle] = useState<AvatarStyle | null>(
-    getSavedAvatarStyle()
+    getSavedAvatarStyle() || 'dot'
   );
   const [cloudStatus, setCloudStatus] = useState<'synced' | 'syncing' | 'offline'>('synced');
 

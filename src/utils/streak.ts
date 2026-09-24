@@ -80,14 +80,10 @@ export const calculateStreakInfo = (
     unlockedStyles.push('photo');
   }
 
-  // Active avatar: user preferred (if unlocked), else highest unlocked
+  // Active avatar: user preferred (if unlocked), else default to 'dot' (so user sees their starting dot-art)
   let activeStyle: AvatarStyle = 'dot';
   if (userSelectedStyle && unlockedStyles.includes(userSelectedStyle)) {
     activeStyle = userSelectedStyle;
-  } else if (unlockedStyles.includes('photo')) {
-    activeStyle = 'photo';
-  } else if (unlockedStyles.includes('illust')) {
-    activeStyle = 'illust';
   }
 
   let nextMilestone = 3;

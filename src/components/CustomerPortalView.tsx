@@ -102,7 +102,7 @@ export const CustomerPortalView: React.FC<CustomerPortalViewProps> = ({
           onSyncNow={onSyncNow}
           onOpenLounge={() => setIsLoungeOpen(true)}
           onOpenReport={() => setIsReportOpen(true)}
-          activeAvatarStyle={selectedAvatarStyle || 'photo'}
+          activeAvatarStyle={selectedAvatarStyle || streakInfo.activeStyle || 'dot'}
           onOpenEvolutionModal={() => setIsAvatarModalOpen(true)}
         />
 
