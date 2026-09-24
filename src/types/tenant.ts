@@ -152,6 +152,7 @@ export interface Customer {
   nickname?: string;          // 呼称 (例: 'ひさこさん', '田中さん')
   joinedDate: string;
   customGoal?: string;        // 顧客の個別目標
+  medicalCondition?: string;  // 主疾患・健康管理区分・注力テーマ (例: '好酸球性多発血管炎性肉芽腫症 (EGPA)', '腰痛改善', '体脂肪燃焼')
   status: 'active' | 'inactive';
 }
 

@@ -232,19 +232,9 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({
                       isModel ? 'text-slate-400' : 'text-white/80 justify-end'
                     }`}
                   >
-                    {isModel && (
-                      <span>
-                        {msg.isAi ? (
-                          <span className="inline-flex items-center gap-1 font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200/60">
-                            ✨ Gemini ({msg.modelUsed})
-                          </span>
-                        ) : msg.isError ? (
-                          <span className="font-bold text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded border border-rose-200">
-                            ⚠️ 通信エラー
-                          </span>
-                        ) : (
-                          <span className="text-slate-400">天使モード</span>
-                        )}
+                    {isModel && msg.isError && (
+                      <span className="font-bold text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded border border-rose-200">
+                        ⚠️ 通信エラー
                       </span>
                     )}
                     <span>{msg.timestamp}</span>

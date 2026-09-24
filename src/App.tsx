@@ -328,6 +328,25 @@ export const App: React.FC = () => {
     saveActiveCustomerId(newCustomer.id);
   };
 
+  // Update existing customer (from Provider view)
+  const handleUpdateCustomer = (updatedCustomer: Customer) => {
+    const updated = customers.map((c) =>
+      c.id === updatedCustomer.id ? updatedCustomer : c
+    );
+    setCustomers(updated);
+    saveCustomers(updated);
+  };
+
+  // Refresh active records for current customer & tenant
+  const refreshActiveRecords = () => {
+    if (activeCustomer && activeTenant) {
+      const logs = getGenericDailyLogs(activeCustomer.id, activeTenant.id);
+      const evals = getGenericEvalRecords(activeCustomer.id, activeTenant.id);
+      setGenericDailyLogs(logs);
+      setGenericEvalRecords(evals);
+    }
+  };
+
   // Save Generic Daily Log
   const handleSaveGenericDailyLog = async (newLog: GenericDailyLog) => {
     const existingIndex = genericDailyLogs.findIndex((l) => l.date === newLog.date);
@@ -474,6 +493,8 @@ export const App: React.FC = () => {
               handleSwitchMode('customer');
             }}
             onCreateCustomer={handleCreateCustomer}
+            onUpdateCustomer={handleUpdateCustomer}
+            onRefreshRecords={refreshActiveRecords}
           />
         </div>
       )}

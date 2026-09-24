@@ -16,10 +16,22 @@ import {
   RefreshCw,
   Eye,
   Smile,
+  Edit3,
+  FileEdit,
+  X,
 } from 'lucide-react';
-import type { Tenant, Customer, ColorTheme, AIPersonaQuote } from '../types/tenant';
+import type { Tenant, Customer, ColorTheme, AIPersonaQuote, GenericDailyLog, GenericEvalRecord } from '../types/tenant';
 import { COLOR_THEMES } from '../data/tenantPresets';
 import { triggerSparkleConfetti } from '../utils/confetti';
+import {
+  getGenericDailyLogs,
+  updateGenericDailyLog,
+  deleteGenericDailyLog,
+  getGenericEvalRecords,
+  updateGenericEvalRecord,
+  deleteGenericEvalRecord,
+  updateCustomer as persistCustomer,
+} from '../utils/tenantStorage';
 
 interface ProviderAdminViewProps {
   tenant: Tenant;
@@ -27,6 +39,8 @@ interface ProviderAdminViewProps {
   onSaveTenant: (updatedTenant: Tenant) => void;
   onOpenCustomerPage: (tenantId: string, customerId?: string) => void;
   onCreateCustomer: (newCustomer: Customer) => void;
+  onUpdateCustomer?: (updatedCustomer: Customer) => void;
+  onRefreshRecords?: () => void;
 }
 
 export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
@@ -35,6 +49,8 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
   onSaveTenant,
   onOpenCustomerPage,
   onCreateCustomer,
+  onUpdateCustomer,
+  onRefreshRecords,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<
     'branding' | 'persona' | 'daily' | 'eval' | 'customers'
@@ -54,6 +70,20 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
   const [newCustName, setNewCustName] = useState('');
   const [newCustNickname, setNewCustNickname] = useState('');
   const [newCustGoal, setNewCustGoal] = useState('');
+  const [newCustMedicalCondition, setNewCustMedicalCondition] = useState('');
+
+  // Edit customer modal state
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+
+  // Manage Past Records modal state
+  const [recordsTargetCustomer, setRecordsTargetCustomer] = useState<Customer | null>(null);
+  const [custDailyLogs, setCustDailyLogs] = useState<GenericDailyLog[]>([]);
+  const [custEvalRecords, setCustEvalRecords] = useState<GenericEvalRecord[]>([]);
+  const [recordsActiveSubTab, setRecordsActiveSubTab] = useState<'daily' | 'eval'>('daily');
+
+  // Editing specific record state
+  const [editingDailyLog, setEditingDailyLog] = useState<GenericDailyLog | null>(null);
+  const [editingEvalRecord, setEditingEvalRecord] = useState<GenericEvalRecord | null>(null);
 
   // Handlers for Brand / Header
   const handleThemeSelect = (theme: ColorTheme) => {
@@ -148,6 +178,7 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
       nickname: newCustNickname.trim() || newCustName.trim(),
       joinedDate: new Date().toISOString().slice(0, 10),
       customGoal: newCustGoal.trim() || '毎日の記録を続けて健康＆目標達成！',
+      medicalCondition: newCustMedicalCondition.trim() || undefined,
       status: 'active',
     };
 
@@ -160,6 +191,85 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
     setNewCustName('');
     setNewCustNickname('');
     setNewCustGoal('');
+    setNewCustMedicalCondition('');
+  };
+
+  // Open records modal for a customer
+  const handleOpenRecordsModal = (customer: Customer) => {
+    setRecordsTargetCustomer(customer);
+    const logs = getGenericDailyLogs(customer.id, currentTenant.id);
+    const evals = getGenericEvalRecords(customer.id, currentTenant.id);
+    setCustDailyLogs(logs);
+    setCustEvalRecords(evals);
+    setRecordsActiveSubTab('daily');
+    setEditingDailyLog(null);
+    setEditingEvalRecord(null);
+  };
+
+  // Save Customer Profile Edit
+  const handleSaveCustomerEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCustomer) return;
+    persistCustomer(editingCustomer);
+    if (onUpdateCustomer) {
+      onUpdateCustomer(editingCustomer);
+    }
+    setEditingCustomer(null);
+    triggerSparkleConfetti();
+  };
+
+  // Save Edited Daily Log
+  const handleSaveEditedDailyLog = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!recordsTargetCustomer || !editingDailyLog) return;
+    const updated = updateGenericDailyLog(
+      recordsTargetCustomer.id,
+      currentTenant.id,
+      editingDailyLog
+    );
+    setCustDailyLogs(updated);
+    setEditingDailyLog(null);
+    if (onRefreshRecords) onRefreshRecords();
+  };
+
+  // Delete Daily Log
+  const handleDeleteDailyLog = (logId: string) => {
+    if (!recordsTargetCustomer) return;
+    if (!window.confirm('この日の記録を削除してもよろしいですか？')) return;
+    const updated = deleteGenericDailyLog(
+      recordsTargetCustomer.id,
+      currentTenant.id,
+      logId
+    );
+    setCustDailyLogs(updated);
+    if (onRefreshRecords) onRefreshRecords();
+  };
+
+  // Save Edited Eval Record
+  const handleSaveEditedEvalRecord = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!recordsTargetCustomer || !editingEvalRecord) return;
+    const updated = updateGenericEvalRecord(
+      recordsTargetCustomer.id,
+      currentTenant.id,
+      editingEvalRecord
+    );
+    setCustEvalRecords(updated);
+    setEditingEvalRecord(null);
+    if (onRefreshRecords) onRefreshRecords();
+  };
+
+  // Delete Eval Record
+  const handleDeleteEvalRecord = (recordId: string) => {
+    if (!recordsTargetCustomer) return;
+    if (!window.confirm('この定期評価レコードを削除してもよろしいですか？')) return;
+    const updated = deleteGenericEvalRecord(
+      recordsTargetCustomer.id,
+      currentTenant.id,
+      recordId
+    );
+    setCustEvalRecords(updated);
+    if (onRefreshRecords) onRefreshRecords();
   };
 
   const tenantCustomers = customers.filter((c) => c.tenantId === currentTenant.id);
@@ -1466,10 +1576,10 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
               <div>
                 <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
                   <Users className="w-4 h-4 text-amber-500" />
-                  <span>所属顧客 (ユーザー) ID一覧・管理</span>
+                  <span>所属顧客 (ユーザー) ID一覧・カルテ管理</span>
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  業者ID <span className="font-mono font-bold text-amber-700">[{currentTenant.id}]</span> に紐付いている顧客アカウントです。
+                  業者ID <span className="font-mono font-bold text-amber-700">[{currentTenant.id}]</span> に紐付いている顧客アカウントです。顧客の主疾患・個別目標の設定や、過去の記録・評価の修正が行えます。
                 </p>
               </div>
 
@@ -1488,20 +1598,21 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
-                    <th className="py-3 px-4">顧客ID (Customer ID)</th>
-                    <th className="py-3 px-4">顧客氏名 / ニックネーム</th>
+                    <th className="py-3 px-4">顧客ID</th>
+                    <th className="py-3 px-4">顧客氏名 / 呼称</th>
+                    <th className="py-3 px-4">主疾患・健康課題・注力テーマ</th>
+                    <th className="py-3 px-4">顧客の個別目標</th>
                     <th className="py-3 px-4">登録日</th>
-                    <th className="py-3 px-4">顧客の個別目標 / モットー</th>
                     <th className="py-3 px-4 text-right">アクション</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
                   {tenantCustomers.map((cust) => (
                     <tr key={cust.id} className="hover:bg-slate-50/80">
-                      <td className="py-3.5 px-4 font-mono font-bold text-slate-800">
+                      <td className="py-3.5 px-4 font-mono font-bold text-slate-800 whitespace-nowrap">
                         {cust.id}
                       </td>
-                      <td className="py-3.5 px-4 font-bold text-slate-800">
+                      <td className="py-3.5 px-4 font-bold text-slate-800 whitespace-nowrap">
                         <span>{cust.name}</span>
                         {cust.nickname && cust.nickname !== cust.name && (
                           <span className="text-slate-400 font-normal ml-1.5">
@@ -1509,20 +1620,52 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
                           </span>
                         )}
                       </td>
-                      <td className="py-3.5 px-4 text-slate-500 font-mono">
-                        {cust.joinedDate}
+                      <td className="py-3.5 px-4">
+                        {cust.medicalCondition ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-800 font-bold text-[11px]">
+                            {cust.medicalCondition}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 italic">未設定 (一般管理)</span>
+                        )}
                       </td>
                       <td className="py-3.5 px-4 text-slate-600 truncate max-w-xs">
                         {cust.customGoal || '目標設定なし'}
                       </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <button
-                          onClick={() => onOpenCustomerPage(currentTenant.id, cust.id)}
-                          className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 font-bold transition-all inline-flex items-center gap-1"
-                        >
-                          <ExternalLink className="w-3 h-3 text-emerald-600" />
-                          <span>この顧客画面を開く</span>
-                        </button>
+                      <td className="py-3.5 px-4 text-slate-500 font-mono whitespace-nowrap">
+                        {cust.joinedDate}
+                      </td>
+                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setEditingCustomer({ ...cust })}
+                            className="px-2.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold text-xs inline-flex items-center gap-1 transition-all"
+                            title="顧客プロファイル・主疾患を編集"
+                          >
+                            <Edit3 className="w-3.5 h-3.5 text-slate-600" />
+                            <span>設定</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleOpenRecordsModal(cust)}
+                            className="px-2.5 py-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 font-bold text-xs inline-flex items-center gap-1 transition-all"
+                            title="過去の日報ログ・定期評価の修正・管理"
+                          >
+                            <FileEdit className="w-3.5 h-3.5 text-amber-600" />
+                            <span>記録修正</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => onOpenCustomerPage(currentTenant.id, cust.id)}
+                            className="px-2.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 font-bold text-xs inline-flex items-center gap-1 transition-all"
+                          >
+                            <ExternalLink className="w-3 h-3 text-emerald-600" />
+                            <span>画面を開く</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1533,7 +1676,7 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
         </div>
       )}
 
-      {/* New Customer Modal */}
+      {/* Modal: New Customer */}
       {isNewCustomerModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-200 space-y-4 animate-scaleUp">
@@ -1543,6 +1686,7 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
                 <p className="text-xs text-slate-500">業者ID [{currentTenant.id}] に紐づく顧客を作成</p>
               </div>
               <button
+                type="button"
                 onClick={() => setIsNewCustomerModalOpen(false)}
                 className="text-slate-400 hover:text-slate-600 text-lg font-bold"
               >
@@ -1552,7 +1696,7 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
 
             <form onSubmit={handleCreateCustomerSubmit} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">顧客氏名</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">顧客氏名 *</label>
                 <input
                   type="text"
                   value={newCustName}
@@ -1570,6 +1714,19 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
                   value={newCustNickname}
                   onChange={(e) => setNewCustNickname(e.target.value)}
                   placeholder="例: 健さん / 花ちゃん"
+                  className="w-full px-3 py-2 bg-slate-50 border rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  主疾患・健康課題・注力テーマ (PDF帳票にも反映)
+                </label>
+                <input
+                  type="text"
+                  value={newCustMedicalCondition}
+                  onChange={(e) => setNewCustMedicalCondition(e.target.value)}
+                  placeholder="例: 好酸球性多発血管炎性肉芽腫症 (EGPA), 腰痛リハビリ, 体脂肪燃焼"
                   className="w-full px-3 py-2 bg-slate-50 border rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500"
                 />
               </div>
@@ -1601,6 +1758,624 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Edit Customer Profile */}
+      {editingCustomer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-200 space-y-4 animate-scaleUp">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-base font-extrabold text-slate-800">顧客カルテ設定の変更</h3>
+                <p className="text-xs text-slate-500 font-mono">ID: {editingCustomer.id}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingCustomer(null)}
+                className="text-slate-400 hover:text-slate-600 text-lg font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCustomerEdit} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">顧客氏名</label>
+                <input
+                  type="text"
+                  value={editingCustomer.name}
+                  onChange={(e) =>
+                    setEditingCustomer({ ...editingCustomer, name: e.target.value })
+                  }
+                  required
+                  className="w-full px-3 py-2 bg-slate-50 border rounded-xl text-xs font-bold focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">呼称 / ニックネーム</label>
+                <input
+                  type="text"
+                  value={editingCustomer.nickname || ''}
+                  onChange={(e) =>
+                    setEditingCustomer({ ...editingCustomer, nickname: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-slate-50 border rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  主疾患・健康管理区分・注力テーマ (PDFサマリー帳票にも反映)
+                </label>
+                <input
+                  type="text"
+                  value={editingCustomer.medicalCondition || ''}
+                  onChange={(e) =>
+                    setEditingCustomer({ ...editingCustomer, medicalCondition: e.target.value })
+                  }
+                  placeholder="例: 好酸球性多発血管炎性肉芽腫症 (EGPA)"
+                  className="w-full px-3 py-2 bg-slate-50 border rounded-xl text-xs font-bold text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  ※ここに設定した疾患名が、PDF出力時のヘッダーや主疾患欄に自動反映されます。
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">個別目標 / チャレンジ</label>
+                <textarea
+                  rows={2}
+                  value={editingCustomer.customGoal || ''}
+                  onChange={(e) =>
+                    setEditingCustomer({ ...editingCustomer, customGoal: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-slate-50 border rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingCustomer(null)}
+                  className="px-4 py-2 rounded-xl text-slate-600 bg-slate-100 hover:bg-slate-200 text-xs font-bold"
+                >
+                  キャンセル
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-md"
+                >
+                  変更を保存
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Manage & Edit Past Records (Daily Logs & Periodic Evaluations) */}
+      {recordsTargetCustomer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl border border-slate-200 animate-scaleUp">
+            {/* Modal Header */}
+            <div className="p-4 sm:p-5 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-extrabold text-slate-800">
+                    過去レコードの管理・修正
+                  </h3>
+                  <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-extrabold text-xs">
+                    {recordsTargetCustomer.name} 様 ({recordsTargetCustomer.id})
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  入力間違いがあった過去の日誌データや定期測定データを修正できます。
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setRecordsTargetCustomer(null);
+                  setEditingDailyLog(null);
+                  setEditingEvalRecord(null);
+                }}
+                className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Sub-tab navigation */}
+            <div className="px-5 pt-3 border-b border-slate-200 flex gap-4 bg-white">
+              <button
+                type="button"
+                onClick={() => {
+                  setRecordsActiveSubTab('daily');
+                  setEditingDailyLog(null);
+                }}
+                className={`pb-2.5 text-xs font-extrabold border-b-2 transition-all cursor-pointer ${
+                  recordsActiveSubTab === 'daily'
+                    ? 'border-amber-600 text-amber-700'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                📅 日々の記録ログ ({custDailyLogs.length}件)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setRecordsActiveSubTab('eval');
+                  setEditingEvalRecord(null);
+                }}
+                className={`pb-2.5 text-xs font-extrabold border-b-2 transition-all cursor-pointer ${
+                  recordsActiveSubTab === 'eval'
+                    ? 'border-amber-600 text-amber-700'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                🏆 定期評価・測定レコード ({custEvalRecords.length}件)
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 overflow-y-auto flex-1 space-y-4">
+              {/* Daily Logs View / Edit Form */}
+              {recordsActiveSubTab === 'daily' && (
+                <div>
+                  {editingDailyLog ? (
+                    /* Edit Form for a Single Daily Log */
+                    <form
+                      onSubmit={handleSaveEditedDailyLog}
+                      className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200 space-y-3"
+                    >
+                      <div className="flex items-center justify-between border-b border-amber-200/60 pb-2">
+                        <h4 className="text-xs font-extrabold text-amber-900 flex items-center gap-1.5">
+                          <Edit3 className="w-4 h-4 text-amber-700" />
+                          <span>日々の記録の修正 ({editingDailyLog.date})</span>
+                        </h4>
+                        <button
+                          type="button"
+                          onClick={() => setEditingDailyLog(null)}
+                          className="text-xs text-slate-500 hover:text-slate-700 font-bold"
+                        >
+                          閉じる
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">記録日</label>
+                          <input
+                            type="date"
+                            value={editingDailyLog.date}
+                            onChange={(e) =>
+                              setEditingDailyLog({ ...editingDailyLog, date: e.target.value })
+                            }
+                            required
+                            className="w-full px-2.5 py-1.5 bg-white border rounded-xl font-bold"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">体調 (5段階)</label>
+                          <select
+                            value={editingDailyLog.condition || 'good'}
+                            onChange={(e) =>
+                              setEditingDailyLog({
+                                ...editingDailyLog,
+                                condition: e.target.value as any,
+                              })
+                            }
+                            className="w-full px-2.5 py-1.5 bg-white border rounded-xl font-bold"
+                          >
+                            <option value="great">😄 絶好調 (5)</option>
+                            <option value="good">🙂 良好 (4)</option>
+                            <option value="okay">😐 普通 (3)</option>
+                            <option value="tired">😫 倦怠感 (2)</option>
+                            <option value="fever">🤒 微熱・不調 (1)</option>
+                          </select>
+                        </div>
+
+                        {currentTenant.dailyConfig.enableEnergy && (
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">
+                              {currentTenant.dailyConfig.energyLabel} (%)
+                            </label>
+                            <input
+                              type="number"
+                              min={0}
+                              max={100}
+                              value={editingDailyLog.energyLevel ?? 80}
+                              onChange={(e) =>
+                                setEditingDailyLog({
+                                  ...editingDailyLog,
+                                  energyLevel: Number(e.target.value),
+                                })
+                              }
+                              className="w-full px-2.5 py-1.5 bg-white border rounded-xl font-bold font-mono"
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Numeric fields */}
+                      {currentTenant.dailyConfig.numericFields.length > 0 && (
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                          {currentTenant.dailyConfig.numericFields.map((nf) => (
+                            <div key={nf.id}>
+                              <label className="block font-bold text-slate-700 mb-1">
+                                {nf.label} ({nf.unit})
+                              </label>
+                              <input
+                                type="number"
+                                step={nf.id === 'bodyTemp' ? '0.1' : '1'}
+                                value={editingDailyLog.numericValues?.[nf.id] ?? ''}
+                                onChange={(e) =>
+                                  setEditingDailyLog({
+                                    ...editingDailyLog,
+                                    numericValues: {
+                                      ...editingDailyLog.numericValues,
+                                      [nf.id]: Number(e.target.value),
+                                    },
+                                  })
+                                }
+                                className="w-full px-2.5 py-1.5 bg-white border rounded-xl font-bold font-mono"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Slider fields */}
+                      {currentTenant.dailyConfig.sliders.length > 0 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                          {currentTenant.dailyConfig.sliders.map((sl) => (
+                            <div key={sl.id}>
+                              <label className="block font-bold text-slate-700 mb-1 flex justify-between">
+                                <span>{sl.label}</span>
+                                <span className="font-mono text-amber-700 font-extrabold">
+                                  {editingDailyLog.sliderValues?.[sl.id] ?? sl.min} / {sl.max}
+                                </span>
+                              </label>
+                              <input
+                                type="range"
+                                min={sl.min}
+                                max={sl.max}
+                                step={sl.step}
+                                value={editingDailyLog.sliderValues?.[sl.id] ?? sl.min}
+                                onChange={(e) =>
+                                  setEditingDailyLog({
+                                    ...editingDailyLog,
+                                    sliderValues: {
+                                      ...editingDailyLog.sliderValues,
+                                      [sl.id]: Number(e.target.value),
+                                    },
+                                  })
+                                }
+                                className="w-full accent-amber-600"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Memo */}
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1 text-xs">メモ・日誌</label>
+                        <textarea
+                          rows={2}
+                          value={editingDailyLog.memo || ''}
+                          onChange={(e) =>
+                            setEditingDailyLog({ ...editingDailyLog, memo: e.target.value })
+                          }
+                          className="w-full px-3 py-1.5 bg-white border rounded-xl text-xs"
+                        />
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setEditingDailyLog(null)}
+                          className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 font-bold text-xs"
+                        >
+                          キャンセル
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-4 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm"
+                        >
+                          変更を保存
+                        </button>
+                      </div>
+                    </form>
+                  ) : null}
+
+                  {/* List of daily logs */}
+                  <div className="overflow-x-auto border border-slate-200 rounded-2xl">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                        <tr>
+                          <th className="py-2 px-3">記録日</th>
+                          <th className="py-2 px-3 text-center">体調 (5段階)</th>
+                          <th className="py-2 px-3 text-center">エナジー</th>
+                          <th className="py-2 px-3">数値・スライダースコア</th>
+                          <th className="py-2 px-3">メモ</th>
+                          <th className="py-2 px-3 text-right">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 bg-white">
+                        {custDailyLogs.length > 0 ? (
+                          [...custDailyLogs].sort((a, b) => b.date.localeCompare(a.date)).map((log) => (
+                            <tr key={log.id} className="hover:bg-slate-50">
+                              <td className="py-2.5 px-3 font-mono font-bold text-indigo-700 whitespace-nowrap">
+                                {log.date}
+                              </td>
+                              <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                                {log.condition === 'great'
+                                  ? '😄 絶好調'
+                                  : log.condition === 'good'
+                                  ? '🙂 良好'
+                                  : log.condition === 'okay'
+                                  ? '😐 普通'
+                                  : log.condition === 'tired'
+                                  ? '😫 倦怠感'
+                                  : '🤒 微熱'}
+                              </td>
+                              <td className="py-2.5 px-3 text-center font-mono font-bold text-pink-600">
+                                {log.energyLevel ?? 80}%
+                              </td>
+                              <td className="py-2.5 px-3 text-slate-600 text-[11px]">
+                                <div className="flex flex-wrap gap-1 max-w-xs">
+                                  {Object.entries(log.numericValues || {}).map(([k, v]) => (
+                                    <span key={k} className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px]">
+                                      {k}: {v}
+                                    </span>
+                                  ))}
+                                  {Object.entries(log.sliderValues || {}).map(([k, v]) => (
+                                    <span key={k} className="bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded text-[10px]">
+                                      {k}: {v}
+                                    </span>
+                                  ))}
+                                </div>
+                              </td>
+                              <td className="py-2.5 px-3 text-slate-600 max-w-xs truncate">
+                                {log.memo || '-'}
+                              </td>
+                              <td className="py-2.5 px-3 text-right whitespace-nowrap">
+                                <div className="flex items-center justify-end gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingDailyLog({ ...log })}
+                                    className="px-2 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 font-bold text-[11px]"
+                                  >
+                                    編集
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteDailyLog(log.id)}
+                                    className="p-1 rounded-lg text-rose-500 hover:bg-rose-50"
+                                    title="削除"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={6} className="py-8 text-center text-slate-400">
+                              日々の記録ログがまだありません。
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Periodic Evaluations View / Edit Form */}
+              {recordsActiveSubTab === 'eval' && (
+                <div>
+                  {editingEvalRecord ? (
+                    /* Edit Form for a Single Eval Record */
+                    <form
+                      onSubmit={handleSaveEditedEvalRecord}
+                      className="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-200 space-y-3"
+                    >
+                      <div className="flex items-center justify-between border-b border-indigo-200/60 pb-2">
+                        <h4 className="text-xs font-extrabold text-indigo-900 flex items-center gap-1.5">
+                          <Edit3 className="w-4 h-4 text-indigo-700" />
+                          <span>定期測定・評価レコードの修正 ({editingEvalRecord.date})</span>
+                        </h4>
+                        <button
+                          type="button"
+                          onClick={() => setEditingEvalRecord(null)}
+                          className="text-xs text-slate-500 hover:text-slate-700 font-bold"
+                        >
+                          閉じる
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">測定日</label>
+                          <input
+                            type="date"
+                            value={editingEvalRecord.date}
+                            onChange={(e) =>
+                              setEditingEvalRecord({ ...editingEvalRecord, date: e.target.value })
+                            }
+                            required
+                            className="w-full px-2.5 py-1.5 bg-white border rounded-xl font-bold"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">評価者 / 担当者名</label>
+                          <input
+                            type="text"
+                            value={editingEvalRecord.evaluator}
+                            onChange={(e) =>
+                              setEditingEvalRecord({ ...editingEvalRecord, evaluator: e.target.value })
+                            }
+                            required
+                            className="w-full px-2.5 py-1.5 bg-white border rounded-xl font-bold"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Eval metrics dynamic inputs */}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+                        {currentTenant.evalConfig.metrics.map((m) => (
+                          <div key={m.id}>
+                            <label className="block font-bold text-slate-700 mb-1">
+                              {m.label} ({m.unit})
+                            </label>
+                            <input
+                              type={m.type === 'number' ? 'number' : 'text'}
+                              value={editingEvalRecord.metricValues?.[m.id] ?? ''}
+                              onChange={(e) =>
+                                setEditingEvalRecord({
+                                  ...editingEvalRecord,
+                                  metricValues: {
+                                    ...editingEvalRecord.metricValues,
+                                    [m.id]: m.type === 'number' ? Number(e.target.value) : e.target.value,
+                                  },
+                                })
+                              }
+                              className="w-full px-2.5 py-1.5 bg-white border rounded-xl font-bold font-mono"
+                            />
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Advice & Goal */}
+                      <div className="space-y-2 text-xs">
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">
+                            {currentTenant.evalConfig.adviceLabel || 'アドバイス・所見'}
+                          </label>
+                          <textarea
+                            rows={2}
+                            value={editingEvalRecord.advice || ''}
+                            onChange={(e) =>
+                              setEditingEvalRecord({ ...editingEvalRecord, advice: e.target.value })
+                            }
+                            className="w-full px-3 py-1.5 bg-white border rounded-xl text-xs"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">
+                            {currentTenant.evalConfig.goalLabel || '次回目標'}
+                          </label>
+                          <input
+                            type="text"
+                            value={editingEvalRecord.nextGoal || ''}
+                            onChange={(e) =>
+                              setEditingEvalRecord({ ...editingEvalRecord, nextGoal: e.target.value })
+                            }
+                            className="w-full px-3 py-1.5 bg-white border rounded-xl text-xs font-bold text-amber-800"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setEditingEvalRecord(null)}
+                          className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 font-bold text-xs"
+                        >
+                          キャンセル
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm"
+                        >
+                          測定データを保存
+                        </button>
+                      </div>
+                    </form>
+                  ) : null}
+
+                  {/* List of eval records */}
+                  <div className="overflow-x-auto border border-slate-200 rounded-2xl">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                        <tr>
+                          <th className="py-2 px-3">測定日</th>
+                          <th className="py-2 px-3">評価者</th>
+                          <th className="py-2 px-3">測定スコア数値</th>
+                          <th className="py-2 px-3">所見・アドバイス</th>
+                          <th className="py-2 px-3">次回目標</th>
+                          <th className="py-2 px-3 text-right">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 bg-white">
+                        {custEvalRecords.length > 0 ? (
+                          [...custEvalRecords].sort((a, b) => b.date.localeCompare(a.date)).map((ev) => (
+                            <tr key={ev.id} className="hover:bg-slate-50">
+                              <td className="py-2.5 px-3 font-mono font-bold text-indigo-700 whitespace-nowrap">
+                                {ev.date}
+                              </td>
+                              <td className="py-2.5 px-3 font-bold text-slate-800 whitespace-nowrap">
+                                {ev.evaluator}
+                              </td>
+                              <td className="py-2.5 px-3 text-slate-700">
+                                <div className="flex flex-wrap gap-1 max-w-xs text-[10px]">
+                                  {Object.entries(ev.metricValues || {}).map(([k, v]) => (
+                                    <span key={k} className="bg-indigo-50 text-indigo-900 border border-indigo-100 px-1.5 py-0.5 rounded font-bold">
+                                      {k}: {v}
+                                    </span>
+                                  ))}
+                                </div>
+                              </td>
+                              <td className="py-2.5 px-3 text-slate-600 max-w-xs truncate">
+                                {ev.advice || '-'}
+                              </td>
+                              <td className="py-2.5 px-3 font-bold text-amber-700 max-w-xs truncate">
+                                {ev.nextGoal || '-'}
+                              </td>
+                              <td className="py-2.5 px-3 text-right whitespace-nowrap">
+                                <div className="flex items-center justify-end gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingEvalRecord({ ...ev })}
+                                    className="px-2 py-1 rounded-lg bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100 font-bold text-[11px]"
+                                  >
+                                    編集
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteEvalRecord(ev.id)}
+                                    className="p-1 rounded-lg text-rose-500 hover:bg-rose-50"
+                                    title="削除"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={6} className="py-8 text-center text-slate-400">
+                              定期評価レコードがまだありません。
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -61,12 +61,12 @@ export const PeriodicSummaryReportModal: React.FC<PeriodicSummaryReportModalProp
   const latestDaily = sortedDaily[0];
   const latestEval = sortedEvals[0];
 
-  // Determine if this is Hisako or an EGPA / Medical rehabilitation case
-  const isMedicalEgpa =
-    tenant.id === 'tenant-carat-hisa' ||
-    customer.name.includes('ひさこ') ||
-    legacyDailyLogs.length > 0 ||
-    legacyPtDocks.length > 0;
+  // Dynamic customer medical condition or health focus
+  const displayCondition =
+    customer.medicalCondition ||
+    (tenant.id === 'tenant-carat-hisa' ? '好酸球性多発血管炎性肉芽腫症 (EGPA)' : undefined);
+
+  const isMedicalCase = !!displayCondition;
 
   // Chronological logs for sparkline graph (last 7 logs)
   const recentLogsChronological = [...sortedDaily].slice(0, 7).reverse();
@@ -86,7 +86,7 @@ export const PeriodicSummaryReportModal: React.FC<PeriodicSummaryReportModalProp
     : '2.5';
 
   const latestPsl =
-    latestDaily?.numericValues?.pslDoseMg ?? (isMedicalEgpa ? 6 : undefined);
+    latestDaily?.numericValues?.pslDoseMg ?? (displayCondition?.includes('EGPA') ? 6 : undefined);
 
   // Print handler
   const handlePrint = () => {
@@ -96,16 +96,15 @@ export const PeriodicSummaryReportModal: React.FC<PeriodicSummaryReportModalProp
   // Copy text summary
   const handleCopyText = () => {
     const text = `
-【${tenant.headerTitle} 定期活動・目標進捗サマリー】
+【${tenant.headerTitle} 定期サマリー報告】
 対象顧客: ${customer.name} 様 (${customer.nickname || ''})
 所属: ${tenant.name} (${tenant.badgeText})
 記録期間: 直近 ${effectiveDailyLogs.length} 日分 / 最新記録: ${latestDaily ? latestDaily.date : 'なし'}
-目標: ${customer.customGoal || '継続的な習慣化と自己実現'}
-${isMedicalEgpa ? `主疾患: EGPA (好酸球性多発血管炎性肉芽腫症)\nプレドニン(PSL)内服量: ${latestPsl} mg/日\n疼痛・しびれ VAS平均: ${avgVas} / 10\n朝の体温: ${latestDaily?.numericValues?.bodyTemp || 36.5}℃` : ''}
-
+個別目標: ${customer.customGoal || '継続的な習慣化と自己実現'}
+${displayCondition ? `主疾患・管理区分: ${displayCondition}\n` : ''}${latestPsl !== undefined ? `プレドニン(PSL)内服量: ${latestPsl} mg/日\n` : ''}${latestDaily?.sliderValues?.painVas !== undefined ? `疼痛・しびれ VAS平均: ${avgVas} / 10 (臨床疼痛尺度: 0無痛〜10激痛)\n` : ''}${latestDaily?.numericValues?.bodyTemp ? `朝の体温: ${latestDaily.numericValues.bodyTemp}℃\n` : ''}
 ■ 現在のコンディション推移
-- 最新体調: ${latestDaily?.condition || '良好'}
-- 平均エナジー指数: ${avgEnergy}%
+- 最新体調: ${latestDaily?.condition ? `${latestDaily.condition} (5段階評価)` : '良好'}
+- 平均エナジー/充実度: ${avgEnergy}%
 - 最新メモ: ${latestDaily?.memo || '順調に継続中'}
 
 ■ 最新評価測定 (${latestEval ? latestEval.date : legacyPtDocks[0]?.date || '未測定'}):
@@ -154,9 +153,9 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold">
                   A4 1ページ最適化済
                 </span>
-                {isMedicalEgpa && (
+                {isMedicalCase && (
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-extrabold">
-                    医療・EGPA連携対応
+                    {displayCondition?.includes('EGPA') ? '医療・EGPA連携' : 'ヘルスケア・課題対応'}
                   </span>
                 )}
               </div>
@@ -206,11 +205,11 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
                   style={{ backgroundColor: tenant.theme.primaryColor }}
                 />
                 <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
-                  {tenant.badgeText} • {isMedicalEgpa ? 'EGPA REHABILITATION & MEDICAL REPORT' : 'PERIODIC PROGRESS REPORT'}
+                  {tenant.badgeText} • {isMedicalCase ? 'HEALTHCARE & PERIODIC PROGRESS REPORT' : 'PERIODIC PROGRESS REPORT'}
                 </span>
               </div>
               <h1 className="text-lg sm:text-2xl font-black text-slate-900 mt-0.5">
-                {tenant.headerTitle} {isMedicalEgpa ? '好酸球性多発血管炎性肉芽腫症 (EGPA) リハビリ・セルフケア定期進捗報告書' : '定期活動・目標進捗報告書'}
+                {tenant.headerTitle} {displayCondition ? `${displayCondition} 定期進捗報告書` : '定期活動・目標進捗報告書'}
               </h1>
             </div>
             <div className="text-right text-[10px] text-slate-600 flex-shrink-0">
@@ -230,7 +229,7 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
             <div>
               <span className="text-slate-500 block text-[9px]">主疾患・健康管理区分</span>
               <span className="font-bold text-slate-800 text-[11px]">
-                {isMedicalEgpa ? '好酸球性多発血管炎性肉芽腫症 (EGPA)' : tenant.name}
+                {displayCondition || `${tenant.name} (一般・健康増進)`}
               </span>
             </div>
             <div>
@@ -274,14 +273,20 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
               <span className="text-[9px] text-pink-600 font-bold ml-0.5">%</span>
             </div>
             <div className="p-2 rounded-xl border border-slate-200 bg-white">
-              <span className="text-[9px] text-slate-500 block">疼痛・しびれ VAS平均</span>
-              <span className="text-base font-black text-amber-600">{avgVas}</span>
-              <span className="text-[9px] text-amber-600 font-bold ml-0.5">/ 10</span>
+              <span className="text-[9px] text-slate-500 block">
+                {latestDaily?.sliderValues?.painVas !== undefined ? '疼痛VAS平均 (0〜10)' : '平均コンディション'}
+              </span>
+              <span className="text-base font-black text-amber-600">
+                {latestDaily?.sliderValues?.painVas !== undefined ? avgVas : '良好'}
+              </span>
+              {latestDaily?.sliderValues?.painVas !== undefined && (
+                <span className="text-[9px] text-amber-600 font-bold ml-0.5">/ 10</span>
+              )}
             </div>
             <div className="p-2 rounded-xl border border-slate-200 bg-white">
-              <span className="text-[9px] text-slate-500 block">直近の測定状態</span>
+              <span className="text-[9px] text-slate-500 block">直近の体調 (5段階評価)</span>
               <span className="text-xs font-black text-emerald-700 block mt-0.5 truncate">
-                {latestDaily?.condition === 'good' ? '良好 😄' : latestDaily?.condition === 'great' ? '絶好調 ✨' : '安定 🌿'}
+                {latestDaily?.condition === 'great' ? '絶好調 😄 (5/5)' : latestDaily?.condition === 'good' ? '良好 😊 (4/5)' : latestDaily?.condition === 'okay' ? '普通 😐 (3/5)' : latestDaily?.condition === 'tired' ? '倦怠感 💧 (2/5)' : latestDaily?.condition === 'fever' ? '微熱 🔥 (1/5)' : '安定 🌿'}
               </span>
             </div>
           </div>
@@ -291,7 +296,7 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
             <div className="flex items-center justify-between border-b border-slate-100 pb-1">
               <h3 className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
                 <Activity className="w-3.5 h-3.5 text-indigo-600" />
-                <span>1. 直近の日次バイタル推移グラフ ＆ 測定履歴数値 (医師・担当者確認用)</span>
+                <span>1. 直近の日次バイタル推移グラフ ＆ 測定履歴数値 (確認・評価用)</span>
               </h3>
               <span className="text-[9px] text-slate-400">直近7件の記録トレンド</span>
             </div>
@@ -300,8 +305,10 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
             {recentLogsChronological.length > 0 ? (
               <div className="bg-slate-50/70 rounded-lg p-2 border border-slate-200/80">
                 <div className="flex items-center justify-between text-[9px] text-slate-500 mb-1 px-1">
-                  <span>棒グラフ: エナジー指数(%) | 折れ線: 疼痛・しびれVAS (0〜10)</span>
-                  <span className="font-bold text-slate-600">最新VAS: {latestDaily?.sliderValues?.painVas ?? 0}/10</span>
+                  <span>棒グラフ: 充実度・エナジー(%) | 数値ラベル: {latestDaily?.sliderValues?.painVas !== undefined ? '疼痛・しびれVAS (0〜10: 臨床尺度)' : '活動スコア'}</span>
+                  {latestDaily?.sliderValues?.painVas !== undefined && (
+                    <span className="font-bold text-pink-600">最新VAS: {latestDaily.sliderValues.painVas} / 10</span>
+                  )}
                 </div>
 
                 {/* SVG Visual Sparkline Chart (Prints cleanly with 100% vector resolution) */}
@@ -319,7 +326,7 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
                         <div
                           className="w-full max-w-[28px] rounded-t-sm bg-gradient-to-t from-indigo-200 to-pink-300 border-t-2 border-pink-500 transition-all"
                           style={{ height: `${energyH * 0.42}px` }}
-                          title={`日付: ${l.date} / VAS: ${vasVal} / エナジー: ${l.energyLevel}%`}
+                          title={`日付: ${l.date} / VAS: ${vasVal}/10 / エナジー: ${l.energyLevel}%`}
                         />
                         {/* Date label */}
                         <span className="text-[8px] text-slate-500 mt-1 whitespace-nowrap">
@@ -338,10 +345,10 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
                 <thead>
                   <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                     <th className="p-1">記録日</th>
-                    <th className="p-1">体調</th>
-                    <th className="p-1 text-center">疼痛VAS (0-10)</th>
-                    {isMedicalEgpa && <th className="p-1 text-center">PSL内服量</th>}
-                    {isMedicalEgpa && <th className="p-1 text-center">朝の体温</th>}
+                    <th className="p-1">日次体調 (5段階)</th>
+                    <th className="p-1 text-center">疼痛VAS (0-10: 臨床尺度)</th>
+                    {isMedicalCase && <th className="p-1 text-center">PSL内服量</th>}
+                    {isMedicalCase && <th className="p-1 text-center">朝の体温</th>}
                     <th className="p-1 text-center">自主ケア実施</th>
                     <th className="p-1">日誌・自覚症状メモ</th>
                   </tr>
@@ -353,17 +360,17 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
                       <tr key={log.id} className="hover:bg-slate-50/60">
                         <td className="p-1 font-bold text-indigo-700 whitespace-nowrap">{log.date}</td>
                         <td className="p-1 whitespace-nowrap">
-                          {log.condition === 'great' ? '絶好調 😄' : log.condition === 'good' ? '良好 😊' : log.condition === 'tired' ? '倦怠感あり 💧' : log.condition === 'fever' ? '微熱 🔥' : '安定 🌿'}
+                          {log.condition === 'great' ? '絶好調 😄 (5)' : log.condition === 'good' ? '良好 😊 (4)' : log.condition === 'okay' ? '普通 😐 (3)' : log.condition === 'tired' ? '倦怠感あり 💧 (2)' : log.condition === 'fever' ? '微熱 🔥 (1)' : '安定 🌿'}
                         </td>
                         <td className="p-1 text-center font-extrabold text-pink-600">
                           {log.sliderValues?.painVas !== undefined ? `${log.sliderValues.painVas} / 10` : '--'}
                         </td>
-                        {isMedicalEgpa && (
+                        {isMedicalCase && (
                           <td className="p-1 text-center font-bold text-indigo-900">
                             {log.numericValues?.pslDoseMg ? `${log.numericValues.pslDoseMg} mg` : '6 mg'}
                           </td>
                         )}
-                        {isMedicalEgpa && (
+                        {isMedicalCase && (
                           <td className="p-1 text-center text-slate-700">
                             {log.numericValues?.bodyTemp ? `${log.numericValues.bodyTemp}℃` : '36.5℃'}
                           </td>
@@ -389,7 +396,7 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
               <div className="flex items-center justify-between border-b border-slate-100 pb-1">
                 <h3 className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-indigo-600" />
-                  <span>2. {isMedicalEgpa ? '専門PT機能評価推移 (EGPA神経・筋力・歩行)' : '定期評価測定推移'}</span>
+                  <span>2. {isMedicalCase ? (displayCondition?.includes('EGPA') ? '専門PT機能評価推移 (EGPA神経・筋力・歩行)' : `${displayCondition} 評価推移`) : '定期評価測定推移'}</span>
                 </h3>
                 <span className="text-[9px] text-slate-400">客観的機能指標</span>
               </div>
@@ -463,13 +470,13 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
               <div className="flex items-center justify-between border-b border-slate-100 pb-1">
                 <h3 className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-pink-500" />
-                  <span>3. {isMedicalEgpa ? '自宅自主リハビリ・運動習慣の継続率' : 'セルフケア＆チェック項目実施状況'}</span>
+                  <span>3. {isMedicalCase ? '自宅自主リハビリ・運動習慣の継続率' : 'セルフケア＆チェック項目実施状況'}</span>
                 </h3>
                 <span className="text-[9px] text-slate-400">継続習慣</span>
               </div>
 
               <div className="space-y-1">
-                {(isMedicalEgpa
+                {(isMedicalCase
                   ? [
                       { id: 'chairSquats', label: '椅子立ち座りスクワット (下肢筋力・起立機能)', icon: '🪑' },
                       { id: 'towelGather', label: '足指タオルギャザー (足底内在筋・感覚刺激)', icon: '🦶' },
@@ -517,7 +524,7 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
             <div className="md:col-span-4 border border-slate-200 rounded-xl p-2.5 bg-white flex flex-col justify-between">
               <div>
                 <span className="text-[9px] font-bold text-slate-600 block leading-tight">
-                  {isMedicalEgpa ? '主治医・担当医 確認印 / 指示コメント欄' : '担当スタッフ・責任者 確認印 / 記入欄'}
+                  {isMedicalCase ? '主治医・担当医 確認印 / 指示コメント欄' : '担当スタッフ・責任者 確認印 / 記入欄'}
                 </span>
                 <p className="text-[8px] text-slate-400 leading-tight mt-0.5">
                   定期受診・面談確認用

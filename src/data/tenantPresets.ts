@@ -452,6 +452,7 @@ export const INITIAL_CUSTOMERS: Customer[] = [
     nickname: 'ひさこさん',
     joinedDate: '2026-08-01',
     customGoal: '2026年11月20日のセブチコンサートで元気に飛び跳ねてハニヘ〜する！👼✨',
+    medicalCondition: '好酸球性多発血管炎性肉芽腫症 (EGPA)',
     status: 'active',
   },
   {
@@ -461,6 +462,7 @@ export const INITIAL_CUSTOMERS: Customer[] = [
     nickname: '田中さん',
     joinedDate: '2026-09-12',
     customGoal: '体脂肪率15%を達成し、ベンチプレス70kgを挙げる！🔥',
+    medicalCondition: '体脂肪燃焼・筋肥大バルクアップ',
     status: 'active',
   },
   {
@@ -470,6 +472,7 @@ export const INITIAL_CUSTOMERS: Customer[] = [
     nickname: '颯太くん',
     joinedDate: '2026-09-16',
     customGoal: '秋の志望校判定模試で偏差値60を突破する！✏️',
+    medicalCondition: '高校受験・英語＆数学特化',
     status: 'active',
   },
   {
@@ -479,6 +482,7 @@ export const INITIAL_CUSTOMERS: Customer[] = [
     nickname: '花子さん',
     joinedDate: '2026-09-19',
     customGoal: '毎日無理なく6000歩歩いて、仲間と健康維持！🌸',
+    medicalCondition: '生活習慣改善・ウォーキング習慣化',
     status: 'active',
   },
 ];

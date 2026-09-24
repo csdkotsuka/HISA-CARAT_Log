@@ -48,11 +48,15 @@ export const DynamicDashboardTab: React.FC<DynamicDashboardTabProps> = ({
   dailyLogs,
   evalRecords,
   onOpenReport,
+  legacyPtDocks = [],
 }) => {
   // Available metrics from tenant daily configuration
   const numericDefs = tenant.dailyConfig.numericFields;
   const sliderDefs = tenant.dailyConfig.sliders;
   const evalDefs = tenant.evalConfig.metrics;
+
+  // History sub-tab: daily logs vs eval records
+  const [historySubTab, setHistorySubTab] = useState<'daily' | 'eval'>('daily');
 
   // Selected primary metric for Line Chart 1
   const [selectedPrimaryMetric, setSelectedPrimaryMetric] = useState<string>(() => {
@@ -374,79 +378,211 @@ export const DynamicDashboardTab: React.FC<DynamicDashboardTabProps> = ({
         </div>
       )}
 
-      {/* 4. Dynamic History Table */}
-      <div className="glass-card rounded-3xl p-5 sm:p-6 bg-white border border-slate-200 shadow-sm space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-indigo-500" />
-            <span>過去の記録一覧 ({sortedDaily.length}件)</span>
-          </h3>
+      {/* 4. Dynamic History Table (Daily Logs & Periodic Evaluations) */}
+      <div className="glass-card rounded-3xl p-5 sm:p-6 bg-white border border-slate-200 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-indigo-500" />
+            <div className="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200">
+              <button
+                type="button"
+                onClick={() => setHistorySubTab('daily')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  historySubTab === 'daily'
+                    ? 'bg-white text-slate-800 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                📅 日々の記録一覧 ({sortedDaily.length}件)
+              </button>
+              <button
+                type="button"
+                onClick={() => setHistorySubTab('eval')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  historySubTab === 'eval'
+                    ? 'bg-white text-slate-800 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                🏆 定期評価・測定履歴 ({sortedEvals.length > 0 ? sortedEvals.length : legacyPtDocks.length}件)
+              </button>
+            </div>
+          </div>
+
+          <div className="text-[11px] text-slate-400 bg-slate-50 px-2.5 py-1 rounded-xl border border-slate-200/60">
+            💡 過去記録の修正・更新は「Pro Partner (事業者)」画面で行えます
+          </div>
         </div>
 
-        <div className="overflow-x-auto border border-slate-200 rounded-2xl max-h-96">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead className="sticky top-0 bg-slate-100 text-slate-600 font-bold border-b border-slate-200 z-10">
-              <tr>
-                <th className="py-2.5 px-3">日付</th>
-                {tenant.dailyConfig.enableCondition && <th className="py-2.5 px-3 text-center">体調</th>}
-                {tenant.dailyConfig.enableEnergy && (
-                  <th className="py-2.5 px-3 text-center">{tenant.dailyConfig.energyLabel}</th>
-                )}
-                {numericDefs.map((n) => (
-                  <th key={n.id} className="py-2.5 px-3 text-right">
-                    {n.label} ({n.unit})
-                  </th>
-                ))}
-                {sliderDefs.map((s) => (
-                  <th key={s.id} className="py-2.5 px-3 text-center">
-                    {s.label}
-                  </th>
-                ))}
-                <th className="py-2.5 px-3">メモ</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 bg-white">
-              {sortedDaily.slice().reverse().map((l) => (
-                <tr key={l.id} className="hover:bg-slate-50">
-                  <td className="py-2.5 px-3 font-mono font-bold text-slate-800 whitespace-nowrap">
-                    {l.date}
-                  </td>
-                  {tenant.dailyConfig.enableCondition && (
-                    <td className="py-2.5 px-3 text-center text-sm">
-                      {l.condition === 'great'
-                        ? '😄'
-                        : l.condition === 'good'
-                        ? '🙂'
-                        : l.condition === 'okay'
-                        ? '😐'
-                        : l.condition === 'tired'
-                        ? '😫'
-                        : '🤒'}
-                    </td>
-                  )}
+        {/* TAB 1: Daily Logs Table */}
+        {historySubTab === 'daily' && (
+          <div className="overflow-x-auto border border-slate-200 rounded-2xl max-h-96">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead className="sticky top-0 bg-slate-100 text-slate-600 font-bold border-b border-slate-200 z-10">
+                <tr>
+                  <th className="py-2.5 px-3">日付</th>
+                  {tenant.dailyConfig.enableCondition && <th className="py-2.5 px-3 text-center">体調 (5段階)</th>}
                   {tenant.dailyConfig.enableEnergy && (
-                    <td className="py-2.5 px-3 text-center font-bold font-mono" style={{ color: tenant.theme.accentColor }}>
-                      {l.energyLevel ?? 80}%
-                    </td>
+                    <th className="py-2.5 px-3 text-center">{tenant.dailyConfig.energyLabel}</th>
                   )}
                   {numericDefs.map((n) => (
-                    <td key={n.id} className="py-2.5 px-3 text-right font-mono font-bold text-slate-700">
-                      {l.numericValues?.[n.id] ?? '-'}
-                    </td>
+                    <th key={n.id} className="py-2.5 px-3 text-right">
+                      {n.label} ({n.unit})
+                    </th>
                   ))}
                   {sliderDefs.map((s) => (
-                    <td key={s.id} className="py-2.5 px-3 text-center font-mono text-slate-600">
-                      {l.sliderValues?.[s.id] ?? '-'}
-                    </td>
+                    <th key={s.id} className="py-2.5 px-3 text-center">
+                      {s.label}
+                    </th>
                   ))}
-                  <td className="py-2.5 px-3 text-slate-600 max-w-xs truncate">
-                    {l.memo || '-'}
-                  </td>
+                  <th className="py-2.5 px-3">メモ</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {sortedDaily.length > 0 ? (
+                  sortedDaily.slice().reverse().map((l) => (
+                    <tr key={l.id} className="hover:bg-slate-50">
+                      <td className="py-2.5 px-3 font-mono font-bold text-slate-800 whitespace-nowrap">
+                        {l.date}
+                      </td>
+                      {tenant.dailyConfig.enableCondition && (
+                        <td className="py-2.5 px-3 text-center text-sm">
+                          {l.condition === 'great'
+                            ? '😄 絶好調'
+                            : l.condition === 'good'
+                            ? '🙂 良好'
+                            : l.condition === 'okay'
+                            ? '😐 普通'
+                            : l.condition === 'tired'
+                            ? '😫 倦怠感'
+                            : '🤒 微熱'}
+                        </td>
+                      )}
+                      {tenant.dailyConfig.enableEnergy && (
+                        <td className="py-2.5 px-3 text-center font-bold font-mono" style={{ color: tenant.theme.accentColor }}>
+                          {l.energyLevel ?? 80}%
+                        </td>
+                      )}
+                      {numericDefs.map((n) => (
+                        <td key={n.id} className="py-2.5 px-3 text-right font-mono font-bold text-slate-700">
+                          {l.numericValues?.[n.id] ?? '-'}
+                        </td>
+                      ))}
+                      {sliderDefs.map((s) => (
+                        <td key={s.id} className="py-2.5 px-3 text-center font-mono text-slate-600">
+                          {l.sliderValues?.[s.id] ?? '-'}
+                        </td>
+                      ))}
+                      <td className="py-2.5 px-3 text-slate-600 max-w-xs truncate">
+                        {l.memo || '-'}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={10} className="py-8 text-center text-slate-400 text-xs">
+                      まだ日々の記録がありません。
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* TAB 2: Periodic Evaluations Table */}
+        {historySubTab === 'eval' && (
+          <div className="overflow-x-auto border border-slate-200 rounded-2xl max-h-96">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead className="sticky top-0 bg-slate-100 text-slate-600 font-bold border-b border-slate-200 z-10">
+                <tr>
+                  <th className="py-2.5 px-3">測定日</th>
+                  <th className="py-2.5 px-3">測定者 / 評価者</th>
+                  <th className="py-2.5 px-3">測定項目・スコア数値</th>
+                  <th className="py-2.5 px-3">{tenant.evalConfig.adviceLabel || 'アドバイス・所見'}</th>
+                  <th className="py-2.5 px-3">{tenant.evalConfig.goalLabel || '次回目標'}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {sortedEvals.length > 0 ? (
+                  sortedEvals.slice().reverse().map((ev) => (
+                    <tr key={ev.id} className="hover:bg-slate-50">
+                      <td className="py-3 px-3 font-mono font-bold text-indigo-700 whitespace-nowrap">
+                        {ev.date}
+                      </td>
+                      <td className="py-3 px-3 font-bold text-slate-800 whitespace-nowrap">
+                        {ev.evaluator || '専任スタッフ'}
+                      </td>
+                      <td className="py-3 px-3 text-slate-700">
+                        <div className="flex flex-wrap gap-1.5 max-w-sm">
+                          {evalDefs.map((def) => {
+                            const val = ev.metricValues?.[def.id];
+                            if (val === undefined || val === null || val === '') return null;
+                            return (
+                              <span
+                                key={def.id}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-indigo-50 border border-indigo-200/60 text-[10px] text-indigo-900 font-bold"
+                              >
+                                <span>{def.label}:</span>
+                                <span className="font-mono text-indigo-700">{val} {def.unit}</span>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </td>
+                      <td className="py-3 px-3 text-slate-700 max-w-xs">
+                        <div className="line-clamp-2 text-xs">{ev.advice || '-'}</div>
+                      </td>
+                      <td className="py-3 px-3 font-bold text-amber-700 max-w-xs">
+                        <div className="line-clamp-2 text-xs">{ev.nextGoal || '-'}</div>
+                      </td>
+                    </tr>
+                  ))
+                ) : legacyPtDocks.length > 0 ? (
+                  /* Legacy PT Docks fallback for Hisako */
+                  legacyPtDocks.map((d) => (
+                    <tr key={d.id} className="hover:bg-slate-50">
+                      <td className="py-3 px-3 font-mono font-bold text-indigo-700 whitespace-nowrap">
+                        {d.date}
+                      </td>
+                      <td className="py-3 px-3 font-bold text-slate-800 whitespace-nowrap">
+                        {d.evaluator}
+                      </td>
+                      <td className="py-3 px-3 text-slate-700">
+                        <div className="flex flex-wrap gap-1.5 max-w-sm text-[10px]">
+                          <span className="px-2 py-0.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-900 font-bold">
+                            CS-30: <strong className="font-mono">{d.functional.cs30Count}回</strong>
+                          </span>
+                          <span className="px-2 py-0.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-900 font-bold">
+                            MMT: <strong className="font-mono">{d.mmt.tibialisAnterior}</strong>
+                          </span>
+                          <span className="px-2 py-0.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-900 font-bold">
+                            ロンベルグ: {d.functional.rombergTest === 'pass' ? '陰性' : '動揺'}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-900 font-bold">
+                            下腿周囲: 右{d.calfCircumference.rightCm} / 左{d.calfCircumference.leftCm}cm
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-3 text-slate-700 max-w-xs">
+                        <div className="line-clamp-2 text-xs">{d.kazuhiroAdvice || '-'}</div>
+                      </td>
+                      <td className="py-3 px-3 font-bold text-amber-700 max-w-xs">
+                        <div className="line-clamp-2 text-xs">{d.nextGoal || '-'}</div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-slate-400 text-xs">
+                      定期測定・評価の履歴がまだ登録されていません。Pro Partner画面から測定記録を入力できます。
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

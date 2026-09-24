@@ -78,18 +78,28 @@ export const getCustomers = (): Customer[] => {
     const parsed: Customer[] = JSON.parse(raw);
     if (!parsed || parsed.length === 0) return INITIAL_CUSTOMERS;
 
-    // Ensure cust-hisa-01 is preserved as Hisako
+    // Ensure cust-hisa-01 is preserved as Hisako and has EGPA medicalCondition
     let modified = false;
     const migrated = parsed.map((c) => {
-      if (c.id === 'cust-hisa-01' && c.name === 'あおい') {
-        modified = true;
-        return {
-          ...c,
-          name: 'ひさこ',
-          nickname: 'ひさこさん',
-        };
+      let updated = { ...c };
+      if (c.id === 'cust-hisa-01') {
+        if (c.name === 'あおい') {
+          updated.name = 'ひさこ';
+          updated.nickname = 'ひさこさん';
+          modified = true;
+        }
+        if (!c.medicalCondition) {
+          updated.medicalCondition = '好酸球性多発血管炎性肉芽腫症 (EGPA)';
+          modified = true;
+        }
+      } else if (!c.medicalCondition) {
+        const init = INITIAL_CUSTOMERS.find((i) => i.id === c.id);
+        if (init?.medicalCondition) {
+          updated.medicalCondition = init.medicalCondition;
+          modified = true;
+        }
       }
-      return c;
+      return updated;
     });
 
     if (modified) {
@@ -108,6 +118,21 @@ export const saveCustomers = (customers: Customer[]): void => {
   } catch (e) {
     console.error('Failed to save customers:', e);
   }
+};
+
+// Update Single Customer
+export const updateCustomer = (updatedCustomer: Customer): Customer[] => {
+  const current = getCustomers();
+  const index = current.findIndex((c) => c.id === updatedCustomer.id);
+  let updatedList: Customer[];
+  if (index >= 0) {
+    updatedList = [...current];
+    updatedList[index] = updatedCustomer;
+  } else {
+    updatedList = [...current, updatedCustomer];
+  }
+  saveCustomers(updatedList);
+  return updatedList;
 };
 
 // Active Tenant ID
@@ -272,4 +297,66 @@ export const saveGenericEvalRecords = (customerId: string, records: GenericEvalR
   } catch (e) {
     console.error('Failed to save generic eval records', e);
   }
+};
+
+// Update or add a single daily log
+export const updateGenericDailyLog = (
+  customerId: string,
+  tenantId: string,
+  log: GenericDailyLog
+): GenericDailyLog[] => {
+  const current = getGenericDailyLogs(customerId, tenantId);
+  const idx = current.findIndex((l) => l.id === log.id || l.date === log.date);
+  let updated: GenericDailyLog[];
+  if (idx >= 0) {
+    updated = [...current];
+    updated[idx] = log;
+  } else {
+    updated = [log, ...current];
+  }
+  saveGenericDailyLogs(customerId, updated);
+  return updated;
+};
+
+// Delete a single daily log
+export const deleteGenericDailyLog = (
+  customerId: string,
+  tenantId: string,
+  logId: string
+): GenericDailyLog[] => {
+  const current = getGenericDailyLogs(customerId, tenantId);
+  const updated = current.filter((l) => l.id !== logId);
+  saveGenericDailyLogs(customerId, updated);
+  return updated;
+};
+
+// Update or add a single eval record
+export const updateGenericEvalRecord = (
+  customerId: string,
+  tenantId: string,
+  record: GenericEvalRecord
+): GenericEvalRecord[] => {
+  const current = getGenericEvalRecords(customerId, tenantId);
+  const idx = current.findIndex((r) => r.id === record.id || r.date === record.date);
+  let updated: GenericEvalRecord[];
+  if (idx >= 0) {
+    updated = [...current];
+    updated[idx] = record;
+  } else {
+    updated = [...current, record];
+  }
+  saveGenericEvalRecords(customerId, updated);
+  return updated;
+};
+
+// Delete a single eval record
+export const deleteGenericEvalRecord = (
+  customerId: string,
+  tenantId: string,
+  recordId: string
+): GenericEvalRecord[] => {
+  const current = getGenericEvalRecords(customerId, tenantId);
+  const updated = current.filter((r) => r.id !== recordId);
+  saveGenericEvalRecords(customerId, updated);
+  return updated;
 };
