@@ -32,6 +32,13 @@ import {
   deleteGenericEvalRecord,
   updateCustomer as persistCustomer,
 } from '../utils/tenantStorage';
+import {
+  saveCustomerToFirestore,
+  saveGenericDailyLogToFirestore,
+  deleteGenericDailyLogFromFirestore,
+  saveGenericEvalRecordToFirestore,
+  deleteGenericEvalRecordFromFirestore,
+} from '../firebase/firestoreService';
 
 interface ProviderAdminViewProps {
   tenant: Tenant;
@@ -207,10 +214,15 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
   };
 
   // Save Customer Profile Edit
-  const handleSaveCustomerEdit = (e: React.FormEvent) => {
+  const handleSaveCustomerEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingCustomer) return;
     persistCustomer(editingCustomer);
+    try {
+      await saveCustomerToFirestore(editingCustomer);
+    } catch (err) {
+      console.warn('Firestore customer edit sync:', err);
+    }
     if (onUpdateCustomer) {
       onUpdateCustomer(editingCustomer);
     }
@@ -219,7 +231,7 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
   };
 
   // Save Edited Daily Log
-  const handleSaveEditedDailyLog = (e: React.FormEvent) => {
+  const handleSaveEditedDailyLog = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!recordsTargetCustomer || !editingDailyLog) return;
     const updated = updateGenericDailyLog(
@@ -228,12 +240,17 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
       editingDailyLog
     );
     setCustDailyLogs(updated);
+    try {
+      await saveGenericDailyLogToFirestore(editingDailyLog);
+    } catch (err) {
+      console.warn('Firestore daily log edit sync:', err);
+    }
     setEditingDailyLog(null);
     if (onRefreshRecords) onRefreshRecords();
   };
 
   // Delete Daily Log
-  const handleDeleteDailyLog = (logId: string) => {
+  const handleDeleteDailyLog = async (logId: string) => {
     if (!recordsTargetCustomer) return;
     if (!window.confirm('この日の記録を削除してもよろしいですか？')) return;
     const updated = deleteGenericDailyLog(
@@ -242,11 +259,16 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
       logId
     );
     setCustDailyLogs(updated);
+    try {
+      await deleteGenericDailyLogFromFirestore(recordsTargetCustomer.id, logId);
+    } catch (err) {
+      console.warn('Firestore daily log delete sync:', err);
+    }
     if (onRefreshRecords) onRefreshRecords();
   };
 
   // Save Edited Eval Record
-  const handleSaveEditedEvalRecord = (e: React.FormEvent) => {
+  const handleSaveEditedEvalRecord = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!recordsTargetCustomer || !editingEvalRecord) return;
     const updated = updateGenericEvalRecord(
@@ -255,12 +277,17 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
       editingEvalRecord
     );
     setCustEvalRecords(updated);
+    try {
+      await saveGenericEvalRecordToFirestore(editingEvalRecord);
+    } catch (err) {
+      console.warn('Firestore eval record edit sync:', err);
+    }
     setEditingEvalRecord(null);
     if (onRefreshRecords) onRefreshRecords();
   };
 
   // Delete Eval Record
-  const handleDeleteEvalRecord = (recordId: string) => {
+  const handleDeleteEvalRecord = async (recordId: string) => {
     if (!recordsTargetCustomer) return;
     if (!window.confirm('この定期評価レコードを削除してもよろしいですか？')) return;
     const updated = deleteGenericEvalRecord(
@@ -269,6 +296,11 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
       recordId
     );
     setCustEvalRecords(updated);
+    try {
+      await deleteGenericEvalRecordFromFirestore(recordsTargetCustomer.id, recordId);
+    } catch (err) {
+      console.warn('Firestore eval record delete sync:', err);
+    }
     if (onRefreshRecords) onRefreshRecords();
   };
 

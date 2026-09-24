@@ -48,6 +48,15 @@ import {
   subscribePTDocks,
   subscribeConcertGoal,
   saveConcertGoalToFirestore,
+  subscribeTenants,
+  saveTenantToFirestore,
+  subscribeCustomers,
+  saveCustomerToFirestore,
+  subscribeAllGenericDailyLogs,
+  saveGenericDailyLogToFirestore,
+  subscribeAllGenericEvalRecords,
+  saveGenericEvalRecordToFirestore,
+  syncAllLocalDataToFirestore,
 } from './firebase/firestoreService';
 
 export const App: React.FC = () => {
@@ -171,8 +180,53 @@ export const App: React.FC = () => {
     }
   }, [activeCustomer, activeTenant]);
 
-  // Firestore real-time listeners for legacy HISA-CARAT
+  // Master Firestore real-time listeners for all SaaS data
   useEffect(() => {
+    // 1. Sync & listen Tenants
+    const unsubTenants = subscribeTenants(
+      (remoteTenants) => {
+        if (remoteTenants && remoteTenants.length > 0) {
+          setTenants(remoteTenants);
+          saveTenants(remoteTenants);
+          setCloudStatus('synced');
+        }
+      },
+      () => setCloudStatus('offline')
+    );
+
+    // 2. Sync & listen Customers
+    const unsubCustomers = subscribeCustomers(
+      (remoteCustomers) => {
+        if (remoteCustomers && remoteCustomers.length > 0) {
+          setCustomers(remoteCustomers);
+          saveCustomers(remoteCustomers);
+          setCloudStatus('synced');
+        }
+      },
+      () => setCloudStatus('offline')
+    );
+
+    // 3. Sync & listen Generic Daily Logs
+    const unsubDailyLogs = subscribeAllGenericDailyLogs(
+      (remoteLogs) => {
+        if (remoteLogs && remoteLogs.length > 0) {
+          setCloudStatus('synced');
+        }
+      },
+      () => setCloudStatus('offline')
+    );
+
+    // 4. Sync & listen Generic Eval Records
+    const unsubEvalRecords = subscribeAllGenericEvalRecords(
+      (remoteEvals) => {
+        if (remoteEvals && remoteEvals.length > 0) {
+          setCloudStatus('synced');
+        }
+      },
+      () => setCloudStatus('offline')
+    );
+
+    // 5. Legacy HISA-CARAT listeners
     const unsubDaily = subscribeDailyLogs(
       (remoteLogs) => {
         setLegacyDailyLogs(remoteLogs);
@@ -200,7 +254,21 @@ export const App: React.FC = () => {
       () => setCloudStatus('offline')
     );
 
+    // 6. Auto-seed: immediately upload all local data to Firestore if not yet populated
+    syncAllLocalDataToFirestore()
+      .then((res) => {
+        console.log('🔥 Initial Firestore sync completed:', res);
+        setCloudStatus('synced');
+      })
+      .catch((err) => {
+        console.warn('Initial Firestore sync notice:', err);
+      });
+
     return () => {
+      unsubTenants();
+      unsubCustomers();
+      unsubDailyLogs();
+      unsubEvalRecords();
       unsubDaily();
       unsubPT();
       unsubGoal();
@@ -289,14 +357,20 @@ export const App: React.FC = () => {
   };
 
   // Save updated tenant (from Provider view)
-  const handleSaveTenant = (updatedTenant: Tenant) => {
+  const handleSaveTenant = async (updatedTenant: Tenant) => {
     const updated = tenants.map((t) => (t.id === updatedTenant.id ? updatedTenant : t));
     setTenants(updated);
     saveTenants(updated);
+    try {
+      await saveTenantToFirestore(updatedTenant);
+      setCloudStatus('synced');
+    } catch (err) {
+      console.warn('Firestore tenant save notice:', err);
+    }
   };
 
   // Create new tenant (from Admin view)
-  const handleCreateTenant = (newTenant: Tenant) => {
+  const handleCreateTenant = async (newTenant: Tenant) => {
     const updated = [newTenant, ...tenants];
     setTenants(updated);
     saveTenants(updated);
@@ -317,24 +391,62 @@ export const App: React.FC = () => {
     saveCustomers(updatedCustomers);
     setActiveCustomerId(defaultCust.id);
     saveActiveCustomerId(defaultCust.id);
+
+    try {
+      await saveTenantToFirestore(newTenant);
+      await saveCustomerToFirestore(defaultCust);
+      setCloudStatus('synced');
+    } catch (err) {
+      console.warn('Firestore tenant create notice:', err);
+    }
   };
 
   // Create new customer (from Provider view)
-  const handleCreateCustomer = (newCustomer: Customer) => {
+  const handleCreateCustomer = async (newCustomer: Customer) => {
     const updated = [...customers, newCustomer];
     setCustomers(updated);
     saveCustomers(updated);
     setActiveCustomerId(newCustomer.id);
     saveActiveCustomerId(newCustomer.id);
+    try {
+      await saveCustomerToFirestore(newCustomer);
+      setCloudStatus('synced');
+    } catch (err) {
+      console.warn('Firestore customer create notice:', err);
+    }
   };
 
   // Update existing customer (from Provider view)
-  const handleUpdateCustomer = (updatedCustomer: Customer) => {
+  const handleUpdateCustomer = async (updatedCustomer: Customer) => {
     const updated = customers.map((c) =>
       c.id === updatedCustomer.id ? updatedCustomer : c
     );
     setCustomers(updated);
     saveCustomers(updated);
+    try {
+      await saveCustomerToFirestore(updatedCustomer);
+      setCloudStatus('synced');
+    } catch (err) {
+      console.warn('Firestore customer update notice:', err);
+    }
+  };
+
+  // Manual one-click sync all local data to Firestore
+  const [isSyncingAll, setIsSyncingAll] = useState(false);
+  const handleManualSyncFirestore = async () => {
+    setIsSyncingAll(true);
+    setCloudStatus('syncing');
+    try {
+      const result = await syncAllLocalDataToFirestore();
+      setCloudStatus('synced');
+      alert(`🎉 Firebase (Firestore) への全データ同期が完了しました！\n\n・事業者(Tenants): ${result.tenantsCount}件\n・顧客(Customers): ${result.customersCount}件\n・日々の記録(Daily Logs): ${result.dailyLogsCount}件\n・定期評価(Eval Records): ${result.evalRecordsCount}件\n\nFirestoreコンソールでもコレクションが作成され確認できます。`);
+    } catch (err) {
+      console.error('Manual Firestore sync error:', err);
+      setCloudStatus('offline');
+      alert('⚠️ Firebaseへの同期中にエラーが発生しました。インターネット接続およびFirebaseコンソールのセキュリティルールをご確認ください。');
+    } finally {
+      setIsSyncingAll(false);
+    }
   };
 
   // Refresh active records for current customer & tenant
@@ -359,6 +471,14 @@ export const App: React.FC = () => {
     }
     setGenericDailyLogs(updated);
     saveGenericDailyLogs(activeCustomer.id, updated);
+
+    // Save to Firestore generic daily logs collection
+    try {
+      await saveGenericDailyLogToFirestore(newLog);
+      setCloudStatus('synced');
+    } catch (err) {
+      console.warn('Firestore generic log sync notice:', err);
+    }
 
     if (activeCustomer.id === 'cust-hisa-01') {
       try {
@@ -394,7 +514,7 @@ export const App: React.FC = () => {
   };
 
   // Save Generic Eval Record
-  const handleSaveGenericEvalRecord = (newRecord: GenericEvalRecord) => {
+  const handleSaveGenericEvalRecord = async (newRecord: GenericEvalRecord) => {
     const existingIndex = genericEvalRecords.findIndex((r) => r.id === newRecord.id);
     let updated: GenericEvalRecord[];
     if (existingIndex >= 0) {
@@ -405,6 +525,14 @@ export const App: React.FC = () => {
     }
     setGenericEvalRecords(updated);
     saveGenericEvalRecords(activeCustomer.id, updated);
+
+    // Save to Firestore generic eval records collection
+    try {
+      await saveGenericEvalRecordToFirestore(newRecord);
+      setCloudStatus('synced');
+    } catch (err) {
+      console.warn('Firestore generic eval sync notice:', err);
+    }
   };
 
   // Avatar Style selector
@@ -455,6 +583,9 @@ export const App: React.FC = () => {
         currentUser={currentUser}
         onOpenLoginModal={() => setIsLoginModalOpen(true)}
         onLogout={handleLogout}
+        cloudStatus={cloudStatus}
+        onSyncFirestore={handleManualSyncFirestore}
+        isSyncingFirestore={isSyncingAll}
       />
 
       {/* 2. Page View according to Current Mode & Permissions */}

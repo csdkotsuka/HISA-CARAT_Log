@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Building2, User, ChevronRight, LogIn, LogOut, ArrowRightLeft } from 'lucide-react';
+import { ShieldCheck, Building2, User, ChevronRight, LogIn, LogOut, ArrowRightLeft, RefreshCw } from 'lucide-react';
 import type { AppMode } from '../utils/tenantStorage';
 import type { Tenant, Customer } from '../types/tenant';
 import type { AuthUser } from '../types/auth';
@@ -17,6 +17,9 @@ interface RoleNavigationHeaderProps {
   currentUser: AuthUser | null;
   onOpenLoginModal: () => void;
   onLogout: () => void;
+  cloudStatus?: 'synced' | 'syncing' | 'offline';
+  onSyncFirestore?: () => void;
+  isSyncingFirestore?: boolean;
 }
 
 export const RoleNavigationHeader: React.FC<RoleNavigationHeaderProps> = ({
@@ -31,6 +34,9 @@ export const RoleNavigationHeader: React.FC<RoleNavigationHeaderProps> = ({
   currentUser,
   onOpenLoginModal,
   onLogout,
+  cloudStatus = 'synced',
+  onSyncFirestore,
+  isSyncingFirestore = false,
 }) => {
   const userRole = currentUser?.role || 'customer';
   const roleMeta = currentUser ? ROLE_DEFINITIONS[userRole] : ROLE_DEFINITIONS.customer;
@@ -56,10 +62,23 @@ export const RoleNavigationHeader: React.FC<RoleNavigationHeaderProps> = ({
             </span>
           </div>
 
-          {/* Right: User Status & Account switch button */}
+          {/* Right: User Status, Cloud Sync & Account switch button */}
           <div className="flex items-center gap-2">
+            {onSyncFirestore && (
+              <button
+                type="button"
+                onClick={onSyncFirestore}
+                disabled={isSyncingFirestore}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-950/80 border border-indigo-700 hover:bg-indigo-900 text-indigo-200 text-[10px] font-bold transition-all shadow-xs disabled:opacity-50"
+                title="ローカルの全データをFirebase (Firestore) に即時同期"
+              >
+                <RefreshCw className={`w-3 h-3 ${isSyncingFirestore ? 'animate-spin text-amber-400' : 'text-indigo-400'}`} />
+                <span>{isSyncingFirestore ? '同期中...' : '🔥 Firebase同期'}</span>
+              </button>
+            )}
+
             <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-[11px]">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className={`w-2 h-2 rounded-full ${cloudStatus === 'synced' ? 'bg-emerald-400 animate-pulse' : cloudStatus === 'syncing' ? 'bg-amber-400 animate-spin' : 'bg-rose-400'}`} />
               <span className="text-slate-300 font-medium">{currentUser?.email}</span>
             </div>
 
@@ -184,8 +203,26 @@ export const RoleNavigationHeader: React.FC<RoleNavigationHeaderProps> = ({
             </select>
           </div>
 
-          {/* User profile & Login switcher */}
+          {/* User profile, Cloud Sync & Login switcher */}
           <div className="flex items-center gap-1.5">
+            {onSyncFirestore && (
+              <button
+                type="button"
+                onClick={onSyncFirestore}
+                disabled={isSyncingFirestore}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-indigo-950/80 border border-indigo-700 hover:bg-indigo-900 text-indigo-200 text-xs font-bold transition-all shadow-xs disabled:opacity-50"
+                title="ローカルの全データ(テナント・顧客・日報・評価)をFirebase (Firestore) に即時同期"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isSyncingFirestore ? 'animate-spin text-amber-400' : 'text-indigo-400'}`} />
+                <span>{isSyncingFirestore ? '同期中...' : '🔥 Firebase同期'}</span>
+              </button>
+            )}
+
+            <div className="hidden xl:flex items-center gap-1.5 px-2 py-1 rounded bg-slate-800/80 border border-slate-700 text-[10px]">
+              <span className={`w-2 h-2 rounded-full ${cloudStatus === 'synced' ? 'bg-emerald-400 animate-pulse' : cloudStatus === 'syncing' ? 'bg-amber-400 animate-spin' : 'bg-rose-400'}`} />
+              <span className="text-slate-400">{cloudStatus === 'synced' ? 'Cloud同期済' : cloudStatus === 'syncing' ? '同期中' : 'オフライン'}</span>
+            </div>
+
             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 border border-slate-700 text-slate-300 hidden lg:inline">
               {currentUser?.name} ({roleMeta.badge})
             </span>
