@@ -440,10 +440,22 @@ export const App: React.FC = () => {
       const result = await syncAllLocalDataToFirestore();
       setCloudStatus('synced');
       alert(`🎉 Firebase (Firestore) への全データ同期が完了しました！\n\n・事業者(Tenants): ${result.tenantsCount}件\n・顧客(Customers): ${result.customersCount}件\n・日々の記録(Daily Logs): ${result.dailyLogsCount}件\n・定期評価(Eval Records): ${result.evalRecordsCount}件\n\nFirestoreコンソールでもコレクションが作成され確認できます。`);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Manual Firestore sync error:', err);
       setCloudStatus('offline');
-      alert('⚠️ Firebaseへの同期中にエラーが発生しました。インターネット接続およびFirebaseコンソールのセキュリティルールをご確認ください。');
+      const errCode = err?.code || 'unknown';
+      const errMsg = err?.message || String(err);
+      
+      let hint = '';
+      if (errCode === 'permission-denied' || errMsg.includes('insufficient permissions')) {
+        hint = '【原因】Firestoreのセキュリティルールで書き込みが拒否されています。\nFirebase Console > Firestore Database >「ルール」タブで、\nallow read, write: if true; に設定し「公開」してください。';
+      } else if (errCode === 'not-found' || errMsg.includes('not exist')) {
+        hint = '【原因】Firestoreデータベースがまだ作成されていません。\nFirebase Console >「Firestore Database」を開き、「データベースの作成」を実行してください。';
+      } else {
+        hint = 'Firebaseコンソールの設定（Firestore Databaseの作成状態・セキュリティルール）をご確認ください。';
+      }
+
+      alert(`⚠️ Firebaseへの同期エラー\n\n[エラー]: ${errCode}\n${errMsg}\n\n${hint}`);
     } finally {
       setIsSyncingAll(false);
     }
