@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { RoleNavigationHeader } from './components/RoleNavigationHeader';
 import { AdminPlatformView } from './components/AdminPlatformView';
 import { ProviderAdminView } from './components/ProviderAdminView';
 import { CustomerPortalView } from './components/CustomerPortalView';
 import { LoginModal } from './components/LoginModal';
+import { ProPartnerLandingPage } from './components/pages/ProPartnerLandingPage';
+import { MyLoungeGuidePage } from './components/pages/MyLoungeGuidePage';
 import type { Tenant, Customer, GenericDailyLog, GenericEvalRecord } from './types/tenant';
 import type { AppMode } from './utils/tenantStorage';
 import type { AuthUser } from './types/auth';
@@ -53,8 +55,23 @@ export const App: React.FC = () => {
   const [currentUser, setCurrentUserState] = useState<AuthUser | null>(getCurrentUser());
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
+  // Subpage for PR/Guides: 'none' | 'pr-partner' | 'guide-lounge'
+  const [subPage, setSubPage] = useState<'none' | 'pr-partner' | 'guide-lounge'>(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const p = params.get('page');
+      if (p === 'pr-partner' || p === 'guide-lounge') return p;
+    } catch {}
+    return 'none';
+  });
+
   // Mode: 'admin' | 'provider' | 'customer'
   const [appMode, setAppMode] = useState<AppMode>(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const m = params.get('mode');
+      if (m === 'admin' || m === 'provider' || m === 'customer') return m;
+    } catch {}
     const user = getCurrentUser();
     if (user?.role === 'customer') return 'customer';
     if (user?.role === 'provider') return 'provider';
@@ -65,14 +82,24 @@ export const App: React.FC = () => {
   const [tenants, setTenants] = useState<Tenant[]>(getTenants());
   const [customers, setCustomers] = useState<Customer[]>(getCustomers());
 
-  // Active Selected IDs
+  // Active Selected IDs (URL query has precedence)
   const [activeTenantId, setActiveTenantId] = useState<string>(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const t = params.get('tenant');
+      if (t) return t;
+    } catch {}
     const user = getCurrentUser();
     if (user?.tenantId) return user.tenantId;
     return getActiveTenantId();
   });
 
   const [activeCustomerId, setActiveCustomerId] = useState<string>(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const c = params.get('customer') || params.get('user');
+      if (c) return c;
+    } catch {}
     const user = getCurrentUser();
     if (user?.customerId) return user.customerId;
     return getActiveCustomerId();
@@ -100,6 +127,39 @@ export const App: React.FC = () => {
     tenantCustomers.find((c) => c.id === activeCustomerId) ||
     tenantCustomers[0] ||
     customers[0];
+
+  // Sync state to URL with tenant & customer IDs for shareable/bookmarkable URLs
+  const updateUrl = useCallback(
+    (page: string, mode: string, tenantId: string, customerId: string) => {
+      try {
+        const url = new URL(window.location.href);
+        if (page !== 'none') {
+          url.searchParams.set('page', page);
+        } else {
+          url.searchParams.delete('page');
+          url.searchParams.set('mode', mode);
+          if (mode === 'provider' || mode === 'customer') {
+            url.searchParams.set('tenant', tenantId);
+          } else {
+            url.searchParams.delete('tenant');
+          }
+          if (mode === 'customer') {
+            url.searchParams.set('customer', customerId);
+          } else {
+            url.searchParams.delete('customer');
+          }
+        }
+        window.history.replaceState({}, '', url.toString());
+      } catch (e) {
+        console.warn('URL update note:', e);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    updateUrl(subPage, appMode, activeTenant.id, activeCustomer.id);
+  }, [subPage, appMode, activeTenant.id, activeCustomer.id, updateUrl]);
 
   // Refresh logs when active customer or tenant changes
   useEffect(() => {
@@ -151,6 +211,7 @@ export const App: React.FC = () => {
   const handleLogin = (user: AuthUser) => {
     setCurrentUserState(user);
     setCurrentUser(user);
+    setSubPage('none');
 
     if (user.role === 'customer') {
       setAppMode('customer');
@@ -184,14 +245,13 @@ export const App: React.FC = () => {
 
   // Mode switcher with strict role check
   const handleSwitchMode = (mode: AppMode) => {
+    setSubPage('none');
     if (currentUser?.role === 'customer') {
-      // Customer is locked to customer portal
       setAppMode('customer');
       saveAppMode('customer');
       return;
     }
     if (currentUser?.role === 'provider' && mode === 'admin') {
-      // Provider cannot enter admin
       return;
     }
     setAppMode(mode);
@@ -203,7 +263,6 @@ export const App: React.FC = () => {
     setActiveTenantId(tenantId);
     saveActiveTenantId(tenantId);
 
-    // Switch to first customer of this tenant if current customer doesn't belong
     const currentBelongs = customers.some(
       (c) => c.id === activeCustomerId && c.tenantId === tenantId
     );
@@ -244,7 +303,6 @@ export const App: React.FC = () => {
     setActiveTenantId(newTenant.id);
     saveActiveTenantId(newTenant.id);
 
-    // Automatically create a default customer for the new tenant
     const defaultCust: Customer = {
       id: `cust-${newTenant.id.replace('tenant-', '')}-01`,
       tenantId: newTenant.id,
@@ -283,7 +341,6 @@ export const App: React.FC = () => {
     setGenericDailyLogs(updated);
     saveGenericDailyLogs(activeCustomer.id, updated);
 
-    // If active customer is Hisako in Carat, also sync to Firestore
     if (activeCustomer.id === 'cust-hisa-01') {
       try {
         const legacyFormat: DailyLog = {
@@ -355,9 +412,18 @@ export const App: React.FC = () => {
     ? 'provider'
     : appMode;
 
+  // Render Subpage (PR landing or User Guide) if requested
+  if (subPage === 'pr-partner') {
+    return <ProPartnerLandingPage onBackToAdmin={() => setSubPage('none')} />;
+  }
+
+  if (subPage === 'guide-lounge') {
+    return <MyLoungeGuidePage onBackToApp={() => setSubPage('none')} />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased selection:bg-pink-200">
-      {/* 1. Global Role Navigation & ID Linkage Bar (With permission checks) */}
+      {/* 1. Global Role Navigation & ID Linkage Bar */}
       <RoleNavigationHeader
         currentMode={effectiveMode}
         onSwitchMode={handleSwitchMode}
@@ -390,6 +456,8 @@ export const App: React.FC = () => {
             }}
             onCreateTenant={handleCreateTenant}
             activeTenantId={activeTenantId}
+            onOpenPrPartnerPage={() => setSubPage('pr-partner')}
+            onOpenMyLoungeGuidePage={() => setSubPage('guide-lounge')}
           />
         </div>
       )}
