@@ -16,9 +16,16 @@ import {
   Save,
   Check,
   Zap,
+  FileText,
+  ToggleLeft,
+  ToggleRight,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
-import type { Tenant, Customer, IndustryType } from '../types/tenant';
+import type { Tenant, Customer, IndustryType, PublicTemplate } from '../types/tenant';
 import { COLOR_THEMES } from '../data/tenantPresets';
+import { getPublicTemplates, savePublicTemplates } from '../data/publicTemplates';
+
 import {
   getGeminiApiKey,
   saveGeminiApiKey,
@@ -53,6 +60,37 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndustry, setSelectedIndustry] = useState<string>('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // Public Templates management
+  const [publicTemplates, setPublicTemplates] = useState<PublicTemplate[]>(() => getPublicTemplates());
+  const [expandedTemplateId, setExpandedTemplateId] = useState<string | null>(null);
+
+  const handleToggleTemplateActive = (id: string) => {
+    const updated = publicTemplates.map((t) =>
+      t.id === id ? { ...t, isActive: !t.isActive, updatedAt: new Date().toISOString().slice(0, 10) } : t
+    );
+    setPublicTemplates(updated);
+    savePublicTemplates(updated);
+  };
+
+  const handleMoveSortOrder = (id: string, direction: 'up' | 'down') => {
+    const idx = publicTemplates.findIndex((t) => t.id === id);
+    if (idx < 0) return;
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= publicTemplates.length) return;
+    const updated = [...publicTemplates];
+    [updated[idx], updated[swapIdx]] = [updated[swapIdx], updated[idx]];
+    updated.forEach((t, i) => { t.sortOrder = i + 1; });
+    setPublicTemplates(updated);
+    savePublicTemplates(updated);
+  };
+
+  const handleResetTemplates = () => {
+    if (!window.confirm('テンプレートをデフォルトにリセットします。現在の変更は失われます。よろしいですか？')) return;
+    localStorage.removeItem('cheer_public_templates_v1');
+    const fresh = getPublicTemplates();
+    setPublicTemplates(fresh);
+  };
 
   // Gemini settings
   const [geminiApiKey, setGeminiApiKey] = useState(getGeminiApiKey());
@@ -447,6 +485,140 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
             </button>
           </div>
         )}
+      </div>
+
+      {/* ── コンシューマー向け公開テンプレート管理 ─────────────── */}
+      <div className="glass-card rounded-3xl p-6 border border-violet-200/60 bg-gradient-to-br from-violet-50/60 to-indigo-50/40 shadow-sm space-y-4">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-violet-100 pb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-violet-500 to-indigo-500 flex items-center justify-center text-xl shadow-md">
+              <FileText className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="text-base font-extrabold text-slate-800 tracking-tight">
+                コンシューマー向け 公開テンプレート管理
+              </h3>
+              <p className="text-xs text-slate-500">
+                新規ユーザーが自己登録時に選べるテンプレートを管理します。業者（テナント）とは独立したコレクションです。
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-violet-700 font-bold bg-violet-100 px-3 py-1.5 rounded-xl border border-violet-200">
+              {publicTemplates.filter((t) => t.isActive).length} / {publicTemplates.length} 件 有効
+            </span>
+            <button
+              onClick={handleResetTemplates}
+              className="text-xs text-slate-500 hover:text-rose-600 underline underline-offset-2 px-2 py-1 transition-colors"
+            >
+              デフォルトに戻す
+            </button>
+          </div>
+        </div>
+
+        {/* Template List */}
+        <div className="space-y-2">
+          {publicTemplates.map((tmpl, idx) => (
+            <div
+              key={tmpl.id}
+              className={`rounded-2xl border transition-all overflow-hidden ${
+                tmpl.isActive
+                  ? 'border-violet-200 bg-white'
+                  : 'border-slate-200 bg-slate-50 opacity-60'
+              }`}
+            >
+              {/* Row Header */}
+              <div className="flex items-center gap-3 px-4 py-3">
+                {/* Sort Arrows */}
+                <div className="flex flex-col gap-0.5">
+                  <button
+                    onClick={() => handleMoveSortOrder(tmpl.id, 'up')}
+                    disabled={idx === 0}
+                    className="text-slate-300 hover:text-slate-600 disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed"
+                    title="上へ"
+                  >
+                    <ChevronUp className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleMoveSortOrder(tmpl.id, 'down')}
+                    disabled={idx === publicTemplates.length - 1}
+                    className="text-slate-300 hover:text-slate-600 disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed"
+                    title="下へ"
+                  >
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Emoji + Name */}
+                <div className="text-2xl">{tmpl.emoji}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-slate-800 text-sm">{tmpl.name}</div>
+                  <div className="text-[11px] text-slate-500 truncate">{tmpl.description}</div>
+                </div>
+
+                {/* Category badge */}
+                <span className="hidden sm:inline-flex text-[10px] px-2 py-0.5 rounded-full font-bold bg-violet-100 text-violet-700 border border-violet-200 whitespace-nowrap">
+                  {tmpl.category}
+                </span>
+
+                {/* Active toggle */}
+                <button
+                  onClick={() => handleToggleTemplateActive(tmpl.id)}
+                  className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
+                    tmpl.isActive
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                      : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'
+                  }`}
+                >
+                  {tmpl.isActive
+                    ? <><ToggleRight className="w-4 h-4 text-emerald-500" /><span>有効</span></>
+                    : <><ToggleLeft className="w-4 h-4 text-slate-400" /><span>無効</span></>
+                  }
+                </button>
+
+                {/* Expand button */}
+                <button
+                  onClick={() => setExpandedTemplateId(expandedTemplateId === tmpl.id ? null : tmpl.id)}
+                  className="text-slate-400 hover:text-slate-700 transition-colors p-1 cursor-pointer"
+                  title="詳細を表示"
+                >
+                  {expandedTemplateId === tmpl.id
+                    ? <ChevronUp className="w-4 h-4" />
+                    : <ChevronDown className="w-4 h-4" />}
+                </button>
+              </div>
+
+              {/* Expanded Detail */}
+              {expandedTemplateId === tmpl.id && (
+                <div className="border-t border-slate-100 px-4 py-3 bg-slate-50/60 text-xs space-y-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <div>
+                      <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">ヘッダータイトル</div>
+                      <div className="font-bold text-slate-700">{tmpl.headerTitle}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">AIパートナー</div>
+                      <div className="font-bold text-slate-700">{tmpl.aiPersona.name}</div>
+                      <div className="text-slate-500">{tmpl.aiPersona.role}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">デイリー項目数</div>
+                      <div className="font-bold text-slate-700">
+                        数値{tmpl.dailyConfig.numericFields.length}・スライダー{tmpl.dailyConfig.sliders.length}・チェック{tmpl.dailyConfig.checkItems.length}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-[10px] text-slate-400">ID: <code className="font-mono bg-slate-200 px-1 rounded">{tmpl.id}</code> ／ 更新: {tmpl.updatedAt}</div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <p className="text-[11px] text-slate-400 bg-white/70 px-3 py-2 rounded-xl border border-slate-100">
+          💡 テンプレートを「無効」にすると、新規ユーザーの選択画面に表示されなくなります。並び順は矢印で変更できます。テンプレートの詳細編集（フィールド追加など）は今後のアップデートで対応予定です。
+        </p>
       </div>
 
       {/* Tenants Table & Management Section */}

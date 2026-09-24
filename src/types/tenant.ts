@@ -197,3 +197,28 @@ export interface GenericEvalRecord {
   nextGoal: string;
   createdAt: string;
 }
+
+// ─────────────────────────────────────────────
+// コンシューマー向け公開テンプレート（Tenant/業者とは別コレクション）
+// Masterが管理し、新規コンシューマーが選択して利用する
+// ─────────────────────────────────────────────
+export interface PublicTemplate {
+  id: string;                 // 例: 'tmpl-health-basic', 'tmpl-fitness', 'tmpl-oshi'
+  name: string;               // 表示名 (例: '基本 健康管理ログ')
+  description: string;        // テンプレート説明（選択画面で表示）
+  emoji: string;              // アイコン絵文字 (例: '🏥', '💪', '💎')
+  category: IndustryType;     // 業種カテゴリー
+  headerTitle: string;        // 顧客ページのヘッダータイトル
+  headerSubtitle: string;
+  badgeText: string;
+  theme: ColorTheme;
+  aiPersona: AIPersonaConfig;
+  dailyConfig: DailyConfig;
+  evalConfig: PeriodicEvalConfig;
+  loungeLinks?: LoungeLinkItem[];
+  isPublic: true;             // 常に true (型判別用)
+  isActive: boolean;          // Masterが有効/無効を切り替えられる
+  sortOrder: number;          // 表示順
+  createdAt: string;
+  updatedAt: string;
+}

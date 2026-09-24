@@ -414,94 +414,138 @@ export const DynamicDashboardTab: React.FC<DynamicDashboardTabProps> = ({
           </div>
         </div>
 
-        {/* TAB 1: Daily Logs Table */}
+        {/* TAB 1: Daily Logs Table – 転置レイアウト: 左列=項目名、右列=日付ごとの値 */}
         {historySubTab === 'daily' && (
-          <div className="overflow-x-auto border border-slate-200 rounded-2xl max-h-96">
-            <table className="min-w-max w-full text-left text-xs border-collapse">
-              <thead className="sticky top-0 bg-slate-100 text-slate-600 font-bold border-b border-slate-200 z-10">
-                <tr>
-                  <th className="py-2.5 px-3 min-w-[95px] whitespace-nowrap">日付</th>
-                  {tenant.dailyConfig.enableCondition && (
-                    <th className="py-2.5 px-3 text-center min-w-[95px] whitespace-nowrap">体調 (5段階)</th>
-                  )}
-                  {tenant.dailyConfig.enableEnergy && (
-                    <th className="py-2.5 px-3 text-center min-w-[100px] max-w-[130px]">
-                      <div className="line-clamp-2 leading-tight" title={tenant.dailyConfig.energyLabel}>
-                        {tenant.dailyConfig.energyLabel}
-                      </div>
-                    </th>
-                  )}
-                  {numericDefs.map((n) => (
-                    <th key={n.id} className="py-2.5 px-3 text-right min-w-[110px] max-w-[140px]">
-                      <div className="line-clamp-2 leading-tight break-words" title={`${n.label} (${n.unit})`}>
-                        {n.label} ({n.unit})
-                      </div>
-                    </th>
-                  ))}
-                  {sliderDefs.map((s) => (
-                    <th key={s.id} className="py-2.5 px-3 text-center min-w-[110px] max-w-[140px]">
-                      <div className="line-clamp-2 leading-tight break-words" title={s.label}>
-                        {s.label}
-                      </div>
-                    </th>
-                  ))}
-                  <th className="py-2.5 px-3 min-w-[180px] max-w-xs">
-                    <div className="line-clamp-2 leading-tight">メモ・推し活日記</div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
-                {sortedDaily.length > 0 ? (
-                  sortedDaily.slice().reverse().map((l) => (
-                    <tr key={l.id} className="hover:bg-slate-50">
-                      <td className="py-3 px-3 font-mono font-bold text-slate-800 whitespace-nowrap">
-                        {l.date}
-                      </td>
-                      {tenant.dailyConfig.enableCondition && (
-                        <td className="py-3 px-3 text-center text-sm whitespace-nowrap">
-                          {l.condition === 'great'
-                            ? '😄 絶好調'
-                            : l.condition === 'good'
-                            ? '🙂 良好'
-                            : l.condition === 'okay'
-                            ? '😐 普通'
-                            : l.condition === 'tired'
-                            ? '😫 倦怠感'
-                            : '🤒 微熱'}
-                        </td>
-                      )}
-                      {tenant.dailyConfig.enableEnergy && (
-                        <td className="py-3 px-3 text-center font-bold font-mono whitespace-nowrap" style={{ color: tenant.theme.accentColor }}>
-                          {l.energyLevel ?? 80}%
-                        </td>
-                      )}
-                      {numericDefs.map((n) => (
-                        <td key={n.id} className="py-3 px-3 text-right font-mono font-bold text-slate-700 whitespace-nowrap">
-                          {l.numericValues?.[n.id] ?? '-'}
-                        </td>
-                      ))}
-                      {sliderDefs.map((s) => (
-                        <td key={s.id} className="py-3 px-3 text-center font-mono text-slate-600 whitespace-nowrap">
-                          {l.sliderValues?.[s.id] ?? '-'}
-                        </td>
-                      ))}
-                      <td className="py-3 px-3 text-slate-600 min-w-[180px] max-w-xs break-words">
-                        <div className="line-clamp-2 leading-snug">
-                          {l.memo || '-'}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
+          sortedDaily.length === 0 ? (
+            <div className="py-10 text-center text-slate-400 text-xs border border-slate-200 rounded-2xl">
+              まだ日々の記録がありません。
+            </div>
+          ) : (
+            <div className="overflow-x-auto border border-slate-200 rounded-2xl max-h-[28rem]">
+              <table className="text-left text-xs border-collapse w-full">
+                {/* Sticky header row: date columns */}
+                <thead className="sticky top-0 z-10 bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
                   <tr>
-                    <td colSpan={10} className="py-8 text-center text-slate-400 text-xs">
-                      まだ日々の記録がありません。
-                    </td>
+                    <th className="py-2.5 px-3 min-w-[130px] max-w-[170px] bg-slate-100 sticky left-0 z-20 border-r border-slate-200 whitespace-nowrap">
+                      記録項目
+                    </th>
+                    {sortedDaily.slice().reverse().map((l) => (
+                      <th key={l.id} className="py-2.5 px-3 min-w-[88px] text-center whitespace-nowrap font-mono">
+                        {l.date.replace(/^\d{4}-/, '')}
+                        {/* show full date on tooltip */}
+                        <div className="text-[9px] text-slate-400 font-normal">{l.date}</div>
+                      </th>
+                    ))}
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100 bg-white">
+
+                  {/* Row: 体調 */}
+                  {tenant.dailyConfig.enableCondition && (
+                    <tr className="hover:bg-slate-50">
+                      <td className="py-2.5 px-3 font-bold text-slate-700 sticky left-0 bg-white border-r border-slate-100 max-w-[170px] break-words leading-snug">
+                        体調
+                        <div className="text-[10px] text-slate-400 font-normal">5段階</div>
+                      </td>
+                      {sortedDaily.slice().reverse().map((l) => (
+                        <td key={l.id} className="py-2.5 px-2 text-center">
+                          {l.condition === 'great' ? '😄' : l.condition === 'good' ? '🙂' : l.condition === 'okay' ? '😐' : l.condition === 'tired' ? '😫' : l.condition === 'fever' ? '🤒' : '-'}
+                        </td>
+                      ))}
+                    </tr>
+                  )}
+
+                  {/* Row: エネルギー */}
+                  {tenant.dailyConfig.enableEnergy && (
+                    <tr className="hover:bg-slate-50">
+                      <td className="py-2.5 px-3 font-bold text-slate-700 sticky left-0 bg-white border-r border-slate-100 max-w-[170px] break-words leading-snug">
+                        <div className="line-clamp-2">{tenant.dailyConfig.energyLabel}</div>
+                        <div className="text-[10px] text-slate-400 font-normal">{tenant.dailyConfig.energyIcon}</div>
+                      </td>
+                      {sortedDaily.slice().reverse().map((l) => (
+                        <td key={l.id} className="py-2.5 px-2 text-center font-bold font-mono whitespace-nowrap"
+                          style={{ color: tenant.theme.accentColor }}>
+                          {l.energyLevel ?? '-'}%
+                        </td>
+                      ))}
+                    </tr>
+                  )}
+
+                  {/* Rows: Numeric Fields */}
+                  {numericDefs.map((n) => (
+                    <tr key={n.id} className="hover:bg-slate-50">
+                      <td className="py-2.5 px-3 font-bold text-slate-700 sticky left-0 bg-white border-r border-slate-100 max-w-[170px] break-words leading-snug">
+                        <div className="line-clamp-2">{n.label}</div>
+                        {n.unit && <div className="text-[10px] text-slate-400 font-normal">{n.unit}</div>}
+                      </td>
+                      {sortedDaily.slice().reverse().map((l) => (
+                        <td key={l.id} className="py-2.5 px-2 text-center font-mono font-bold text-slate-700 whitespace-nowrap">
+                          {l.numericValues?.[n.id] !== undefined && l.numericValues[n.id] !== null
+                            ? `${l.numericValues[n.id]}${n.unit ? '' : ''}`
+                            : <span className="text-slate-300">–</span>}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+
+                  {/* Rows: Slider Fields */}
+                  {sliderDefs.map((s) => (
+                    <tr key={s.id} className="hover:bg-slate-50">
+                      <td className="py-2.5 px-3 font-bold text-slate-700 sticky left-0 bg-white border-r border-slate-100 max-w-[170px] break-words leading-snug">
+                        <div className="line-clamp-2">{s.label}</div>
+                        {s.minLabel && s.maxLabel && (
+                          <div className="text-[9px] text-slate-400 font-normal">{s.minLabel}→{s.maxLabel}</div>
+                        )}
+                      </td>
+                      {sortedDaily.slice().reverse().map((l) => (
+                        <td key={l.id} className="py-2.5 px-2 text-center font-mono text-slate-600 whitespace-nowrap">
+                          {l.sliderValues?.[s.id] !== undefined
+                            ? l.sliderValues[s.id]
+                            : <span className="text-slate-300">–</span>}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+
+                  {/* Row: Check Items (どれかチェックされている日だけ●) */}
+                  {tenant.dailyConfig.checkItems.length > 0 && (
+                    <>
+                      {tenant.dailyConfig.checkItems.map((item) => (
+                        <tr key={item.id} className="hover:bg-slate-50">
+                          <td className="py-2.5 px-3 font-bold text-slate-700 sticky left-0 bg-white border-r border-slate-100 max-w-[170px] break-words leading-snug">
+                            <span className="mr-1">{item.icon}</span>
+                            <span className="line-clamp-2 text-[11px]">{item.label}</span>
+                          </td>
+                          {sortedDaily.slice().reverse().map((l) => (
+                            <td key={l.id} className="py-2.5 px-2 text-center">
+                              {l.checkStates?.[item.id]
+                                ? <span className="text-emerald-600 font-bold">✓</span>
+                                : <span className="text-slate-200">–</span>}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </>
+                  )}
+
+                  {/* Row: メモ */}
+                  <tr className="hover:bg-slate-50">
+                    <td className="py-2.5 px-3 font-bold text-slate-700 sticky left-0 bg-white border-r border-slate-100 whitespace-nowrap">
+                      {tenant.dailyConfig.memoLabel || 'メモ'}
+                    </td>
+                    {sortedDaily.slice().reverse().map((l) => (
+                      <td key={l.id} className="py-2.5 px-2 text-slate-600 min-w-[140px] max-w-[220px]">
+                        {l.memo
+                          ? <div className="line-clamp-2 leading-snug text-[11px]">{l.memo}</div>
+                          : <span className="text-slate-300">–</span>}
+                      </td>
+                    ))}
+                  </tr>
+
+                </tbody>
+              </table>
+            </div>
+          )
         )}
 
         {/* TAB 2: Periodic Evaluations Table */}
