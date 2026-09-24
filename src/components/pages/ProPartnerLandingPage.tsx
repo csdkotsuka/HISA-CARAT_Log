@@ -248,7 +248,7 @@ export const ProPartnerLandingPage: React.FC<ProPartnerLandingPageProps> = ({
                 : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
             }`}
           >
-            💎 推し活・ファン仕様 (HISA-CARAT)
+            💎 推し活・ファン仕様 (MY-CARAT)
           </button>
           <button
             onClick={() => setSelectedMockTheme('fitness')}
@@ -304,13 +304,13 @@ export const ProPartnerLandingPage: React.FC<ProPartnerLandingPageProps> = ({
                     <div className="inline-block text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-white/70 text-pink-700 mb-0.5">
                       CARAT 💎 Care
                     </div>
-                    <div className="font-black text-sm text-slate-800">HISA-CARAT Log</div>
-                    <div className="text-[10px] text-slate-600">ひさこさんの推し活ダイアリー</div>
+                    <div className="font-black text-sm text-slate-800">MY-CARAT Log</div>
+                    <div className="text-[10px] text-slate-600">あおいさんの推し活ダイアリー</div>
                   </div>
                 </div>
 
                 <div className="mt-2.5 bg-white/90 backdrop-blur-sm rounded-xl p-2 border border-pink-200 text-[11px] font-bold text-pink-900 shadow-xs">
-                  💬「ひさこちゃん、今日も無理せず自分のペースでね💎」
+                  💬「あおいちゃん、今日も無理せず自分のペースでね💎」
                 </div>
               </div>
 

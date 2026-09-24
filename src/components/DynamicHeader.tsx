@@ -143,10 +143,9 @@ export const DynamicHeader: React.FC<DynamicHeaderProps> = ({
               {/* Speech bubble on tap */}
               {showAvatarSpeech && (
                 <div className="absolute left-1/2 -translate-x-1/2 -top-16 sm:-top-18 z-40 bg-slate-900/95 backdrop-blur-md text-white text-xs py-2 px-3.5 rounded-2xl whitespace-nowrap shadow-2xl border border-white/20 animate-bounce">
-                  {tenant.aiPersona.speechBubbleText.replace(
-                    'ひさこさん',
-                    customer.nickname || customer.name || 'あなた'
-                  )}
+                  {tenant.aiPersona.speechBubbleText
+                    .replace('ひさこさん', customer.nickname || customer.name || 'あなた')
+                    .replace('あおいさん', customer.nickname || customer.name || 'あなた')}
                   <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 w-2.5 h-2.5 bg-slate-900 rotate-45" />
                 </div>
               )}

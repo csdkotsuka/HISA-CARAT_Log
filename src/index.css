@@ -93,15 +93,53 @@ input[type="range"].vas-slider::-webkit-slider-thumb:hover {
   background: rgba(146, 168, 209, 0.7);
 }
 
-/* Print styles for doctor / PT evaluation reports */
+/* Print styles for A4 1-page reports */
 @media print {
-  body {
-    background: #ffffff !important;
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm 8mm 10mm;
   }
-  .no-print {
+  html, body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    font-size: 11px !important;
+  }
+
+  /* Hide everything on screen except the target report */
+  body * {
+    visibility: hidden !important;
+  }
+
+  #printable-summary-report,
+  #printable-summary-report * {
+    visibility: visible !important;
+  }
+
+  #printable-summary-report {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .no-print,
+  .no-print-bg {
     display: none !important;
+    background: transparent !important;
   }
   .print-only {
     display: block !important;
   }
 }
+

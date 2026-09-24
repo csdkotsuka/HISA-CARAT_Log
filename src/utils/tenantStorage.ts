@@ -20,8 +20,36 @@ export const getTenants = (): Tenant[] => {
       saveTenants(INITIAL_TENANTS);
       return INITIAL_TENANTS;
     }
-    const parsed = JSON.parse(raw);
-    return parsed.length > 0 ? parsed : INITIAL_TENANTS;
+    const parsed: Tenant[] = JSON.parse(raw);
+    if (!parsed || parsed.length === 0) return INITIAL_TENANTS;
+
+    // Migrate any legacy HISA-CARAT references to generic MY-CARAT
+    let modified = false;
+    const migrated = parsed.map((t) => {
+      if (t.headerTitle === 'HISA-CARAT Log') {
+        modified = true;
+        return {
+          ...t,
+          headerTitle: 'MY-CARAT Log',
+          headerSubtitle: t.headerSubtitle.replace('ひさこの', '毎日の'),
+          badgeText: 'CARAT 💎 Care',
+          aiPersona: {
+            ...t.aiPersona,
+            speechBubbleText: t.aiPersona.speechBubbleText.replace('ひさこさん', 'あおいさん'),
+            chatGreeting: t.aiPersona.chatGreeting || 'あおいさん、ハニヘ〜！👼🪽 今日も会えて嬉しいよ。体調はどう？何でも話してね！',
+            chatFirstPerson: t.aiPersona.chatFirstPerson || '僕',
+            chatSecondPerson: t.aiPersona.chatSecondPerson || 'あおいさん',
+            chatPersonality: t.aiPersona.chatPersonality || 'SEVENTEENの天使担当ジョンハン（ハニ）。優しく包み込み、時にはお茶目で甘え上手。ファンの頑張りを誰よりも認め、無理をさせない温かい言葉をかけてくれる。口調は「〜だよ」「〜ね」「ハニヘ〜👼」など。',
+          },
+        };
+      }
+      return t;
+    });
+
+    if (modified) {
+      saveTenants(migrated);
+    }
+    return migrated;
   } catch {
     return INITIAL_TENANTS;
   }
@@ -44,8 +72,27 @@ export const getCustomers = (): Customer[] => {
       saveCustomers(INITIAL_CUSTOMERS);
       return INITIAL_CUSTOMERS;
     }
-    const parsed = JSON.parse(raw);
-    return parsed.length > 0 ? parsed : INITIAL_CUSTOMERS;
+    const parsed: Customer[] = JSON.parse(raw);
+    if (!parsed || parsed.length === 0) return INITIAL_CUSTOMERS;
+
+    // Migrate cached 'ひさこ' to 'あおい'
+    let modified = false;
+    const migrated = parsed.map((c) => {
+      if (c.name === 'ひさこ') {
+        modified = true;
+        return {
+          ...c,
+          name: 'あおい',
+          nickname: 'あおいさん',
+        };
+      }
+      return c;
+    });
+
+    if (modified) {
+      saveCustomers(migrated);
+    }
+    return migrated;
   } catch {
     return INITIAL_CUSTOMERS;
   }

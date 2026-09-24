@@ -105,15 +105,15 @@ export const MyLoungeGuidePage: React.FC<MyLoungeGuidePageProps> = ({
                   <div className="inline-block text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-white/80 text-pink-700 mb-0.5">
                     CARAT 💎 Care
                   </div>
-                  <div className="font-black text-sm text-slate-800">HISA-CARAT Log</div>
-                  <div className="text-[10px] text-slate-600">ひさこさんの推し活ダイアリー</div>
+                  <div className="font-black text-sm text-slate-800">MY-CARAT Log</div>
+                  <div className="text-[10px] text-slate-600">あおいさんの推し活ダイアリー</div>
                 </div>
               </div>
 
               {/* Speech bubble */}
               <div className="mt-3 bg-white/95 backdrop-blur-sm rounded-xl p-2.5 border border-pink-200 text-xs font-bold text-pink-900 shadow-xs flex items-center gap-2">
                 <span className="text-base">💬</span>
-                <span className="leading-snug">「ひさこちゃん、今日も無理せず自分のペースでね💎 いつも応援してるよ！」</span>
+                <span className="leading-snug">「あおいちゃん、今日も無理せず自分のペースでね💎 いつも応援してるよ！」</span>
               </div>
             </div>
 

@@ -215,7 +215,7 @@ export const CaratLoungeModal: React.FC<CaratLoungeModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-slate-600 block mb-1">ひさこの意気込みモットー:</label>
+                  <label className="text-[11px] font-bold text-slate-600 block mb-1">私の意気込みモットー:</label>
                   <input
                     type="text"
                     value={targetMotto}

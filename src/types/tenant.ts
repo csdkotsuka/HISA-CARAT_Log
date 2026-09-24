@@ -37,14 +37,19 @@ export interface AIPersonaQuote {
 }
 
 export interface AIPersonaConfig {
-  name: string;
+  name: string;               // 例: 'JEONGHAN (ジョンハン)', 'KENJI (チーフトレーナー)'
   role: string;               // 例: '専属アイドル', 'チーフトレーナー', '担任の美咲先生', '親友・サポーター'
   tone: 'friendly' | 'polite' | 'passionate' | 'gentle' | 'cool'; // 口調
   avatarUrl: string;          // アバター画像のURLまたはDataURL
   avatarType: 'upload' | 'preset' | 'ai_generated';
-  aiPromptSnippet?: string;   // AI生成時のプロンプト
+  aiPromptSnippet?: string;   // AI生成時・会話時のプロンプト
   speechBubbleText: string;   // タップ時に喋るひとこと
   encouragementQuotes: AIPersonaQuote[];
+  // 本人と会話できるAIチャット設定 (Gemini連携)
+  chatGreeting?: string;      // チャット開始時の挨拶
+  chatFirstPerson?: string;   // 一人称 (例: 僕, 私, 俺, 先生)
+  chatSecondPerson?: string;  // 相手の呼び方 (例: ○○さん, ○○ちゃん, あなた, 君)
+  chatPersonality?: string;   // キャラクター詳細設定・性格・背景
 }
 
 // 日々の記録項目のカスタマイズ定義

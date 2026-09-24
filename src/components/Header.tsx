@@ -99,7 +99,7 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Speech bubble on tap */}
               {showAvatarSpeech && (
                 <div className="absolute left-1/2 -translate-x-1/2 -top-14 sm:-top-16 z-30 bg-slate-900/90 backdrop-blur-md text-white text-xs py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl border border-pink-300 animate-bounce">
-                  ✨ ひさこさん、ハニヘ〜！👼🪽
+                  ✨ あおいさん、ハニヘ〜！👼🪽
                   <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 w-2 h-2 bg-slate-900 rotate-45" />
                 </div>
               )}
@@ -108,7 +108,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-pink-400 to-purple-400 text-white shadow-sm">
-                  CARAT 💎 EGPA Care
+                  CARAT 💎 Care
                 </span>
                 <span className="text-xs text-slate-500 font-medium">
                   記録日数: <span className="font-bold text-pink-600">{totalLogsCount}日目</span>
@@ -135,13 +135,13 @@ export const Header: React.FC<HeaderProps> = ({
                 ) : null}
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-0.5">
-                <span className="svt-gradient-text">HISA-CARAT Log</span>
+                <span className="svt-gradient-text">MY-CARAT Log</span>
                 <span className="text-sm font-bold text-slate-400 ml-1.5 hidden sm:inline">
                   ✨ 毎日輝くカラットダイアリー
                 </span>
               </h1>
               <p className="text-xs text-slate-500 mt-0.5">
-                ひさこのEGPAリハビリ＆セルフケア手帳（受診・定期測定共有対応）
+                毎日のリハビリ＆セルフケア手帳（受診・定期測定共有対応）
               </p>
             </div>
           </div>

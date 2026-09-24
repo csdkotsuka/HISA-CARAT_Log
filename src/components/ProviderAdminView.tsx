@@ -294,7 +294,7 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
               <span>ユーザーページ（顧客ページ）のヘッダー設定</span>
             </h3>
             <p className="text-xs text-slate-500">
-              顧客がログインした画面の最上部に表示されるアプリ名・見出し・バッジを設定します（現在は「HISA-CARAT Log」や「HISA-CHART」）。
+              顧客がログインした画面の最上部に表示されるアプリ名・見出し・バッジを設定します（例:「MY-CARAT Log」「POWER-FIT Log」など）。
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -308,7 +308,7 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
                   onChange={(e) =>
                     setCurrentTenant({ ...currentTenant, headerTitle: e.target.value })
                   }
-                  placeholder="例: HISA-CARAT Log または HISA-CHART"
+                  placeholder="例: MY-CARAT Log または POWER-FIT Log"
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                 />
               </div>
@@ -323,7 +323,7 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
                   onChange={(e) =>
                     setCurrentTenant({ ...currentTenant, badgeText: e.target.value })
                   }
-                  placeholder="例: CARAT 💎 EGPA Care, FITNESS PRO 🔥"
+                  placeholder="例: CARAT 💎 Care, FITNESS PRO 🔥"
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                 />
               </div>
@@ -338,7 +338,7 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
                   onChange={(e) =>
                     setCurrentTenant({ ...currentTenant, headerSubtitle: e.target.value })
                   }
-                  placeholder="例: ひさこのEGPAリハビリ＆セルフケア手帳"
+                  placeholder="例: 毎日のリハビリ＆セルフケア手帳"
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                 />
               </div>
@@ -689,7 +689,7 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
 
               <div className="sm:col-span-3">
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  アバタータップ時の吹き出しセリフ
+                  アバタータップ時の吹き出しセリフ (ワンタップ励まし)
                 </label>
                 <input
                   type="text"
@@ -703,9 +703,113 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
                       },
                     })
                   }
-                  placeholder="例: ✨ ひさこさん、ハニヘ〜！今日も自分のペースでね👼🪽"
+                  placeholder="例: ✨ あおいさん、ハニヘ〜！今日も自分のペースでね👼🪽"
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
                 />
+              </div>
+
+              {/* Gemini Chat Persona Details ("相手が誰か"設定) */}
+              <div className="sm:col-span-3 p-4 rounded-2xl bg-gradient-to-r from-purple-50/80 via-pink-50/80 to-indigo-50/80 border border-purple-200/80 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">💬</span>
+                    <span className="text-xs font-extrabold text-slate-800">
+                      対話AIチャット詳細設定（「相手が誰か」のパーソナリティ）
+                    </span>
+                  </div>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-bold border border-purple-200">
+                    Gemini 連携
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  顧客が「本人と会話しているかのようなAIチャット」を楽しむための、キャラクターの口調・一人称・背景設定です。
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                      一人称（AI自身の呼び名）
+                    </label>
+                    <input
+                      type="text"
+                      value={currentTenant.aiPersona.chatFirstPerson || ''}
+                      onChange={(e) =>
+                        setCurrentTenant({
+                          ...currentTenant,
+                          aiPersona: {
+                            ...currentTenant.aiPersona,
+                            chatFirstPerson: e.target.value,
+                          },
+                        })
+                      }
+                      placeholder="例: 僕, 私, 俺, 先生, わたし"
+                      className="w-full px-3 py-2 bg-white border border-purple-200 rounded-xl text-xs font-bold text-slate-800"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                      相手（顧客）の呼び方
+                    </label>
+                    <input
+                      type="text"
+                      value={currentTenant.aiPersona.chatSecondPerson || ''}
+                      onChange={(e) =>
+                        setCurrentTenant({
+                          ...currentTenant,
+                          aiPersona: {
+                            ...currentTenant.aiPersona,
+                            chatSecondPerson: e.target.value,
+                          },
+                        })
+                      }
+                      placeholder="例: あおいさん, ○○ちゃん, あなた, 君"
+                      className="w-full px-3 py-2 bg-white border border-purple-200 rounded-xl text-xs font-bold text-slate-800"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                      チャット開始時の第一声（オープニング挨拶）
+                    </label>
+                    <input
+                      type="text"
+                      value={currentTenant.aiPersona.chatGreeting || ''}
+                      onChange={(e) =>
+                        setCurrentTenant({
+                          ...currentTenant,
+                          aiPersona: {
+                            ...currentTenant.aiPersona,
+                            chatGreeting: e.target.value,
+                          },
+                        })
+                      }
+                      placeholder="例: あおいさん、ハニヘ〜！👼🪽 今日も会えて嬉しいよ。体調はどう？何でも話してね！"
+                      className="w-full px-3 py-2 bg-white border border-purple-200 rounded-xl text-xs text-slate-800"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                      キャラクター詳細設定・性格・口調の指示（AIプロンプト）
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={currentTenant.aiPersona.chatPersonality || ''}
+                      onChange={(e) =>
+                        setCurrentTenant({
+                          ...currentTenant,
+                          aiPersona: {
+                            ...currentTenant.aiPersona,
+                            chatPersonality: e.target.value,
+                          },
+                        })
+                      }
+                      placeholder="例: SEVENTEENの天使担当ジョンハン。優しく包み込み、時にはお茶目で甘え上手。ファンの頑張りを誰よりも認め、無理をさせない温かい言葉をかけてくれる。口調は「〜だよ」「〜ね」「ハニヘ〜👼」など。"
+                      className="w-full px-3 py-2 bg-white border border-purple-200 rounded-xl text-xs text-slate-800"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 

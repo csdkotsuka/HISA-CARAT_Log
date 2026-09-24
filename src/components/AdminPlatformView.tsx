@@ -10,9 +10,22 @@ import {
   Layers,
   TrendingUp,
   ExternalLink,
+  Key,
+  Eye,
+  EyeOff,
+  Save,
+  Check,
+  Zap,
 } from 'lucide-react';
 import type { Tenant, Customer, IndustryType } from '../types/tenant';
 import { COLOR_THEMES } from '../data/tenantPresets';
+import {
+  getGeminiApiKey,
+  saveGeminiApiKey,
+  getGeminiModel,
+  saveGeminiModel,
+  testGeminiConnection,
+} from '../utils/geminiChat';
 
 interface AdminPlatformViewProps {
   tenants: Tenant[];
@@ -40,6 +53,29 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndustry, setSelectedIndustry] = useState<string>('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // Gemini settings
+  const [geminiApiKey, setGeminiApiKey] = useState(getGeminiApiKey());
+  const [geminiModel, setGeminiModel] = useState(getGeminiModel());
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [isTestingGemini, setIsTestingGemini] = useState(false);
+  const [geminiTestResult, setGeminiTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [saveStatus, setSaveStatus] = useState(false);
+
+  const handleSaveGeminiSettings = () => {
+    saveGeminiApiKey(geminiApiKey);
+    saveGeminiModel(geminiModel);
+    setSaveStatus(true);
+    setTimeout(() => setSaveStatus(false), 2500);
+  };
+
+  const handleTestConnection = async () => {
+    setIsTestingGemini(true);
+    setGeminiTestResult(null);
+    const result = await testGeminiConnection(geminiApiKey, geminiModel);
+    setGeminiTestResult(result);
+    setIsTestingGemini(false);
+  };
 
   // New tenant form states
   const [newName, setNewName] = useState('');
@@ -274,6 +310,119 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
             <ExternalLink className="w-3.5 h-3.5" />
           </span>
         </div>
+      </div>
+
+      {/* Gemini AI Platform Configuration */}
+      <div className="rounded-3xl p-6 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white shadow-lg border border-indigo-800/40 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-indigo-800/40 pb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-500 to-pink-500 flex items-center justify-center text-xl shadow-md">
+              🤖
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-extrabold tracking-tight">
+                  Google Gemini AI チャット連携設定 (Cheer Master)
+                </h3>
+                <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold border ${
+                  geminiApiKey
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                    : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                }`}>
+                  {geminiApiKey ? `🟢 連携中 (${geminiModel})` : '🟡 未設定 (シミュレーションモード)'}
+                </span>
+              </div>
+              <p className="text-xs text-indigo-200/70 mt-0.5">
+                ここで設定されたAPIキーとモデルが、全テナント・顧客の「本人と会話できるAIチャット」に適用されます。
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleTestConnection}
+              disabled={isTestingGemini || !geminiApiKey}
+              className="px-3.5 py-2 rounded-xl bg-indigo-800/60 hover:bg-indigo-700/80 disabled:opacity-40 text-xs font-bold text-indigo-100 border border-indigo-600/50 transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <Zap className="w-3.5 h-3.5 text-amber-400" />
+              <span>{isTestingGemini ? 'テスト中...' : '接続テスト'}</span>
+            </button>
+
+            <button
+              onClick={handleSaveGeminiSettings}
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 text-xs font-extrabold text-white shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              {saveStatus ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Save className="w-3.5 h-3.5" />}
+              <span>{saveStatus ? '保存完了！' : '設定を保存'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Input Controls */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 text-xs">
+          {/* API Key Input */}
+          <div className="md:col-span-8 space-y-1.5">
+            <label className="flex items-center justify-between font-bold text-indigo-200">
+              <span className="flex items-center gap-1.5">
+                <Key className="w-3.5 h-3.5 text-pink-400" />
+                <span>Gemini API Key (Google AI Studio)</span>
+              </span>
+              <span className="text-[10px] text-indigo-300/60">
+                ※ブラウザローカルに暗号化保存（外部送信なし）
+              </span>
+            </label>
+            <div className="relative">
+              <input
+                type={showApiKey ? 'text' : 'password'}
+                value={geminiApiKey}
+                onChange={(e) => setGeminiApiKey(e.target.value)}
+                placeholder="AIzaSy..."
+                className="w-full pl-3.5 pr-10 py-2.5 bg-slate-950/80 border border-indigo-700/60 rounded-xl font-mono text-xs text-indigo-100 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500"
+              />
+              <button
+                type="button"
+                onClick={() => setShowApiKey(!showApiKey)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-200 p-1"
+                title={showApiKey ? '非表示' : '表示'}
+              >
+                {showApiKey ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Model Selection */}
+          <div className="md:col-span-4 space-y-1.5">
+            <label className="block font-bold text-indigo-200">
+              使用モデル (Model Name)
+            </label>
+            <select
+              value={geminiModel}
+              onChange={(e) => setGeminiModel(e.target.value)}
+              className="w-full px-3.5 py-2.5 bg-slate-950/80 border border-indigo-700/60 rounded-xl font-mono text-xs text-indigo-100 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 cursor-pointer"
+            >
+              <option value="gemini-2.0-flash">gemini-2.0-flash (推奨・最新最速)</option>
+              <option value="gemini-1.5-flash">gemini-1.5-flash (高速・軽量)</option>
+              <option value="gemini-1.5-pro">gemini-1.5-pro (高精度・長文)</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Test Result Message */}
+        {geminiTestResult && (
+          <div className={`p-3 rounded-2xl text-xs font-bold border flex items-center justify-between ${
+            geminiTestResult.success
+              ? 'bg-emerald-950/60 border-emerald-500/60 text-emerald-200'
+              : 'bg-rose-950/60 border-rose-500/60 text-rose-200'
+          }`}>
+            <span>{geminiTestResult.message}</span>
+            <button
+              onClick={() => setGeminiTestResult(null)}
+              className="text-[10px] underline hover:opacity-75"
+            >
+              閉じる
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Tenants Table & Management Section */}
