@@ -56,44 +56,25 @@ export const RoleNavigationHeader: React.FC<RoleNavigationHeaderProps> = ({
             </span>
           </div>
 
-          {/* Right: Stacked Sync & User/Logout */}
-          <div className="flex items-center gap-3">
-            <div className="flex flex-col items-center sm:items-end gap-0.5">
-              {onSyncFirestore && (
-                <button
-                  type="button"
-                  onClick={onSyncFirestore}
-                  disabled={isSyncingFirestore}
-                  className="flex items-center gap-1 px-2 py-0.5 rounded bg-indigo-950/80 border border-indigo-700 hover:bg-indigo-900 text-indigo-200 text-[10px] font-bold transition-all shadow-xs disabled:opacity-50"
-                  title="ローカルの全データをFirebase (Firestore) に即時同期"
-                >
-                  <RefreshCw className={`w-2.5 h-2.5 ${isSyncingFirestore ? 'animate-spin text-amber-400' : 'text-indigo-400'}`} />
-                  <span>{isSyncingFirestore ? '同期中...' : '🔥 Firebase同期'}</span>
-                </button>
-              )}
-
-              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-[9px]">
-                <span className={`w-1.5 h-1.5 rounded-full ${cloudStatus === 'synced' ? 'bg-emerald-400 animate-pulse' : cloudStatus === 'syncing' ? 'bg-amber-400 animate-spin' : 'bg-rose-400'}`} />
-                <span className="text-slate-300 font-medium">{currentUser?.email || '未ログイン (ゲスト)'}</span>
-              </div>
-            </div>
-
+          {/* Right: Vertical Stack: マイページ & ログアウト (No sync/email badge in customer mode) */}
+          <div className="flex flex-col items-end gap-1">
             {currentUser && onOpenPasswordModal && (
               <button
                 type="button"
                 onClick={onOpenPasswordModal}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white text-[11px] font-bold transition-all shadow-xs cursor-pointer"
-                title="パスワード変更"
+                className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 hover:text-white text-[11px] font-bold transition-all shadow-xs cursor-pointer"
+                title="マイページ（表示名・お名前・パスワード設定）"
               >
-                <Key className="w-3 h-3 text-amber-400" />
-                <span>パスワード</span>
+                <User className="w-3 h-3 text-pink-400" />
+                <span>マイページ</span>
               </button>
             )}
 
             {currentUser ? (
               <button
+                type="button"
                 onClick={onLogout}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-950/60 border border-slate-700 hover:border-rose-500 text-slate-400 hover:text-rose-300 text-[11px] font-bold transition-all shadow-xs cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-800/80 hover:bg-rose-950/60 border border-slate-700 hover:border-rose-500 text-slate-400 hover:text-rose-300 text-[11px] font-bold transition-all shadow-xs cursor-pointer"
                 title="ログアウト"
               >
                 <LogOut className="w-3 h-3" />
@@ -101,8 +82,9 @@ export const RoleNavigationHeader: React.FC<RoleNavigationHeaderProps> = ({
               </button>
             ) : (
               <button
+                type="button"
                 onClick={onOpenLoginModal}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gradient-to-r from-pink-500 to-indigo-600 hover:opacity-90 text-white text-[11px] font-bold transition-all shadow-sm cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-pink-500 to-indigo-600 hover:opacity-90 text-white text-[11px] font-bold transition-all shadow-sm cursor-pointer"
                 title="ログイン"
               >
                 <LogIn className="w-3 h-3" />
@@ -211,29 +193,30 @@ export const RoleNavigationHeader: React.FC<RoleNavigationHeaderProps> = ({
             <span className="text-[10px] text-slate-400 font-mono">{currentUser?.email}</span>
           </div>
 
-          {/* Password Change Button */}
-          {onOpenPasswordModal && (
+          {/* Vertical Stack: Password & Logout */}
+          <div className="flex flex-col items-end gap-1">
+            {onOpenPasswordModal && (
+              <button
+                type="button"
+                onClick={onOpenPasswordModal}
+                className="w-full justify-center flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white font-bold transition-all shadow-xs text-xs cursor-pointer"
+                title="パスワード設定・変更"
+              >
+                <Key className="w-3.5 h-3.5 text-amber-400" />
+                <span>パスワード</span>
+              </button>
+            )}
+
             <button
               type="button"
-              onClick={onOpenPasswordModal}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white font-bold transition-all shadow-xs text-xs"
-              title="パスワード設定・変更"
+              onClick={onLogout}
+              className="w-full justify-center flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-800 hover:bg-rose-950/60 border border-slate-700 hover:border-rose-500 text-slate-300 hover:text-rose-300 font-bold transition-all shadow-xs text-xs cursor-pointer"
+              title="ログアウト"
             >
-              <Key className="w-3.5 h-3.5 text-amber-400" />
-              <span>パスワード</span>
+              <LogOut className="w-3.5 h-3.5" />
+              <span>ログアウト</span>
             </button>
-          )}
-
-          {/* Logout Button */}
-          <button
-            type="button"
-            onClick={onLogout}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-950/60 border border-slate-700 hover:border-rose-500 text-slate-300 hover:text-rose-300 font-bold transition-all shadow-xs text-xs"
-            title="ログアウト"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>ログアウト</span>
-          </button>
+          </div>
         </div>
       </div>
     </div>

@@ -11,7 +11,7 @@ export const getCurrentUser = (): AuthUser => {
       // Synchronize with updated DEMO_ACCOUNTS if this user is a demo user
       const matched = DEMO_ACCOUNTS.find((u) => u.id === parsed.id);
       if (matched) {
-        return matched;
+        return { ...matched, ...parsed };
       }
       return parsed;
     }

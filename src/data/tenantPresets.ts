@@ -1,5 +1,40 @@
-import type { ColorTheme, Tenant, Customer } from '../types/tenant';
+import type { ColorTheme, Tenant, Customer, LoungeLinkItem } from '../types/tenant';
 import { HANI_QUOTES } from './haniQuotes';
+
+export const DEFAULT_CARAT_LOUNGE_LINKS: LoungeLinkItem[] = [
+  {
+    id: 'link-1',
+    title: 'Weverse SEVENTEEN',
+    desc: 'ジョンハンの投稿やモーメントを直接チェック！',
+    url: 'https://weverse.io/seventeen',
+    badge: '公式コミュニティ',
+    color: 'from-pink-500 to-rose-400',
+  },
+  {
+    id: 'link-2',
+    title: 'SEVENTEEN Official YouTube',
+    desc: '「GOING SEVENTEEN」やMVで笑顔をチャージ 🎥',
+    url: 'https://www.youtube.com/@pledis17',
+    badge: '公式YouTube',
+    color: 'from-red-500 to-rose-500',
+  },
+  {
+    id: 'link-3',
+    title: 'SEVENTEEN Japan Official',
+    desc: '日本ファンクラブ・ツアー・最新インフォメーション',
+    url: 'https://www.seventeen-17.jp/',
+    badge: '日本公式サイト',
+    color: 'from-sky-500 to-indigo-500',
+  },
+  {
+    id: 'link-4',
+    title: 'SEVENTEEN on Spotify',
+    desc: 'リハビリやお散歩中のBGMにぴったりなセブチ楽曲 🎶',
+    url: 'https://open.spotify.com/artist/7nqOGRxlXj7N2JYbgBEjIl',
+    badge: 'リハビリBGM',
+    color: 'from-emerald-500 to-teal-500',
+  },
+];
 
 // 10種類のカラーテーマプリセット
 export const COLOR_THEMES: ColorTheme[] = [
@@ -215,6 +250,7 @@ export const INITIAL_TENANTS: Tenant[] = [
       adviceLabel: '担当PT・専門職からの講評・アドバイス',
       goalLabel: '次回測定までのステップ目標',
     },
+    loungeLinks: DEFAULT_CARAT_LOUNGE_LINKS,
     customerIds: ['cust-hisa-01'],
     status: 'active',
     createdAt: '2026-09-01',

@@ -20,8 +20,8 @@ import {
   FileEdit,
   X,
 } from 'lucide-react';
-import type { Tenant, Customer, ColorTheme, AIPersonaQuote, GenericDailyLog, GenericEvalRecord } from '../types/tenant';
-import { COLOR_THEMES } from '../data/tenantPresets';
+import type { Tenant, Customer, ColorTheme, AIPersonaQuote, GenericDailyLog, GenericEvalRecord, LoungeLinkItem } from '../types/tenant';
+import { COLOR_THEMES, DEFAULT_CARAT_LOUNGE_LINKS } from '../data/tenantPresets';
 import { triggerSparkleConfetti } from '../utils/confetti';
 import {
   getGenericDailyLogs,
@@ -60,7 +60,7 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
   onRefreshRecords,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<
-    'branding' | 'persona' | 'daily' | 'eval' | 'customers'
+    'branding' | 'persona' | 'daily' | 'eval' | 'customers' | 'lounge'
   >('branding');
 
   // Working copy of tenant settings
@@ -110,6 +110,46 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
     triggerSparkleConfetti();
     setSaveSuccessNotice(true);
     setTimeout(() => setSaveSuccessNotice(false), 3500);
+  };
+
+  // Lounge Links Handlers
+  const handleAddLoungeLink = () => {
+    const newLink: LoungeLinkItem = {
+      id: `link-${Date.now()}`,
+      title: '新しいコンテンツリンク',
+      desc: 'リンクの説明やおすすめポイント',
+      url: 'https://',
+      badge: 'おすすめ',
+    };
+    setCurrentTenant((prev) => ({
+      ...prev,
+      loungeLinks: [...(prev.loungeLinks || []), newLink],
+    }));
+  };
+
+  const handleUpdateLoungeLink = (index: number, field: keyof LoungeLinkItem, value: string) => {
+    setCurrentTenant((prev) => {
+      const links = [...(prev.loungeLinks || [])];
+      if (links[index]) {
+        links[index] = { ...links[index], [field]: value };
+      }
+      return { ...prev, loungeLinks: links };
+    });
+  };
+
+  const handleDeleteLoungeLink = (index: number) => {
+    setCurrentTenant((prev) => {
+      const links = [...(prev.loungeLinks || [])];
+      links.splice(index, 1);
+      return { ...prev, loungeLinks: links };
+    });
+  };
+
+  const handleResetDefaultLinks = () => {
+    setCurrentTenant((prev) => ({
+      ...prev,
+      loungeLinks: [...DEFAULT_CARAT_LOUNGE_LINKS],
+    }));
   };
 
   // AI Avatar Generation simulation
@@ -426,6 +466,18 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
         >
           <Users className="w-4 h-4" />
           <span>⑤ 顧客ID管理 ({tenantCustomers.length}名)</span>
+        </button>
+
+        <button
+          onClick={() => setActiveSubTab('lounge')}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-2xl text-xs font-bold transition-all whitespace-nowrap ${
+            activeSubTab === 'lounge'
+              ? 'bg-amber-600 text-white shadow-sm'
+              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <Sparkles className="w-4 h-4" />
+          <span>⑥ 推し活ラウンジ・リンク設定 ({currentTenant.loungeLinks?.length || 0}件)</span>
         </button>
       </div>
 
@@ -1766,6 +1818,138 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SUB TAB 6: 推し活ラウンジ・リンク設定 */}
+      {activeSubTab === 'lounge' && (
+        <div className="space-y-6">
+          <div className="glass-card rounded-3xl p-6 bg-white border border-slate-200 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div>
+                <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-pink-500" />
+                  <span>推し活ラウンジ・外部コンテンツ＆リンク設定</span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  メンバー画面の「💎 推し活ラウンジ」モーダルに表示されるファンクラブ、YouTube動画、公式SNS、BGMリンク等をパートナー側で自由にカスタマイズできます。
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={handleResetDefaultLinks}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all"
+                  title="SEVENTEEN公式リンク4件を復元"
+                >
+                  初期リンクに戻す
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAddLoungeLink}
+                  className="px-3.5 py-1.5 bg-gradient-to-r from-pink-500 to-indigo-600 text-white text-xs font-bold rounded-xl shadow-xs hover:opacity-90 transition-all flex items-center gap-1.5"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>新規リンク追加</span>
+                </button>
+              </div>
+            </div>
+
+            {/* List of Links */}
+            <div className="space-y-3">
+              {(!currentTenant.loungeLinks || currentTenant.loungeLinks.length === 0) ? (
+                <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-300 space-y-3">
+                  <p className="text-xs text-slate-500 font-medium">現在リンクが登録されていません。（未設定時はデフォルトのSEVENTEEN公式リンクが表示されます）</p>
+                  <button
+                    type="button"
+                    onClick={handleResetDefaultLinks}
+                    className="px-4 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-bold rounded-xl transition-all"
+                  >
+                    💎 デフォルトの推し活リンクを読み込む
+                  </button>
+                </div>
+              ) : (
+                currentTenant.loungeLinks.map((link, idx) => (
+                  <div key={link.id || idx} className="p-4 bg-slate-50/90 rounded-2xl border border-slate-200 space-y-3 hover:border-pink-200 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-extrabold text-slate-700 flex items-center gap-1.5">
+                        <span className="w-5 h-5 rounded-full bg-pink-500 text-white font-bold flex items-center justify-center text-[10px]">
+                          {idx + 1}
+                        </span>
+                        <span>コンテンツ #{idx + 1}</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteLoungeLink(idx)}
+                        className="text-rose-500 hover:text-rose-700 px-2 py-1 hover:bg-rose-50 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                        title="このリンクを削除"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>削除</span>
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">タイトル・サイト名 *</label>
+                        <input
+                          type="text"
+                          value={link.title}
+                          onChange={(e) => handleUpdateLoungeLink(idx, 'title', e.target.value)}
+                          placeholder="例: Weverse SEVENTEEN"
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:outline-pink-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">バッジ表示 (例: 公式YouTube / ファンクラブ / BGM)</label>
+                        <input
+                          type="text"
+                          value={link.badge || ''}
+                          onChange={(e) => handleUpdateLoungeLink(idx, 'badge', e.target.value)}
+                          placeholder="例: 公式ファンクラブ"
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-pink-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 mb-1">リンク先 URL *</label>
+                      <input
+                        type="url"
+                        value={link.url}
+                        onChange={(e) => handleUpdateLoungeLink(idx, 'url', e.target.value)}
+                        placeholder="https://..."
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono focus:outline-pink-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 mb-1">説明・ひとことコメント</label>
+                      <input
+                        type="text"
+                        value={link.desc}
+                        onChange={(e) => handleUpdateLoungeLink(idx, 'desc', e.target.value)}
+                        placeholder="例: ジョンハンの投稿や動画を直接チェック！"
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-600 focus:outline-pink-500"
+                      />
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={handleSave}
+                className="px-5 py-2.5 bg-gradient-to-r from-amber-600 to-pink-600 hover:opacity-90 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <Save className="w-4 h-4" />
+                <span>推し活ラウンジ設定を保存する</span>
+              </button>
             </div>
           </div>
         </div>

@@ -124,6 +124,16 @@ export interface PeriodicEvalConfig {
   goalLabel: string;          // 例: '次回までの目標', '来月のターゲット'
 }
 
+// 推し活ラウンジ・おすすめリンク項目
+export interface LoungeLinkItem {
+  id: string;
+  title: string;
+  desc: string;
+  url: string;
+  badge?: string;
+  color?: string;
+}
+
 // 業者（Tenant / Provider）エンティティ
 export interface Tenant {
   id: string;                 // 業者ID (例: 'tenant-carat', 'tenant-fitness')
@@ -139,6 +149,7 @@ export interface Tenant {
   aiPersona: AIPersonaConfig;
   dailyConfig: DailyConfig;
   evalConfig: PeriodicEvalConfig;
+  loungeLinks?: LoungeLinkItem[]; // 推し活ラウンジ・外部コンテンツリンク一覧
   customerIds: string[];      // 紐づく顧客IDリスト
   status: 'active' | 'trial' | 'suspended';
   createdAt: string;

@@ -154,6 +154,7 @@ export const CustomerPortalView: React.FC<CustomerPortalViewProps> = ({
         onClose={() => setIsLoungeOpen(false)}
         concertGoal={concertGoal}
         onSaveConcertGoal={onSaveConcertGoal}
+        tenant={tenant}
       />
 
       {/* Dedicated 1-Page A4 Periodic Summary Report */}

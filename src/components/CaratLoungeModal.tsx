@@ -3,16 +3,19 @@ import { X, ExternalLink, Sparkles, Music, Play, Globe, PartyPopper } from 'luci
 import { HANI_QUOTES } from '../data/haniQuotes';
 import { triggerFullCelebration, triggerSparkleConfetti } from '../utils/confetti';
 import type { ConcertGoal } from '../utils/storage';
+import type { Tenant } from '../types/tenant';
 
 interface CaratLoungeModalProps {
   isOpen: boolean;
   onClose: () => void;
   concertGoal: ConcertGoal;
   onSaveConcertGoal: (goal: ConcertGoal) => void;
+  tenant?: Tenant;
 }
 
 const FAN_LINKS = [
   {
+    id: 'fan-1',
     title: 'Weverse SEVENTEEN',
     desc: 'ジョンハンの投稿やモーメントを直接チェック！',
     url: 'https://weverse.io/seventeen',
@@ -21,6 +24,7 @@ const FAN_LINKS = [
     color: 'from-pink-500 to-rose-400',
   },
   {
+    id: 'fan-2',
     title: 'SEVENTEEN Official YouTube',
     desc: '「GOING SEVENTEEN」やMVで笑顔をチャージ 🎥',
     url: 'https://www.youtube.com/@pledis17',
@@ -29,6 +33,7 @@ const FAN_LINKS = [
     color: 'from-red-500 to-rose-500',
   },
   {
+    id: 'fan-3',
     title: 'SEVENTEEN Japan Official',
     desc: '日本ファンクラブ・ツアー・最新インフォメーション',
     url: 'https://www.seventeen-17.jp/',
@@ -37,6 +42,7 @@ const FAN_LINKS = [
     color: 'from-sky-500 to-indigo-500',
   },
   {
+    id: 'fan-4',
     title: 'SEVENTEEN on Spotify',
     desc: 'リハビリやお散歩中のBGMにぴったりなセブチ楽曲 🎶',
     url: 'https://open.spotify.com/artist/7nqOGRxlXj7N2JYbgBEjIl',
@@ -51,6 +57,7 @@ export const CaratLoungeModal: React.FC<CaratLoungeModalProps> = ({
   onClose,
   concertGoal,
   onSaveConcertGoal,
+  tenant,
 }) => {
   const [activeQuoteIndex, setActiveQuoteIndex] = useState(0);
   const [isEditingGoal, setIsEditingGoal] = useState(false);
@@ -255,40 +262,50 @@ export const CaratLoungeModal: React.FC<CaratLoungeModalProps> = ({
             )}
           </div>
 
-          {/* Official Fan Links */}
+          {/* Official Fan Links (Controlled via Tenant Config) */}
           <div className="space-y-3">
-            <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
-              <Globe className="w-4 h-4 text-pink-600" />
-              <span>SEVENTEEN 公式ファンサイト ＆ コンテンツリンク</span>
+            <h3 className="text-sm font-extrabold text-slate-800 flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-pink-600" />
+                <span>おすすめ公式コンテンツ ＆ リンク</span>
+              </span>
+              <span className="text-[10px] text-slate-400 font-normal">
+                {tenant?.loungeLinks?.length ? `${tenant.loungeLinks.length}件のコンテンツ` : ''}
+              </span>
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {FAN_LINKS.map((link) => {
-                const Icon = link.icon;
+              {(tenant?.loungeLinks && tenant.loungeLinks.length > 0 ? tenant.loungeLinks : FAN_LINKS).map((link, idx) => {
+                const color = link.color || (idx % 4 === 0 ? 'from-pink-500 to-rose-400' : idx % 4 === 1 ? 'from-red-500 to-rose-500' : idx % 4 === 2 ? 'from-sky-500 to-indigo-500' : 'from-emerald-500 to-teal-500');
                 return (
                   <a
-                    key={link.title}
+                    key={link.id || link.title || idx}
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-3.5 rounded-2xl bg-white border border-pink-100 shadow-xs hover:shadow-md hover:border-pink-300 hover:scale-[1.01] transition-all flex items-start justify-between group"
                   >
                     <div className="flex items-start gap-3">
-                      <div className={`p-2 rounded-xl bg-gradient-to-tr ${link.color} text-white shadow-xs`}>
-                        <Icon className="w-4 h-4" />
+                      <div className={`p-2 rounded-xl bg-gradient-to-tr ${color} text-white shadow-xs shrink-0`}>
+                        <Globe className="w-4 h-4" />
                       </div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-extrabold text-slate-800 group-hover:text-pink-600 transition-colors">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-xs font-extrabold text-slate-800 group-hover:text-pink-600 transition-colors truncate">
                             {link.title}
                           </span>
+                          {link.badge && (
+                            <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-pink-50 text-pink-600 border border-pink-200 font-bold shrink-0">
+                              {link.badge}
+                            </span>
+                          )}
                         </div>
-                        <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                        <p className="text-[11px] text-slate-500 mt-0.5 leading-snug line-clamp-2">
                           {link.desc}
                         </p>
                       </div>
                     </div>
-                    <ExternalLink className="w-4 h-4 text-slate-300 group-hover:text-pink-500 transition-colors flex-shrink-0" />
+                    <ExternalLink className="w-4 h-4 text-slate-300 group-hover:text-pink-500 transition-colors flex-shrink-0 ml-2" />
                   </a>
                 );
               })}

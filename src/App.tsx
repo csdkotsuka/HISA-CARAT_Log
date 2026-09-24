@@ -683,11 +683,17 @@ export const App: React.FC = () => {
         currentUser={currentUser}
       />
 
-      {/* 4. Password Change Modal */}
+      {/* 4. My Page & Password Modal */}
       <PasswordChangeModal
         isOpen={isPasswordChangeModalOpen}
         onClose={() => setIsPasswordChangeModalOpen(false)}
         currentUser={currentUser}
+        activeCustomer={activeCustomer}
+        onUpdateCustomer={handleUpdateCustomer}
+        onUpdateCurrentUser={(updatedUser) => {
+          setCurrentUserState(updatedUser);
+          setCurrentUser(updatedUser);
+        }}
       />
     </div>
   );
