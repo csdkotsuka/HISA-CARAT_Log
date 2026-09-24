@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { DynamicHeader } from './DynamicHeader';
 import { DynamicDailyLogTab } from './DynamicDailyLogTab';
 import { DynamicPeriodicEvalTab } from './DynamicPeriodicEvalTab';
-import { DashboardTab } from './DashboardTab';
+import { DynamicDashboardTab } from './DynamicDashboardTab';
 import { CaratLoungeModal } from './CaratLoungeModal';
 import { MedicalReportModal } from './MedicalReportModal';
 import { AvatarEvolutionModal } from './AvatarEvolutionModal';
@@ -23,8 +23,6 @@ interface CustomerPortalViewProps {
   // Legacy support for Carat modals & dashboard
   legacyDailyLogs: DailyLog[];
   legacyPtDocks: PTEvalDock[];
-  onDeleteDailyLog?: (id: string) => void;
-  onDeletePTDock?: (id: string) => void;
   concertGoal: ConcertGoal;
   onSaveConcertGoal: (goal: ConcertGoal) => void;
   cloudStatus: 'synced' | 'syncing' | 'offline';
@@ -42,8 +40,6 @@ export const CustomerPortalView: React.FC<CustomerPortalViewProps> = ({
   onSaveEvalRecord,
   legacyDailyLogs,
   legacyPtDocks,
-  onDeleteDailyLog = () => {},
-  onDeletePTDock = () => {},
   concertGoal,
   onSaveConcertGoal,
   cloudStatus,
@@ -137,12 +133,14 @@ export const CustomerPortalView: React.FC<CustomerPortalViewProps> = ({
           )}
 
           {activeTab === 'dashboard' && (
-            <DashboardTab
-              dailyLogs={displayDailyLogs}
-              ptDocks={legacyPtDocks}
-              onDeleteDailyLog={onDeleteDailyLog}
-              onDeletePTDock={onDeletePTDock}
-              onOpenMedicalReport={() => setIsReportOpen(true)}
+            <DynamicDashboardTab
+              tenant={tenant}
+              customer={customer}
+              dailyLogs={dailyLogs}
+              evalRecords={evalRecords}
+              onOpenReport={() => setIsReportOpen(true)}
+              legacyDailyLogs={displayDailyLogs}
+              legacyPtDocks={legacyPtDocks}
             />
           )}
         </main>

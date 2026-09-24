@@ -3,8 +3,15 @@ import { RoleNavigationHeader } from './components/RoleNavigationHeader';
 import { AdminPlatformView } from './components/AdminPlatformView';
 import { ProviderAdminView } from './components/ProviderAdminView';
 import { CustomerPortalView } from './components/CustomerPortalView';
+import { LoginModal } from './components/LoginModal';
 import type { Tenant, Customer, GenericDailyLog, GenericEvalRecord } from './types/tenant';
 import type { AppMode } from './utils/tenantStorage';
+import type { AuthUser } from './types/auth';
+import {
+  getCurrentUser,
+  setCurrentUser,
+  logout,
+} from './utils/authStorage';
 import {
   getTenants,
   saveTenants,
@@ -42,16 +49,34 @@ import {
 } from './firebase/firestoreService';
 
 export const App: React.FC = () => {
+  // Current Authenticated User
+  const [currentUser, setCurrentUserState] = useState<AuthUser | null>(getCurrentUser());
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
   // Mode: 'admin' | 'provider' | 'customer'
-  const [appMode, setAppMode] = useState<AppMode>(getAppMode());
+  const [appMode, setAppMode] = useState<AppMode>(() => {
+    const user = getCurrentUser();
+    if (user?.role === 'customer') return 'customer';
+    if (user?.role === 'provider') return 'provider';
+    return getAppMode();
+  });
 
   // Tenants and Customers State
   const [tenants, setTenants] = useState<Tenant[]>(getTenants());
   const [customers, setCustomers] = useState<Customer[]>(getCustomers());
 
   // Active Selected IDs
-  const [activeTenantId, setActiveTenantId] = useState<string>(getActiveTenantId());
-  const [activeCustomerId, setActiveCustomerId] = useState<string>(getActiveCustomerId());
+  const [activeTenantId, setActiveTenantId] = useState<string>(() => {
+    const user = getCurrentUser();
+    if (user?.tenantId) return user.tenantId;
+    return getActiveTenantId();
+  });
+
+  const [activeCustomerId, setActiveCustomerId] = useState<string>(() => {
+    const user = getCurrentUser();
+    if (user?.customerId) return user.customerId;
+    return getActiveCustomerId();
+  });
 
   // Legacy data for HISA-CARAT backward compatibility
   const [legacyDailyLogs, setLegacyDailyLogs] = useState<DailyLog[]>(getDailyLogs());
@@ -122,8 +147,53 @@ export const App: React.FC = () => {
     };
   }, []);
 
-  // Mode switcher
+  // Handle Login
+  const handleLogin = (user: AuthUser) => {
+    setCurrentUserState(user);
+    setCurrentUser(user);
+
+    if (user.role === 'customer') {
+      setAppMode('customer');
+      saveAppMode('customer');
+      if (user.tenantId) {
+        setActiveTenantId(user.tenantId);
+        saveActiveTenantId(user.tenantId);
+      }
+      if (user.customerId) {
+        setActiveCustomerId(user.customerId);
+        saveActiveCustomerId(user.customerId);
+      }
+    } else if (user.role === 'provider') {
+      setAppMode('provider');
+      saveAppMode('provider');
+      if (user.tenantId) {
+        setActiveTenantId(user.tenantId);
+        saveActiveTenantId(user.tenantId);
+      }
+    } else {
+      setAppMode('admin');
+      saveAppMode('admin');
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    setCurrentUserState(null);
+    setIsLoginModalOpen(true);
+  };
+
+  // Mode switcher with strict role check
   const handleSwitchMode = (mode: AppMode) => {
+    if (currentUser?.role === 'customer') {
+      // Customer is locked to customer portal
+      setAppMode('customer');
+      saveAppMode('customer');
+      return;
+    }
+    if (currentUser?.role === 'provider' && mode === 'admin') {
+      // Provider cannot enter admin
+      return;
+    }
     setAppMode(mode);
     saveAppMode(mode);
   };
@@ -278,11 +348,18 @@ export const App: React.FC = () => {
     }
   };
 
+  // Enforce access control for current effective render
+  const effectiveMode = currentUser?.role === 'customer'
+    ? 'customer'
+    : currentUser?.role === 'provider' && appMode === 'admin'
+    ? 'provider'
+    : appMode;
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased selection:bg-pink-200">
-      {/* 1. Global Role Navigation & ID Linkage Bar */}
+      {/* 1. Global Role Navigation & ID Linkage Bar (With permission checks) */}
       <RoleNavigationHeader
-        currentMode={appMode}
+        currentMode={effectiveMode}
         onSwitchMode={handleSwitchMode}
         activeTenant={activeTenant}
         activeCustomer={activeCustomer}
@@ -290,10 +367,13 @@ export const App: React.FC = () => {
         customers={customers}
         onSelectTenant={handleSelectTenant}
         onSelectCustomer={handleSelectCustomer}
+        currentUser={currentUser}
+        onOpenLoginModal={() => setIsLoginModalOpen(true)}
+        onLogout={handleLogout}
       />
 
-      {/* 2. Page View according to Current Mode */}
-      {appMode === 'admin' && (
+      {/* 2. Page View according to Current Mode & Permissions */}
+      {effectiveMode === 'admin' && currentUser?.role === 'admin' && (
         <div className="p-4 sm:p-6">
           <AdminPlatformView
             tenants={tenants}
@@ -314,7 +394,7 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {appMode === 'provider' && (
+      {effectiveMode === 'provider' && (currentUser?.role === 'admin' || currentUser?.role === 'provider') && (
         <div className="p-4 sm:p-6">
           <ProviderAdminView
             tenant={activeTenant}
@@ -330,7 +410,7 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {appMode === 'customer' && (
+      {effectiveMode === 'customer' && (
         <CustomerPortalView
           tenant={activeTenant}
           customer={activeCustomer}
@@ -348,6 +428,14 @@ export const App: React.FC = () => {
           onSelectAvatarStyle={handleSelectAvatarStyle}
         />
       )}
+
+      {/* 3. Login Modal */}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onLogin={handleLogin}
+        currentUser={currentUser}
+      />
     </div>
   );
 };
