@@ -49,7 +49,7 @@ export const DEMO_ACCOUNTS: AuthUser[] = [
   // 1. Cheer Master (管理者)
   {
     id: 'user-admin-01',
-    email: 'admin@cheer.app',
+    email: 'kotsuka@creativesd.net',
     name: 'Cheer HQ 管理部',
     role: 'admin',
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
@@ -59,7 +59,7 @@ export const DEMO_ACCOUNTS: AuthUser[] = [
   // 2. Pro Partner (業者) - CARAT 公式ケア
   {
     id: 'user-partner-carat',
-    email: 'carat@partner.cheer.app',
+    email: 'kotsuka@creativesd.net',
     name: 'CARAT オフィシャルケア担当',
     role: 'provider',
     tenantId: 'tenant-carat-hisa',
@@ -67,7 +67,7 @@ export const DEMO_ACCOUNTS: AuthUser[] = [
     description: 'ひさこ様のリハビリ＆推し活ケア伴走担当',
   },
 
-  // 3. Pro Partner (業者) - NEXT-FITNESS
+  // 3. Pro Partner (業者) - NEXT-FITNESS (ダミー)
   {
     id: 'user-partner-fit',
     email: 'fitness@partner.cheer.app',
@@ -75,10 +75,10 @@ export const DEMO_ACCOUNTS: AuthUser[] = [
     role: 'provider',
     tenantId: 'tenant-fitness-pro',
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
-    description: 'パーソナルジム会員のトレーニング管理',
+    description: 'パーソナルジム会員のトレーニング管理 (ダミー)',
   },
 
-  // 4. Pro Partner (業者) - 未来アカデミー
+  // 4. Pro Partner (業者) - 未来アカデミー (ダミー)
   {
     id: 'user-partner-edu',
     email: 'academy@partner.cheer.app',
@@ -86,7 +86,7 @@ export const DEMO_ACCOUNTS: AuthUser[] = [
     role: 'provider',
     tenantId: 'tenant-study-academy',
     avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80',
-    description: '個別指導塾生の学習記録＆面談サポート',
+    description: '個別指導塾生の学習記録＆面談サポート (ダミー)',
   },
 
   // 5. My Lounge (顧客) - ひさこ様

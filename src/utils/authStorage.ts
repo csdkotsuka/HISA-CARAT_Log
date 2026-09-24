@@ -7,7 +7,13 @@ export const getCurrentUser = (): AuthUser => {
   try {
     const raw = localStorage.getItem(CURRENT_USER_KEY);
     if (raw) {
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      // Synchronize with updated DEMO_ACCOUNTS if this user is a demo user
+      const matched = DEMO_ACCOUNTS.find((u) => u.id === parsed.id);
+      if (matched) {
+        return matched;
+      }
+      return parsed;
     }
     // Default to Hisako's account for immediate delightful experience
     const defaultUser = DEMO_ACCOUNTS.find((u) => u.id === 'user-cust-hisa') || DEMO_ACCOUNTS[0];
