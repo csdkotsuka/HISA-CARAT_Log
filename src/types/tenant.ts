@@ -1,109 +1,22 @@
 import type { DailyCondition, WeatherCondition } from './index';
 
-// 5大業界カテゴリー
-export type IndustryGroup =
-  | 'medical_care'   // 1. 医療・福祉・ケア (訪問看護, 障がい者支援, 整体, デイサービス)
-  | 'field_ops'      // 2. 現場・建設・フィールド (造園・外構, ビルメンテ, 遊漁船, 林業)
-  | 'local_service'  // 3. 地域密着・ライフサービス (ペットサロン, 車整備, 寺院・儀礼)
-  | 'edu_community'  // 4. 教育・実践コミュニティ・BtoB (個別学習塾, 実習ポータル, 地域営農)
-  | 'cheer_personal';// 5. 推し活・ウェルネス・パーソナル (アイドル推し活, ジム, ヨガ)
-
-// 業界種別詳細
+// 業界種別
 export type IndustryType =
-  // 医療・福祉
-  | 'visiting_nurse'      // 訪問看護・介護ステーション
-  | 'welfare_support'     // 障がい者就労支援・放デイ
-  | 'orthopedic_clinic'   // 接骨院・整体院
-  | 'day_service'         // 小規模デイサービス
-  | 'healthcare'          // 一般医療・リハビリ
-  // 現場・フィールド
-  | 'landscaping_const'   // 造園・外構・建設
-  | 'building_clean'      // ビルメンテ・清掃
-  | 'fishing_boat'        // 小型船・釣り船・遊漁船
-  | 'forestry_safety'     // 林業・山林安全
-  // 地域密着
-  | 'pet_salon'           // ペットサロン・トリミング
-  | 'auto_repair'         // 自動車整備・板金
-  | 'temple_ceremony'     // 寺院・神社・儀礼
-  // 教育・コミュニティ
-  | 'private_tutoring'    // 個別学習塾・家庭教師
-  | 'internship_portal'   // 実習・インターンポータル
-  | 'farm_sharing'        // 農業・農機具シェア
-  | 'community'           // 地域サークル・健康会
-  // 推し活・パーソナル
-  | 'idol'                // 推し活・ファンコミュニティ
-  | 'fitness'             // パーソナルジム・フィットネス
-  | 'wellness'            // ヨガ・ウェルネス
-  | 'beauty'              // エステ・サロン
-  | 'coaching'            // ビジネス・コーチング
-  | 'education'           // スクール一般
-  | 'custom';             // カスタム
-
-// カテゴリ情報メタデータ
-export interface CategoryGroupMeta {
-  id: IndustryGroup;
-  title: string;
-  subTitle: string;
-  icon: string;
-  color: string;
-  badge: string;
-  description: string;
-}
-
-export const INDUSTRY_GROUPS: CategoryGroupMeta[] = [
-  {
-    id: 'medical_care',
-    title: '医療・福祉・ケア',
-    subTitle: '現場知見×リアルタイム連携',
-    icon: '🩺',
-    color: '#0D9488',
-    badge: 'Medical & Care',
-    description: '訪問看護、障がい者就労支援、整体、デイサービスなど、毎日のバイタルや支援記録・関係者共有に特化',
-  },
-  {
-    id: 'field_ops',
-    title: '現場・建設・フィールド',
-    subTitle: '位置情報×現場動態共有',
-    icon: '🏗️',
-    color: '#EA580C',
-    badge: 'Field & Ops',
-    description: '造園、外構、ビルメンテ、遊漁船、林業など、写真付き日報や安全管理・リアルタイム動態をスマート化',
-  },
-  {
-    id: 'local_service',
-    title: '地域密着・ライフサービス',
-    subTitle: '個体カルテ×リピート支援',
-    icon: '✂️',
-    color: '#8B5CF6',
-    badge: 'Local Service',
-    description: 'ペットサロン、自動車整備工場、寺院・納骨堂など、細やかな履歴管理と次回予約・アフターフォローを両立',
-  },
-  {
-    id: 'edu_community',
-    title: '教育・実習・コミュニティ',
-    subTitle: '成長伴走×多角連携',
-    icon: '🎓',
-    color: '#2563EB',
-    badge: 'Edu & BtoB',
-    description: '個別塾の保護者連携、大学×企業インターン実習、農機具シェアなど、関係者を1つのタイムラインでつなぐ',
-  },
-  {
-    id: 'cheer_personal',
-    title: '推し活・ウェルネス・自己実現',
-    subTitle: 'エナジーチャージ＆伴走',
-    icon: '💎',
-    color: '#EC4899',
-    badge: 'Cheer & Life',
-    description: '推し活ダイアリー、パーソナルトレーニング、ヨガ習慣化など、毎日に寄り添いモチベーションを最大化',
-  },
-];
+  | 'idol'        // 推し活・アイドル・ファンコミュニティ
+  | 'fitness'     // フィットネス・パーソナルトレーニング・ジム
+  | 'education'   // 教育・学習塾・個別指導・先生
+  | 'community'   // コミュニティ・仲間・サークル
+  | 'healthcare'  // 医療・クリニック・リハビリ・整体
+  | 'beauty'      // ビューティ・エステ・サロン
+  | 'coaching'    // ビジネス・メンター・コーチング
+  | 'wellness'    // メンタルヘルス・ヨガ・リラクゼーション
+  | 'custom';     // カスタム
 
 // カラーテーマ定義
 export interface ColorTheme {
   id: string;
   name: string;
   industry: IndustryType;
-  group: IndustryGroup;
   primaryColor: string;     // メインアクセント (HEX)
   secondaryColor: string;   // サブカラー (HEX)
   accentColor: string;      // ハイライト (HEX)
@@ -125,7 +38,7 @@ export interface AIPersonaQuote {
 
 export interface AIPersonaConfig {
   name: string;
-  role: string;               // 例: '専属アイドル', 'チーフトレーナー', '訪問リーダー', '担任の美咲先生'
+  role: string;               // 例: '専属アイドル', 'チーフトレーナー', '担任の美咲先生', '親友・サポーター'
   tone: 'friendly' | 'polite' | 'passionate' | 'gentle' | 'cool'; // 口調
   avatarUrl: string;          // アバター画像のURLまたはDataURL
   avatarType: 'upload' | 'preset' | 'ai_generated';
@@ -165,21 +78,28 @@ export interface DailyNumericDef {
 
 export interface DailyConfig {
   title: string;
+  // コンディション5段階選択
   enableCondition: boolean;
   conditionLabel: string;
+  // お天気・気圧
   enableWeather: boolean;
+  // チェック項目
   checkItems: DailyCheckItemDef[];
+  // スライダー項目 (疲労度、痛み、集中度、充実度など)
   sliders: DailySliderDef[];
+  // 数値項目 (体温、歩数、体重、勉強時間など)
   numericFields: DailyNumericDef[];
+  // 特有のモチベーション/エネルギー指数 (例: 推し活エネルギー、モチベーション指数、闘魂度など)
   energyLabel: string;
   energyIcon: string;
   enableEnergy: boolean;
+  // メモ欄
   memoLabel: string;
   memoPlaceholder: string;
   quickTags: string[];
 }
 
-// 定期評価項目のカスタマイズ定義
+// 定期評価項目のカスタマイズ定義（特定の測定方法は省き、汎用化）
 export interface EvalMetricDef {
   id: string;
   label: string;
@@ -192,23 +112,23 @@ export interface EvalMetricDef {
 
 export interface PeriodicEvalConfig {
   enabled: boolean;
-  title: string;
-  evaluatorLabel: string;
-  metrics: EvalMetricDef[];
-  adviceLabel: string;
-  goalLabel: string;
+  title: string;              // 例: '定期コンディショニング測定', '月次フィットネスチェック', '学習到達度チェック'
+  evaluatorLabel: string;     // 例: '担当トレーナー / 測定者', '担当講師 / 担任', '専任スタッフ'
+  metrics: EvalMetricDef[];   // 測定項目リスト
+  adviceLabel: string;        // 例: 'トレーナーからのアドバイス', '先生からの講評', '専門スタッフの所見'
+  goalLabel: string;          // 例: '次回までの目標', '来月のターゲット'
 }
 
 // 業者（Tenant / Provider）エンティティ
 export interface Tenant {
-  id: string;                 // 業者ID (例: 'tenant-carat-hisa', 'tenant-visiting-nurse')
+  id: string;                 // 業者ID (例: 'tenant-carat', 'tenant-fitness')
   adminId: string;            // 管理者ID ('admin-master')
   name: string;               // 業者名・屋号
   industry: IndustryType;
-  group: IndustryGroup;       // 5大カテゴリー
-  headerTitle: string;        // 顧客ページの見出し
+  // 顧客ページ（ヘッダー・ブランディング）
+  headerTitle: string;        // 顧客ページの見出し (例: 'HISA-CARAT Log', 'POWER-FIT Gym', 'STEP 学習手帳')
   headerSubtitle: string;     // 顧客ページのサブ見出し
-  badgeText: string;          // ヘッダー上のバッジ
+  badgeText: string;          // ヘッダー上のバッジ (例: 'CARAT 💎 Care', 'FITNESS PRO 🔥', 'STUDY ACADEMY ✏️')
   theme: ColorTheme;
   aiPersona: AIPersonaConfig;
   dailyConfig: DailyConfig;
@@ -224,7 +144,7 @@ export interface Customer {
   id: string;                 // 顧客ID (例: 'cust-hisa-01', 'cust-tanaka-02')
   tenantId: string;           // 所属する業者ID
   name: string;               // 顧客氏名
-  nickname?: string;          // 呼称
+  nickname?: string;          // 呼称 (例: 'ひさこさん', '田中さん')
   joinedDate: string;
   customGoal?: string;        // 顧客の個別目標
   status: 'active' | 'inactive';
@@ -238,10 +158,10 @@ export interface GenericDailyLog {
   date: string;
   condition?: DailyCondition;
   weather?: WeatherCondition;
-  checkStates: Record<string, boolean>;
-  sliderValues: Record<string, number>;
-  numericValues: Record<string, number>;
-  energyLevel?: number;
+  checkStates: Record<string, boolean>;     // checkItem.id -> boolean
+  sliderValues: Record<string, number>;     // slider.id -> number
+  numericValues: Record<string, number>;    // numeric.id -> number
+  energyLevel?: number;                     // 0 - 100
   memo: string;
   createdAt: string;
 }
@@ -253,7 +173,7 @@ export interface GenericEvalRecord {
   tenantId: string;
   date: string;
   evaluator: string;
-  metricValues: Record<string, any>;
+  metricValues: Record<string, any>;        // metric.id -> value
   advice: string;
   nextGoal: string;
   createdAt: string;

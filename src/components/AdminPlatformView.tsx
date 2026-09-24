@@ -54,7 +54,6 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
       t.headerTitle.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesIndustry =
       selectedIndustry === 'all' ||
-      t.group === selectedIndustry ||
       t.industry === selectedIndustry;
     return matchesSearch && matchesIndustry;
   });
@@ -80,7 +79,6 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
       adminId: 'admin-master',
       name: newName.trim(),
       industry: newIndustry,
-      group: theme.group || 'cheer_personal',
       headerTitle: newHeaderTitle.trim() || `${newName} ポータルLog`,
       headerSubtitle: '毎日の習慣化・成果向上を支える専用パートナー手帳',
       badgeText: `${newIndustry.toUpperCase()} PRO ✨`,
@@ -239,7 +237,7 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
                 事業者向けPR・ソリューション紹介ページ
               </h3>
               <p className="text-[11px] text-slate-500 mt-0.5">
-                医療福祉・現場・地域サロン・教育・推し活など5大領域の導入メリットと現場事例
+                推し活・パーソナルトレーニング・個別指導・仲間サークル・セルフケア向け導入メリットとUIプレビュー
               </p>
             </div>
           </div>
@@ -305,54 +303,64 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
               すべて ({tenants.length})
             </button>
             <button
-              onClick={() => setSelectedIndustry('medical_care')}
+              onClick={() => setSelectedIndustry('idol')}
               className={`px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap ${
-                selectedIndustry === 'medical_care'
-                  ? 'bg-teal-600 text-white'
-                  : 'bg-teal-50 text-teal-700 hover:bg-teal-100'
-              }`}
-            >
-              🩺 医療・福祉・ケア
-            </button>
-            <button
-              onClick={() => setSelectedIndustry('field_ops')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap ${
-                selectedIndustry === 'field_ops'
-                  ? 'bg-orange-600 text-white'
-                  : 'bg-orange-50 text-orange-700 hover:bg-orange-100'
-              }`}
-            >
-              🏗️ 現場・建設・フィールド
-            </button>
-            <button
-              onClick={() => setSelectedIndustry('local_service')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap ${
-                selectedIndustry === 'local_service'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
-              }`}
-            >
-              ✂️ 地域・ライフサービス
-            </button>
-            <button
-              onClick={() => setSelectedIndustry('edu_community')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap ${
-                selectedIndustry === 'edu_community'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
-              }`}
-            >
-              🎓 教育・実習・BtoB
-            </button>
-            <button
-              onClick={() => setSelectedIndustry('cheer_personal')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap ${
-                selectedIndustry === 'cheer_personal'
+                selectedIndustry === 'idol'
                   ? 'bg-pink-600 text-white'
                   : 'bg-pink-50 text-pink-700 hover:bg-pink-100'
               }`}
             >
-              💎 推し活・自己実現
+              💎 推し活・アイドル
+            </button>
+            <button
+              onClick={() => setSelectedIndustry('fitness')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap ${
+                selectedIndustry === 'fitness'
+                  ? 'bg-orange-600 text-white'
+                  : 'bg-orange-50 text-orange-700 hover:bg-orange-100'
+              }`}
+            >
+              🏋️ フィットネス
+            </button>
+            <button
+              onClick={() => setSelectedIndustry('education')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap ${
+                selectedIndustry === 'education'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+              }`}
+            >
+              ✏️ 教育・先生
+            </button>
+            <button
+              onClick={() => setSelectedIndustry('community')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap ${
+                selectedIndustry === 'community'
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+              }`}
+            >
+              🤝 仲間・コミュニティ
+            </button>
+            <button
+              onClick={() => setSelectedIndustry('healthcare')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap ${
+                selectedIndustry === 'healthcare'
+                  ? 'bg-teal-600 text-white'
+                  : 'bg-teal-50 text-teal-700 hover:bg-teal-100'
+              }`}
+            >
+              🩺 医療・クリニック
+            </button>
+            <button
+              onClick={() => setSelectedIndustry('beauty')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap ${
+                selectedIndustry === 'beauty'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
+              }`}
+            >
+              💄 ビューティ・サロン
             </button>
           </div>
         </div>
@@ -525,34 +533,14 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
                   onChange={(e) => setNewIndustry(e.target.value as IndustryType)}
                   className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer"
                 >
-                  <optgroup label="🩺 医療・福祉・ケア">
-                    <option value="visiting_nurse">訪問看護・介護ステーション (バイタル共有)</option>
-                    <option value="welfare_support">障がい者就労支援・放デイ (作業工数＆日報AI)</option>
-                    <option value="orthopedic_clinic">接骨院・整体院 (AI姿勢カルテ)</option>
-                    <option value="healthcare">一般医療・リハビリ・クリニック</option>
-                  </optgroup>
-                  <optgroup label="🏗️ 現場・建設・フィールド">
-                    <option value="landscaping_const">造園・外構・建設 (写真×位置情報日報)</option>
-                    <option value="building_clean">ビルメンテ・清掃 (完了証明マップ)</option>
-                    <option value="fishing_boat">小型船・遊漁船 (出港・釣果管理)</option>
-                    <option value="forestry_safety">林業・山林安全 (SOS＆見守り)</option>
-                  </optgroup>
-                  <optgroup label="✂️ 地域密着・ライフサービス">
-                    <option value="pet_salon">ペットサロン・トリミング (毛並みカルテ＆自動リピート)</option>
-                    <option value="auto_repair">自動車整備・板金 (修理進捗見える化)</option>
-                    <option value="temple_ceremony">寺院・神社・納骨堂 (法要＆ご縁管理)</option>
-                  </optgroup>
-                  <optgroup label="🎓 教育・実習・BtoB">
-                    <option value="private_tutoring">個別指導塾・家庭教師 (つまずき可視化＆保護者報告)</option>
-                    <option value="internship_portal">学生×企業 実習・インターンポータル</option>
-                    <option value="farm_sharing">地域農業・農機具シェア</option>
-                  </optgroup>
-                  <optgroup label="💎 推し活・自己実現・ライフ">
-                    <option value="idol">推し活・アイドルファンコミュニティ</option>
-                    <option value="fitness">パーソナルジム・フィットネス (筋トレ・食事)</option>
-                    <option value="wellness">ヨガ・ウェルネス・習慣化</option>
-                    <option value="beauty">ビューティ・エステ・サロン</option>
-                  </optgroup>
+                  <option value="idol">💎 推し活・アイドル・ファンコミュニティ</option>
+                  <option value="fitness">🏋️ フィットネス・パーソナルトレーニング (ジム・トレーナー)</option>
+                  <option value="education">✏️ 教育・個別指導・学習スクール (先生・講師)</option>
+                  <option value="community">🤝 仲間・サークル・コミュニティ (習慣化仲間)</option>
+                  <option value="healthcare">🩺 医療・クリニック・リハビリ・整体</option>
+                  <option value="beauty">💄 ビューティ・エステ・サロン</option>
+                  <option value="coaching">👔 ビジネス・メンター・コーチング</option>
+                  <option value="wellness">🌿 ヨガ・ウェルネス・メンタルケア</option>
                 </select>
               </div>
 

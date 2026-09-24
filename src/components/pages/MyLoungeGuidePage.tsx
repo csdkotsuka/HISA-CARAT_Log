@@ -1,5 +1,13 @@
 import React from 'react';
-import { ArrowLeft, Heart } from 'lucide-react';
+import {
+  ArrowLeft,
+  Heart,
+  CheckCircle2,
+  Smile,
+  Zap,
+  Smartphone,
+  ChevronRight,
+} from 'lucide-react';
 
 interface MyLoungeGuidePageProps {
   onBackToApp: () => void;
@@ -11,7 +19,7 @@ export const MyLoungeGuidePage: React.FC<MyLoungeGuidePageProps> = ({
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FFF5F7] via-[#FFF9FA] to-[#F2F6FC] text-slate-800 font-sans pb-24">
       {/* Top sticky nav */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-pink-100 px-4 sm:px-8 py-3.5 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-md border-b border-pink-100 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-xs">
         <div className="flex items-center gap-2">
           <span className="text-xl">💎</span>
           <span className="font-extrabold text-lg bg-gradient-to-r from-pink-500 to-indigo-500 bg-clip-text text-transparent">
@@ -24,7 +32,7 @@ export const MyLoungeGuidePage: React.FC<MyLoungeGuidePageProps> = ({
 
         <button
           onClick={onBackToApp}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-sm hover:bg-slate-800 transition-all"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-sm hover:bg-slate-800 transition-all cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>マイラウンジに戻る</span>
@@ -32,13 +40,13 @@ export const MyLoungeGuidePage: React.FC<MyLoungeGuidePageProps> = ({
       </header>
 
       {/* Hero Section */}
-      <section className="max-w-4xl mx-auto px-4 pt-12 sm:pt-16 pb-10 text-center space-y-5">
+      <section className="max-w-4xl mx-auto px-4 pt-10 sm:pt-16 pb-8 text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-pink-200 text-pink-600 text-xs font-bold shadow-xs">
           <Heart className="w-3.5 h-3.5 fill-pink-500 text-pink-500" />
           <span>自分らしさを大切にする、毎日の優しい居場所</span>
         </div>
 
-        <h1 className="text-3xl sm:text-4xl font-black text-slate-900 leading-tight">
+        <h1 className="text-3xl sm:text-5xl font-black text-slate-900 leading-tight">
           毎日の小さな記録が、<br />
           <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 bg-clip-text text-transparent">
             私をちょっと好きになる。
@@ -50,15 +58,178 @@ export const MyLoungeGuidePage: React.FC<MyLoungeGuidePageProps> = ({
         </p>
       </section>
 
-      {/* 4 Steps to Enjoy My Lounge */}
+      {/* SCREENSHOT SECTION: Actual Mobile UI Mockup */}
       <section className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-pink-50 border border-pink-200 text-pink-700 text-xs font-bold">
+            <Smartphone className="w-3.5 h-3.5" />
+            <span>実際のマイラウンジ画面プレビュー</span>
+          </div>
+          <h2 className="text-xl sm:text-3xl font-extrabold text-slate-900">
+            シンプルで心地いい、あなたのための手帳画面
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto">
+            毎日続けたくなる工夫が、この画面にぎゅっと詰まっています。
+          </p>
+        </div>
+
+        {/* Mobile Phone Mockup Frame */}
+        <div className="max-w-md mx-auto rounded-3xl border-4 border-slate-800 bg-white shadow-2xl overflow-hidden">
+          {/* Mobile Top Bar */}
+          <div className="bg-slate-800 text-white text-[10px] px-6 py-1.5 flex items-center justify-between font-mono">
+            <span>9:41</span>
+            <div className="w-16 h-3.5 bg-black rounded-full mx-auto" />
+            <div className="flex items-center gap-1.5">
+              <span>5G</span>
+              <span>100%</span>
+            </div>
+          </div>
+
+          {/* Screenshot Body */}
+          <div className="bg-gradient-to-b from-[#FFF5F8] via-[#FAF8FF] to-white p-4 space-y-3.5">
+            {/* 1. Header with Avatar & Speech Bubble */}
+            <div className="rounded-2xl p-4 bg-gradient-to-r from-[#F7CAC9] via-[#E8D1E6] to-[#92A8D1] text-slate-800 shadow-sm relative overflow-hidden">
+              <div className="flex items-center gap-3">
+                <div className="w-13 h-13 rounded-full border-2 border-white overflow-hidden shadow-md flex-shrink-0 relative group">
+                  <img
+                    src="/hani-avatar.png"
+                    alt="AI Partner"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
+                    }}
+                  />
+                  <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-400 border-2 border-white rounded-full" />
+                </div>
+                <div className="flex-1">
+                  <div className="inline-block text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-white/80 text-pink-700 mb-0.5">
+                    CARAT 💎 Care
+                  </div>
+                  <div className="font-black text-sm text-slate-800">HISA-CARAT Log</div>
+                  <div className="text-[10px] text-slate-600">ひさこさんの推し活ダイアリー</div>
+                </div>
+              </div>
+
+              {/* Speech bubble */}
+              <div className="mt-3 bg-white/95 backdrop-blur-sm rounded-xl p-2.5 border border-pink-200 text-xs font-bold text-pink-900 shadow-xs flex items-center gap-2">
+                <span className="text-base">💬</span>
+                <span className="leading-snug">「ひさこちゃん、今日も無理せず自分のペースでね💎 いつも応援してるよ！」</span>
+              </div>
+            </div>
+
+            {/* 2. Mood & Weather Selector */}
+            <div className="bg-white rounded-2xl p-3 border border-pink-100 shadow-xs space-y-2">
+              <div className="flex justify-between items-center text-xs font-bold text-slate-700">
+                <span className="flex items-center gap-1.5">
+                  <Smile className="w-3.5 h-3.5 text-pink-500" />
+                  <span>今日の気分</span>
+                </span>
+                <span className="text-[10px] px-2 py-0.5 rounded-md bg-sky-50 text-sky-700 font-medium">
+                  ☀️ 晴れ・気圧 安定
+                </span>
+              </div>
+              <div className="grid grid-cols-5 gap-1.5 text-center">
+                <div className="p-2 rounded-xl bg-pink-500 text-white font-black text-xs shadow-xs ring-2 ring-pink-300">
+                  <div className="text-base">😄</div>
+                  <div className="text-[9px] mt-0.5 font-bold">最高</div>
+                </div>
+                <div className="p-2 rounded-xl bg-slate-50 text-slate-600 text-xs">
+                  <div className="text-base">🙂</div>
+                  <div className="text-[9px] mt-0.5">良好</div>
+                </div>
+                <div className="p-2 rounded-xl bg-slate-50 text-slate-600 text-xs">
+                  <div className="text-base">😐</div>
+                  <div className="text-[9px] mt-0.5">普通</div>
+                </div>
+                <div className="p-2 rounded-xl bg-slate-50 text-slate-600 text-xs">
+                  <div className="text-base">🥱</div>
+                  <div className="text-[9px] mt-0.5">お疲れ</div>
+                </div>
+                <div className="p-2 rounded-xl bg-slate-50 text-slate-600 text-xs">
+                  <div className="text-base">😣</div>
+                  <div className="text-[9px] mt-0.5">つらい</div>
+                </div>
+              </div>
+            </div>
+
+            {/* 3. 30-Second Checklist with Confetti preview */}
+            <div className="bg-white rounded-2xl p-3.5 border border-pink-100 shadow-xs space-y-2">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>今日のセルフケア</span>
+                </span>
+                <span className="text-[10px] text-pink-600 font-extrabold bg-pink-50 px-2 py-0.5 rounded-full border border-pink-200">
+                  ✨ 3/3 完了！花吹雪発生中 🎉
+                </span>
+              </div>
+              <div className="space-y-1.5 text-xs">
+                <div className="flex items-center justify-between p-2 rounded-xl bg-pink-50/70 border border-pink-200 text-pink-950 font-bold">
+                  <div className="flex items-center gap-2">
+                    <span className="w-4 h-4 rounded-md bg-pink-500 text-white flex items-center justify-center text-[10px]">✓</span>
+                    <span>セブチの曲を聴いて元気チャージ</span>
+                  </div>
+                  <span className="text-[10px] text-pink-600">完了</span>
+                </div>
+                <div className="flex items-center justify-between p-2 rounded-xl bg-pink-50/70 border border-pink-200 text-pink-950 font-bold">
+                  <div className="flex items-center gap-2">
+                    <span className="w-4 h-4 rounded-md bg-pink-500 text-white flex items-center justify-center text-[10px]">✓</span>
+                    <span>水分を1.5L以上しっかり補給</span>
+                  </div>
+                  <span className="text-[10px] text-pink-600">完了</span>
+                </div>
+                <div className="flex items-center justify-between p-2 rounded-xl bg-pink-50/70 border border-pink-200 text-pink-950 font-bold">
+                  <div className="flex items-center gap-2">
+                    <span className="w-4 h-4 rounded-md bg-pink-500 text-white flex items-center justify-center text-[10px]">✓</span>
+                    <span>寝る前のストレッチ5分間</span>
+                  </div>
+                  <span className="text-[10px] text-pink-600">完了</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 4. Energy Gauge */}
+            <div className="bg-white rounded-2xl p-3 border border-pink-100 shadow-xs space-y-1.5">
+              <div className="flex justify-between items-center text-xs font-bold">
+                <span className="flex items-center gap-1.5 text-pink-800">
+                  <Zap className="w-3.5 h-3.5 text-amber-500" />
+                  <span>💎 推し活エネルギー指数</span>
+                </span>
+                <span className="text-sm font-black text-pink-600">92 %</span>
+              </div>
+              <div className="h-3 w-full bg-pink-100 rounded-full overflow-hidden p-0.5">
+                <div className="h-full bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-500 rounded-full" style={{ width: '92%' }} />
+              </div>
+            </div>
+
+            {/* 5. Streak & Trophy Badge */}
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-3 border border-amber-200 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-400 text-white flex items-center justify-center text-lg shadow-xs">
+                  🏆
+                </div>
+                <div>
+                  <div className="text-xs font-extrabold text-amber-950">7日間連続チェックイン達成！</div>
+                  <div className="text-[10px] text-amber-700">「マイペース継続マスター」バッジ獲得</div>
+                </div>
+              </div>
+              <span className="text-[10px] font-black text-amber-800 bg-white px-2 py-1 rounded-lg border border-amber-200">
+                Lv. 3
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4 Points that Make My Lounge Feel Special */}
+      <section className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         <h2 className="text-xl sm:text-2xl font-extrabold text-center text-slate-800">
-          My Lounge を楽しむ4つのステップ
+          My Lounge を楽しむ 4つのステップ
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Step 1 */}
-          <div className="bg-white/90 backdrop-blur-md p-6 rounded-3xl border border-pink-100 shadow-sm space-y-3 hover:shadow-md transition-all">
+          <div className="bg-white/95 backdrop-blur-md p-6 rounded-3xl border border-pink-100 shadow-sm space-y-3 hover:shadow-md transition-all">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center font-black text-sm">
                 01
@@ -73,7 +244,7 @@ export const MyLoungeGuidePage: React.FC<MyLoungeGuidePageProps> = ({
           </div>
 
           {/* Step 2 */}
-          <div className="bg-white/90 backdrop-blur-md p-6 rounded-3xl border border-purple-100 shadow-sm space-y-3 hover:shadow-md transition-all">
+          <div className="bg-white/95 backdrop-blur-md p-6 rounded-3xl border border-purple-100 shadow-sm space-y-3 hover:shadow-md transition-all">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center font-black text-sm">
                 02
@@ -83,12 +254,12 @@ export const MyLoungeGuidePage: React.FC<MyLoungeGuidePageProps> = ({
               </h3>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed">
-              ヘッダーのアバターをタップすると、あなただけに向けた励ましメッセージを喋ってくれます。日替わりの温かい言葉が、疲れた日の心をふっと軽くしてくれます。
+              ヘッダーのアバターをタップすると、あなただけに向けた励ましメッセージを喋ってくれます。日替わりの温かい言葉が、疲れた日の心をふっと軽やかにしてくれます。
             </p>
           </div>
 
           {/* Step 3 */}
-          <div className="bg-white/90 backdrop-blur-md p-6 rounded-3xl border border-sky-100 shadow-sm space-y-3 hover:shadow-md transition-all">
+          <div className="bg-white/95 backdrop-blur-md p-6 rounded-3xl border border-sky-100 shadow-sm space-y-3 hover:shadow-md transition-all">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center font-black text-sm">
                 03
@@ -98,47 +269,53 @@ export const MyLoungeGuidePage: React.FC<MyLoungeGuidePageProps> = ({
               </h3>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed">
-              カレンダーにはスタンプが並び、グラフにはあなたの積み重ねが描かれます。「こんなに続けてこれたんだ」という実感が、明日の自信につながります。
+              記録を重ねるたびに、グラフやカレンダーに彩りが加わります。調子が良い日も、少し休んだ日も、すべてが大切なあなたの軌跡。振り返るたびに自己肯定感が高まります。
             </p>
           </div>
 
           {/* Step 4 */}
-          <div className="bg-white/90 backdrop-blur-md p-6 rounded-3xl border border-emerald-100 shadow-sm space-y-3 hover:shadow-md transition-all">
+          <div className="bg-white/95 backdrop-blur-md p-6 rounded-3xl border border-emerald-100 shadow-sm space-y-3 hover:shadow-md transition-all">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-black text-sm">
                 04
               </div>
               <h3 className="text-sm font-extrabold text-slate-800">
-                安心のプライベート空間
+                誰にも邪魔されない、完全なプライベート空間
               </h3>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed">
-              他のユーザーやSNSに見られる心配はありません。あなたと、あなたの信頼するパートナー（トレーナーや先生、医療職）だけの安全で温かいお部屋です。
+              他の人の視線やSNSの比較は一切ありません。あなたのデータは大切に守られ、あなたと担当パートナーだけがつながる安心で穏やかな場所です。
             </p>
           </div>
         </div>
       </section>
 
-      {/* Gentle Message & Back button */}
-      <section className="max-w-2xl mx-auto px-4 py-10 text-center space-y-5">
-        <div className="p-6 rounded-3xl bg-white/80 border border-pink-100 shadow-sm space-y-3">
-          <div className="text-2xl">☕</div>
-          <h3 className="text-base font-extrabold text-slate-800">
-            無理のないペースが、いちばん続く魔法。
-          </h3>
-          <p className="text-xs text-slate-600 leading-relaxed">
-            記録を忘れる日があっても大丈夫。いつでも気が向いたときにMy Loungeを開いてみてくださいね。
-          </p>
-          <div className="pt-2">
-            <button
-              onClick={onBackToApp}
-              className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-pink-500 to-indigo-600 hover:opacity-95 text-white font-bold text-xs shadow-md transition-all inline-flex items-center gap-2"
-            >
-              <span>マイラウンジで記録をつける</span>
-              <span>→</span>
-            </button>
+      {/* How to add to home screen */}
+      <section className="max-w-2xl mx-auto px-4 py-4">
+        <div className="bg-white rounded-3xl p-5 border border-pink-200/80 shadow-xs flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-pink-50 text-pink-600 flex items-center justify-center text-2xl flex-shrink-0">
+            📱
+          </div>
+          <div className="flex-1">
+            <h4 className="text-xs font-bold text-slate-800">
+              スマホのホーム画面に追加してアプリのように使えます
+            </h4>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              SafariやChromeのメニューから「ホーム画面に追加」をタップするだけで、いつでもワンタップで開けます。
+            </p>
           </div>
         </div>
+      </section>
+
+      {/* Bottom CTA */}
+      <section className="max-w-xl mx-auto px-4 pt-6 text-center">
+        <button
+          onClick={onBackToApp}
+          className="w-full py-4 rounded-2xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 text-white font-extrabold text-sm shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
+        >
+          <span>マイラウンジを開いて記録してみる</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
       </section>
     </div>
   );
