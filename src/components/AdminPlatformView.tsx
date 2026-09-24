@@ -331,9 +331,14 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
                 }`}>
                   {geminiApiKey ? `🟢 連携中 (${geminiModel})` : '🟡 未設定 (シミュレーションモード)'}
                 </span>
+                {import.meta.env.VITE_GEMINI_API_KEY && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/40 font-bold">
+                    Vercel環境変数適用中
+                  </span>
+                )}
               </div>
               <p className="text-xs text-indigo-200/70 mt-0.5">
-                ここで設定されたAPIキーとモデルが、全テナント・顧客の「本人と会話できるAIチャット」に適用されます。
+                Vercelの環境変数 <code className="text-pink-300 bg-slate-950 px-1 py-0.5 rounded">VITE_GEMINI_API_KEY</code> または下記フォームから設定可能。モデルは即時切り替えてテストできます。
               </p>
             </div>
           </div>
@@ -353,7 +358,7 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
               className="px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 text-xs font-extrabold text-white shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
             >
               {saveStatus ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Save className="w-3.5 h-3.5" />}
-              <span>{saveStatus ? '保存完了！' : '設定を保存'}</span>
+              <span>{saveStatus ? '保存完了！' : 'モデル・キーを保存'}</span>
             </button>
           </div>
         </div>
@@ -361,14 +366,14 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
         {/* Input Controls */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 text-xs">
           {/* API Key Input */}
-          <div className="md:col-span-8 space-y-1.5">
+          <div className="md:col-span-7 space-y-1.5">
             <label className="flex items-center justify-between font-bold text-indigo-200">
               <span className="flex items-center gap-1.5">
                 <Key className="w-3.5 h-3.5 text-pink-400" />
                 <span>Gemini API Key (Google AI Studio)</span>
               </span>
-              <span className="text-[10px] text-indigo-300/60">
-                ※ブラウザローカルに暗号化保存（外部送信なし）
+              <span className="text-[10px] text-indigo-300/70">
+                {import.meta.env.VITE_GEMINI_API_KEY ? '（Vercel環境変数から読込中 / 上書き可）' : '（Vercelまたはここで設定）'}
               </span>
             </label>
             <div className="relative">
@@ -376,7 +381,7 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
                 type={showApiKey ? 'text' : 'password'}
                 value={geminiApiKey}
                 onChange={(e) => setGeminiApiKey(e.target.value)}
-                placeholder="AIzaSy..."
+                placeholder="AIzaSy... (Vercel環境変数未設定時はここに入力)"
                 className="w-full pl-3.5 pr-10 py-2.5 bg-slate-950/80 border border-indigo-700/60 rounded-xl font-mono text-xs text-indigo-100 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500"
               />
               <button
@@ -391,20 +396,35 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
           </div>
 
           {/* Model Selection */}
-          <div className="md:col-span-4 space-y-1.5">
-            <label className="block font-bold text-indigo-200">
-              使用モデル (Model Name)
+          <div className="md:col-span-5 space-y-1.5">
+            <label className="flex items-center justify-between font-bold text-indigo-200">
+              <span>使用モデル (最新3.8・音声3.8-live対応)</span>
+              <span className="text-[10px] text-pink-300 font-normal">即時切替可能</span>
             </label>
             <select
               value={geminiModel}
               onChange={(e) => setGeminiModel(e.target.value)}
               className="w-full px-3.5 py-2.5 bg-slate-950/80 border border-indigo-700/60 rounded-xl font-mono text-xs text-indigo-100 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 cursor-pointer"
             >
-              <option value="gemini-2.0-flash">gemini-2.0-flash (推奨・最新最速)</option>
-              <option value="gemini-1.5-flash">gemini-1.5-flash (高速・軽量)</option>
-              <option value="gemini-1.5-pro">gemini-1.5-pro (高精度・長文)</option>
+              <option value="gemini-3.8-flash">gemini-3.8-flash (最新・超高速思考・推奨)</option>
+              <option value="gemini-3.8-pro">gemini-3.8-pro (最新・高度推論)</option>
+              <option value="gemini-3.8-live">gemini-3.8-live (音声＆リアルタイム対話)</option>
+              <option value="gemini-2.0-flash">gemini-2.0-flash (安定稼働版)</option>
+              <option value="gemini-1.5-flash">gemini-1.5-flash (軽量高速)</option>
+              <option value="gemini-1.5-pro">gemini-1.5-pro (多言語・高精度)</option>
             </select>
           </div>
+        </div>
+
+        {/* Vercel Guide Callout Box */}
+        <div className="p-3 bg-slate-950/70 border border-indigo-800/60 rounded-2xl text-[11px] text-indigo-200/80 space-y-1">
+          <div className="flex items-center gap-1.5 font-bold text-white">
+            <span>ℹ️ VercelでのAPIキー設定手順:</span>
+          </div>
+          <p className="leading-relaxed">
+            Vercelダッシュボード → 該当プロジェクト（cheer） → <strong>Settings</strong> → <strong>Environment Variables</strong> にて、<br />
+            Name: <code className="bg-slate-900 text-pink-300 px-1.5 py-0.5 rounded font-mono font-bold">VITE_GEMINI_API_KEY</code>、Value: <code className="bg-slate-900 text-pink-300 px-1.5 py-0.5 rounded font-mono font-bold">AIzaSy...</code> を追加して保存＆Redeployすると、全ユーザーで自動有効化されます。
+          </p>
         </div>
 
         {/* Test Result Message */}

@@ -2,7 +2,16 @@ import type { Tenant, Customer } from '../types/tenant';
 
 export const GEMINI_API_KEY_STORAGE = 'cheer_gemini_api_key';
 export const GEMINI_MODEL_STORAGE = 'cheer_gemini_model';
-export const DEFAULT_GEMINI_MODEL = 'gemini-2.0-flash';
+export const DEFAULT_GEMINI_MODEL = 'gemini-3.8-flash';
+
+export const AVAILABLE_GEMINI_MODELS = [
+  { id: 'gemini-3.8-flash', label: 'gemini-3.8-flash (最新・超高速・推奨)' },
+  { id: 'gemini-3.8-pro', label: 'gemini-3.8-pro (最新・高度推論)' },
+  { id: 'gemini-3.8-live', label: 'gemini-3.8-live (音声チャット・リアルタイム対話)' },
+  { id: 'gemini-2.0-flash', label: 'gemini-2.0-flash (安定稼働版)' },
+  { id: 'gemini-1.5-flash', label: 'gemini-1.5-flash (軽量高速)' },
+  { id: 'gemini-1.5-pro', label: 'gemini-1.5-pro (多言語・高精度)' },
+];
 
 export interface ChatMessage {
   id: string;
@@ -11,14 +20,19 @@ export interface ChatMessage {
   timestamp: string;
 }
 
-// Get saved API key
+// Check if Vercel environment variable is set
+export const isVercelEnvKeyConfigured = (): boolean => {
+  return !!(import.meta.env.VITE_GEMINI_API_KEY && import.meta.env.VITE_GEMINI_API_KEY.trim());
+};
+
+// Get active API key (localStorage override has precedence, then Vercel env)
 export const getGeminiApiKey = (): string => {
   try {
-    const key = localStorage.getItem(GEMINI_API_KEY_STORAGE);
-    if (key && key.trim()) return key.trim();
+    const localKey = localStorage.getItem(GEMINI_API_KEY_STORAGE);
+    if (localKey && localKey.trim()) return localKey.trim();
     return (import.meta.env.VITE_GEMINI_API_KEY || '').trim();
   } catch {
-    return '';
+    return (import.meta.env.VITE_GEMINI_API_KEY || '').trim();
   }
 };
 

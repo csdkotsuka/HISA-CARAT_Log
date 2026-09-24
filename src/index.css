@@ -97,7 +97,7 @@ input[type="range"].vas-slider::-webkit-slider-thumb:hover {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 8mm 10mm 8mm 10mm;
+    margin: 8mm 8mm 8mm 8mm;
   }
   html, body {
     background: #ffffff !important;
@@ -109,20 +109,40 @@ input[type="range"].vas-slider::-webkit-slider-thumb:hover {
     font-size: 11px !important;
   }
 
-  /* Hide everything on screen except the target report */
-  body * {
-    visibility: hidden !important;
+  .no-print {
+    display: none !important;
   }
 
-  #printable-summary-report,
-  #printable-summary-report * {
-    visibility: visible !important;
+  /* Reset modal containers so they flow naturally onto the printed page */
+  .print-modal-overlay {
+    position: static !important;
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    overflow: visible !important;
+    inset: auto !important;
+    z-index: auto !important;
+  }
+
+  .print-modal-card {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    overflow: visible !important;
   }
 
   #printable-summary-report {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
+    display: block !important;
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;
@@ -133,13 +153,9 @@ input[type="range"].vas-slider::-webkit-slider-thumb:hover {
     page-break-inside: avoid !important;
   }
 
-  .no-print,
-  .no-print-bg {
-    display: none !important;
-    background: transparent !important;
-  }
-  .print-only {
-    display: block !important;
+  #printable-summary-report * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }
 

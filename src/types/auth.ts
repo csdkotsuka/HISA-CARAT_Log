@@ -64,7 +64,7 @@ export const DEMO_ACCOUNTS: AuthUser[] = [
     role: 'provider',
     tenantId: 'tenant-carat-hisa',
     avatarUrl: '/jeonghan_photo.jpg',
-    description: 'あおい様のリハビリ＆推し活ケア伴走担当',
+    description: 'ひさこ様のリハビリ＆推し活ケア伴走担当',
   },
 
   // 3. Pro Partner (業者) - NEXT-FITNESS
@@ -89,16 +89,16 @@ export const DEMO_ACCOUNTS: AuthUser[] = [
     description: '個別指導塾生の学習記録＆面談サポート',
   },
 
-  // 5. My Lounge (顧客) - あおい様
+  // 5. My Lounge (顧客) - ひさこ様
   {
-    id: 'user-cust-aoi',
-    email: 'aoi@user.cheer.app',
-    name: 'あおい',
+    id: 'user-cust-hisa',
+    email: 'hisako@user.cheer.app',
+    name: 'ひさこ',
     role: 'customer',
     tenantId: 'tenant-carat-hisa',
     customerId: 'cust-hisa-01',
     avatarUrl: '/jeonghan_photo.jpg',
-    description: '推し活＆リハビリ・セルフケアダイアリー',
+    description: '推し活＆EGPAセルフケアダイアリー',
   },
 
   // 6. My Lounge (顧客) - 田中 健太郎様

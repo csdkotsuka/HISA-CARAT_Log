@@ -22,6 +22,7 @@ export const PeriodicSummaryReportModal: React.FC<PeriodicSummaryReportModalProp
   customer,
   dailyLogs,
   evalRecords,
+  legacyDailyLogs = [],
   legacyPtDocks = [],
 }) => {
   const [copied, setCopied] = useState(false);
@@ -37,7 +38,24 @@ export const PeriodicSummaryReportModal: React.FC<PeriodicSummaryReportModalProp
 
   if (!isOpen) return null;
 
-  const sortedDaily = [...dailyLogs].sort((a, b) => b.date.localeCompare(a.date));
+  // Effective daily logs: fall back to legacy if generic logs are empty
+  const effectiveDailyLogs =
+    dailyLogs.length > 0
+      ? dailyLogs
+      : legacyDailyLogs.map((l) => ({
+          id: l.id,
+          tenantId: tenant.id,
+          customerId: customer.id,
+          date: l.date,
+          condition: l.condition,
+          energyLevel: Math.max(10, 100 - (l.fatigueLevel * 15)),
+          sliderValues: { fatigueLevel: l.fatigueLevel, painVas: l.painVas },
+          checkStates: l.exercises,
+          memo: l.memo || '',
+          createdAt: l.date,
+        }));
+
+  const sortedDaily = [...effectiveDailyLogs].sort((a, b) => b.date.localeCompare(a.date));
   const sortedEvals = [...evalRecords].sort((a, b) => b.date.localeCompare(a.date));
   const latestDaily = sortedDaily[0];
   const latestEval = sortedEvals[0];
@@ -60,7 +78,7 @@ export const PeriodicSummaryReportModal: React.FC<PeriodicSummaryReportModalProp
 【${tenant.headerTitle} 定期活動・目標進捗サマリー】
 対象顧客: ${customer.name} 様 (${customer.nickname || ''})
 所属: ${tenant.name} (${tenant.badgeText})
-記録期間: 直近 ${dailyLogs.length} 日分 / 最新記録: ${latestDaily ? latestDaily.date : 'なし'}
+記録期間: 直近 ${effectiveDailyLogs.length} 日分 / 最新記録: ${latestDaily ? latestDaily.date : 'なし'}
 目標: ${customer.customGoal || '継続的な習慣化と自己実現'}
 
 ■ 現在のコンディション推移
@@ -89,12 +107,12 @@ ${latestEval?.advice || tenant.aiPersona.speechBubbleText}
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in no-print-bg"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in print-modal-overlay"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[94vh] overflow-y-auto shadow-2xl border border-slate-200 text-left relative">
+      <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[94vh] overflow-y-auto shadow-2xl border border-slate-200 text-left relative print-modal-card">
         {/* Modal Top Bar (Screen only, hidden on print) */}
         <div className="sticky top-0 bg-white/95 backdrop-blur-md p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between z-20 rounded-t-3xl no-print">
           <div className="flex items-center gap-2.5">
@@ -102,7 +120,7 @@ ${latestEval?.advice || tenant.aiPersona.speechBubbleText}
               className="p-2 rounded-xl text-white shadow-xs"
               style={{ backgroundColor: tenant.theme.primaryColor }}
             >
-              <FileText className="w-5 h-5" />
+              <FileText className="w-5 h-5 text-slate-900" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -130,12 +148,9 @@ ${latestEval?.advice || tenant.aiPersona.speechBubbleText}
 
             <button
               onClick={handlePrint}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-white text-xs font-bold shadow-sm hover:opacity-90 transition-all cursor-pointer"
-              style={{
-                backgroundColor: tenant.theme.primaryColor,
-              }}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95"
             >
-              <Printer className="w-3.5 h-3.5" />
+              <Printer className="w-4 h-4 text-emerald-400" />
               <span>帳票印刷 / PDF保存</span>
             </button>
 
@@ -197,7 +212,7 @@ ${latestEval?.advice || tenant.aiPersona.speechBubbleText}
             </div>
             <div>
               <span className="text-slate-500 block text-[10px]">記録集計期間</span>
-              <span className="font-bold text-indigo-700">直近 {dailyLogs.length} 日間</span>
+              <span className="font-bold text-indigo-700">直近 {effectiveDailyLogs.length} 日間</span>
             </div>
 
             <div className="col-span-2 sm:col-span-4 pt-1 border-t border-slate-200 flex items-center gap-2">
@@ -212,7 +227,7 @@ ${latestEval?.advice || tenant.aiPersona.speechBubbleText}
           <div className="mt-3.5 grid grid-cols-4 gap-2 text-center text-xs">
             <div className="p-2.5 rounded-xl border border-slate-200 bg-white">
               <span className="text-[10px] text-slate-500 block">総記録日数</span>
-              <span className="text-lg font-black text-slate-900">{dailyLogs.length}</span>
+              <span className="text-lg font-black text-slate-900">{effectiveDailyLogs.length}</span>
               <span className="text-[10px] text-slate-500 ml-0.5">日</span>
             </div>
             <div className="p-2.5 rounded-xl border border-slate-200 bg-white">

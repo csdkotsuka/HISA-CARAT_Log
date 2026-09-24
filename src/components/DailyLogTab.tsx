@@ -877,7 +877,7 @@ export const DailyLogTab: React.FC<DailyLogTabProps> = ({
           <div className="glass-card rounded-3xl p-5 sm:p-6 border border-pink-100 shadow-sm">
             <h2 className="text-base font-extrabold text-slate-800 flex items-center gap-2 mb-2">
               <span className="p-1.5 rounded-xl bg-amber-100 text-amber-600">✍️</span>
-              <span>5. 今日のひとことメモ ＆ 推し活ダイアリー</span>
+              <span>5. 今日のひさこメモ ＆ 推し活ダイアリー</span>
             </h2>
             <p className="text-xs text-slate-500 mb-3">
               診察時に先生に伝えたいこと、楽しかったこと、足の感覚の変化などを自由に記録しましょう。

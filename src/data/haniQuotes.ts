@@ -3,7 +3,7 @@ import type { HaniQuote } from '../types';
 export const HANI_QUOTES: HaniQuote[] = [
   {
     id: 'quote-1',
-    quote: 'あおいさん、今日もハニヘ〜！👼🪽 無理せず深呼吸して、自分のペースで一歩ずつ進もうね。',
+    quote: 'ひさこさん、今日もハニヘ〜！👼🪽 無理せず深呼吸して、自分のペースで一歩ずつ進もうね。',
     subtext: 'ジョンハン天使より愛を込めて 💖',
     emoji: '👼',
     category: 'cheer',
@@ -31,7 +31,7 @@ export const HANI_QUOTES: HaniQuote[] = [
   },
   {
     id: 'quote-5',
-    quote: 'からだの定期チェック、前より確実に強くなってる！あおいさんの日々の頑張り、僕が一番褒めてあげる！👏🎉',
+    quote: 'からだの定期チェック、前より確実に強くなってる！ひさこさんの日々の頑張り、僕が一番褒めてあげる！👏🎉',
     subtext: '努力は絶対裏切らないよ〜！',
     emoji: '🌟',
     category: 'rehab',
@@ -45,7 +45,7 @@ export const HANI_QUOTES: HaniQuote[] = [
   },
   {
     id: 'quote-7',
-    quote: 'しびれに負けず、毎日自分を大切にしてるあおいさんは本当にキラキラ輝いてるよ。ハニヘ〜👼',
+    quote: 'しびれに負けず、毎日自分を大切にしてるひさこさんは本当にキラキラ輝いてるよ。ハニヘ〜👼',
     subtext: '世界で一番輝くCARATへ 🩷🩵',
     emoji: '👼',
     category: 'love',

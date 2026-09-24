@@ -92,7 +92,7 @@ export const CustomerPortalView: React.FC<CustomerPortalViewProps> = ({
         background: `radial-gradient(circle at 10% 20%, ${tenant.theme.primaryColor}18 0%, transparent 40%), radial-gradient(circle at 90% 80%, ${tenant.theme.secondaryColor}18 0%, transparent 40%), #F8FAFC`,
       }}
     >
-      <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+      <div className={`max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6 ${isReportOpen ? 'no-print' : ''}`}>
         {/* Dynamic Header with tenant branding and persona */}
         <DynamicHeader
           tenant={tenant}

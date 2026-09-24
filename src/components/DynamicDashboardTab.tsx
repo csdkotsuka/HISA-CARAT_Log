@@ -234,12 +234,9 @@ export const DynamicDashboardTab: React.FC<DynamicDashboardTabProps> = ({
 
           <button
             onClick={onOpenReport}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-white text-xs font-bold shadow-sm hover:scale-[1.02] active:scale-95 transition-all"
-            style={{
-              background: `linear-gradient(135deg, ${tenant.theme.primaryColor}, ${tenant.theme.accentColor})`,
-            }}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:to-pink-700 text-white text-xs font-black shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
           >
-            <FileText className="w-3.5 h-3.5" />
+            <FileText className="w-4 h-4 text-white" />
             <span>定期サマリー 📊</span>
           </button>
         </div>
