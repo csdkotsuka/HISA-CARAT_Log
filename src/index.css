@@ -161,11 +161,17 @@ input[type="range"].vas-slider::-webkit-slider-thumb:hover {
     break-after: avoid !important;
   }
 
+  #printable-summary-report,
   #printable-summary-report * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    transition: none !important;
+    animation: none !important;
   }
 }
 

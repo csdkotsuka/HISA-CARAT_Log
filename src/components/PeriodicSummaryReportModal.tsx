@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, Printer, Copy, Check, FileText, Sparkles, Activity } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { X, Printer, FileText, Sparkles, Activity } from 'lucide-react';
 import type { Tenant, Customer, GenericDailyLog, GenericEvalRecord } from '../types/tenant';
 import type { DailyLog, PTEvalDock } from '../types';
 
@@ -25,7 +25,6 @@ export const PeriodicSummaryReportModal: React.FC<PeriodicSummaryReportModalProp
   legacyDailyLogs = [],
   legacyPtDocks = [],
 }) => {
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -93,41 +92,6 @@ export const PeriodicSummaryReportModal: React.FC<PeriodicSummaryReportModalProp
     window.print();
   };
 
-  // Copy text summary
-  const handleCopyText = () => {
-    const text = `
-【${tenant.headerTitle} 定期サマリー報告】
-対象顧客: ${customer.name} 様 (${customer.nickname || ''})
-所属: ${tenant.name} (${tenant.badgeText})
-記録期間: 直近 ${effectiveDailyLogs.length} 日分 / 最新記録: ${latestDaily ? latestDaily.date : 'なし'}
-個別目標: ${customer.customGoal || '継続的な習慣化と自己実現'}
-${displayCondition ? `主疾患・管理区分: ${displayCondition}\n` : ''}${latestPsl !== undefined ? `プレドニン(PSL)内服量: ${latestPsl} mg/日\n` : ''}${latestDaily?.sliderValues?.painVas !== undefined ? `疼痛・しびれ VAS平均: ${avgVas} / 10 (臨床疼痛尺度: 0無痛〜10激痛)\n` : ''}${latestDaily?.numericValues?.bodyTemp ? `朝の体温: ${latestDaily.numericValues.bodyTemp}℃\n` : ''}
-■ 現在のコンディション推移
-- 最新体調: ${latestDaily?.condition ? `${latestDaily.condition} (5段階評価)` : '良好'}
-- 平均エナジー/充実度: ${avgEnergy}%
-- 最新メモ: ${latestDaily?.memo || '順調に継続中'}
-
-■ 最新評価測定 (${latestEval ? latestEval.date : legacyPtDocks[0]?.date || '未測定'}):
-${
-  latestEval
-    ? Object.entries(latestEval.metricValues || {})
-        .map(([k, v]) => `- ${k}: ${v}`)
-        .join('\n')
-    : legacyPtDocks.length > 0
-    ? `- CS-30 (立ち座り): ${legacyPtDocks[0].functional.cs30Count}回\n- 前脛骨筋 MMT: ${legacyPtDocks[0].mmt.tibialisAnterior}\n- ロンベルグ: ${legacyPtDocks[0].functional.rombergTest === 'pass' ? '陰性(Pass)' : '動揺あり'}\n- 下腿周径: 右${legacyPtDocks[0].calfCircumference.rightCm}cm / 左${legacyPtDocks[0].calfCircumference.leftCm}cm`
-    : '- 定期測定データ登録待ち'
-}
-
-■ 担当者/パートナー所見:
-${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.speechBubbleText}
-次回目標: ${latestEval?.nextGoal || customer.customGoal || '次回もマイペースに前進！'}
-    `.trim();
-
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 3000);
-  };
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in print-modal-overlay"
@@ -136,47 +100,24 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
       }}
     >
       <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[94vh] overflow-y-auto shadow-2xl border border-slate-200 text-left relative print-modal-card">
-        {/* Modal Top Bar (Screen only, hidden on print) */}
-        <div className="sticky top-0 bg-white/95 backdrop-blur-md p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between z-20 rounded-t-3xl no-print">
-          <div className="flex items-center gap-2.5">
+        {/* Modal Top Bar (Screen only, hidden on print) - Streamlined & mobile-optimized */}
+        <div className="sticky top-0 bg-white/95 backdrop-blur-md px-4 py-3 sm:px-6 sm:py-3.5 border-b border-slate-200 flex items-center justify-between z-20 rounded-t-3xl no-print">
+          <div className="flex items-center gap-2">
             <div
-              className="p-2 rounded-xl text-white shadow-xs"
+              className="p-1.5 rounded-lg text-white shadow-xs"
               style={{ backgroundColor: tenant.theme.primaryColor }}
             >
-              <FileText className="w-5 h-5 text-slate-900" />
+              <FileText className="w-4 h-4 text-slate-900" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-extrabold text-slate-800">
-                  {tenant.headerTitle} 定期サマリー帳票 (A4 1枚PDF出力)
-                </h2>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold">
-                  A4 1ページ最適化済
-                </span>
-                {isMedicalCase && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-extrabold">
-                    {displayCondition?.includes('EGPA') ? '医療・EGPA連携' : 'ヘルスケア・課題対応'}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-slate-500">
-                印刷ダイアログで「PDFに保存」を選択すると、整った1枚の帳票として保管・提出できます
-              </p>
-            </div>
+            <span className="text-xs sm:text-sm font-bold text-slate-700">
+              帳票プレビュー
+            </span>
           </div>
 
           <div className="flex items-center gap-2">
             <button
-              onClick={handleCopyText}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
-            >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-500" />}
-              <span>{copied ? 'コピー完了' : 'テキスト要約'}</span>
-            </button>
-
-            <button
               onClick={handlePrint}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95"
+              className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95"
             >
               <Printer className="w-4 h-4 text-emerald-400" />
               <span>帳票印刷 / PDF保存</span>
@@ -184,7 +125,8 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
 
             <button
               onClick={onClose}
-              className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors ml-1 cursor-pointer"
+              className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              title="閉じる"
             >
               <X className="w-5 h-5" />
             </button>
@@ -194,10 +136,10 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
         {/* ----------------- PRINTABLE A4 REPORT SHEET ----------------- */}
         <div
           id="printable-summary-report"
-          className="p-5 sm:p-7 bg-white text-slate-900 font-sans printable-sheet"
+          className="p-3.5 sm:p-7 bg-white text-slate-900 font-sans printable-sheet"
         >
           {/* Top Title & Header */}
-          <div className="border-b-2 border-slate-900 pb-2.5 flex justify-between items-end">
+          <div className="border-b-2 border-slate-900 pb-2.5 flex justify-between items-end flex-wrap gap-2">
             <div>
               <div className="flex items-center gap-2">
                 <span
@@ -208,7 +150,7 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
                   {tenant.badgeText} • {isMedicalCase ? 'HEALTHCARE & PERIODIC PROGRESS REPORT' : 'PERIODIC PROGRESS REPORT'}
                 </span>
               </div>
-              <h1 className="text-lg sm:text-2xl font-black text-slate-900 mt-0.5">
+              <h1 className="text-base sm:text-2xl font-black text-slate-900 mt-0.5">
                 {tenant.headerTitle} {displayCondition ? `${displayCondition} 定期進捗報告書` : '定期活動・目標進捗報告書'}
               </h1>
             </div>
@@ -219,7 +161,7 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
           </div>
 
           {/* Customer & Goal Metadata Grid */}
-          <div className="mt-2.5 grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs">
+          <div className="mt-2.5 grid grid-cols-2 sm:grid-cols-4 print:grid-cols-4 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs">
             <div>
               <span className="text-slate-500 block text-[9px]">顧客名 / 呼称</span>
               <span className="font-extrabold text-slate-900 text-sm">
@@ -245,7 +187,7 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
               </span>
             </div>
 
-            <div className="col-span-2 sm:col-span-4 pt-1 border-t border-slate-200 flex items-center justify-between text-[11px]">
+            <div className="col-span-2 sm:col-span-4 print:col-span-4 pt-1 border-t border-slate-200 flex items-center justify-between text-[11px] flex-wrap gap-1">
               <div>
                 <span className="text-[9px] font-bold text-slate-500 mr-1.5">個別設定目標:</span>
                 <span className="font-extrabold text-slate-800">
@@ -261,7 +203,7 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
           </div>
 
           {/* 4 Summary KPI Cards */}
-          <div className="mt-2.5 grid grid-cols-4 gap-2 text-center text-xs">
+          <div className="mt-2.5 grid grid-cols-2 sm:grid-cols-4 print:grid-cols-4 gap-2 text-center text-xs">
             <div className="p-2 rounded-xl border border-slate-200 bg-white">
               <span className="text-[9px] text-slate-500 block">総記録日数</span>
               <span className="text-base font-black text-slate-900">{effectiveDailyLogs.length}</span>
@@ -340,8 +282,8 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
             ) : null}
 
             {/* Numerical Logs History Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-[9px] text-left border-collapse">
+            <div className="overflow-x-auto -mx-1 sm:mx-0">
+              <table className="min-w-[480px] sm:min-w-0 w-full text-[9px] text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                     <th className="p-1">記録日</th>
@@ -390,7 +332,7 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
           </div>
 
           {/* ---------------- SECTION 2: PERIODIC EVALUATIONS & REHABILITATION STATUS ---------------- */}
-          <div className="mt-2.5 grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          <div className="mt-2.5 grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-2.5">
             {/* Left: Periodic Evaluation Table (CS-30, MMT, Romberg, Calf) */}
             <div className="border border-slate-200 rounded-xl p-2.5 bg-white space-y-1.5">
               <div className="flex items-center justify-between border-b border-slate-100 pb-1">
@@ -403,8 +345,8 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
 
               {legacyPtDocks.length > 0 ? (
                 /* Legacy PT Dock support for Hisako's EGPA medical data */
-                <div className="overflow-x-auto">
-                  <table className="w-full text-[9px] text-left border-collapse">
+                <div className="overflow-x-auto -mx-1 sm:mx-0">
+                  <table className="min-w-[380px] sm:min-w-0 w-full text-[9px] text-left border-collapse">
                     <thead>
                       <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                         <th className="p-1">測定日</th>
@@ -431,8 +373,8 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
                   </p>
                 </div>
               ) : sortedEvals.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-[9px] text-left border-collapse">
+                <div className="overflow-x-auto -mx-1 sm:mx-0">
+                  <table className="min-w-[380px] sm:min-w-0 w-full text-[9px] text-left border-collapse">
                     <thead>
                       <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                         <th className="p-1">測定日</th>
@@ -503,9 +445,9 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
           </div>
 
           {/* ---------------- SECTION 3: DOCTOR / EVALUATOR COMMENTS & SIGN-OFF BOX ---------------- */}
-          <div className="mt-2.5 grid grid-cols-1 md:grid-cols-12 gap-2.5">
+          <div className="mt-2.5 grid grid-cols-1 md:grid-cols-12 print:grid-cols-12 gap-2.5">
             {/* Advice box */}
-            <div className="md:col-span-8 border border-slate-200 rounded-xl p-2.5 bg-white space-y-1">
+            <div className="md:col-span-8 print:col-span-8 border border-slate-200 rounded-xl p-2.5 bg-white space-y-1">
               <div className="flex items-center justify-between border-b border-slate-100 pb-0.5">
                 <h3 className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-amber-500" />
@@ -521,7 +463,7 @@ ${latestEval?.advice || legacyPtDocks[0]?.kazuhiroAdvice || tenant.aiPersona.spe
             </div>
 
             {/* Doctor / Attending Sign-off Box */}
-            <div className="md:col-span-4 border border-slate-200 rounded-xl p-2.5 bg-white flex flex-col justify-between">
+            <div className="md:col-span-4 print:col-span-4 border border-slate-200 rounded-xl p-2.5 bg-white flex flex-col justify-between">
               <div>
                 <span className="text-[9px] font-bold text-slate-600 block leading-tight">
                   {isMedicalCase ? '主治医・担当医 確認印 / 指示コメント欄' : '担当スタッフ・責任者 確認印 / 記入欄'}

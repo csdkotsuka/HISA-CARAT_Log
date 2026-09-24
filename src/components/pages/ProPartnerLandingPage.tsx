@@ -6,9 +6,9 @@ import {
   Bot,
   Palette,
   Sliders,
-  ChevronRight,
   Zap,
 } from 'lucide-react';
+import { getCurrentUser } from '../../utils/authStorage';
 
 interface ProPartnerLandingPageProps {
   onBackToAdmin: () => void;
@@ -18,6 +18,8 @@ export const ProPartnerLandingPage: React.FC<ProPartnerLandingPageProps> = ({
   onBackToAdmin,
 }) => {
   const [selectedMockTheme, setSelectedMockTheme] = useState<'idol' | 'fitness' | 'education'>('idol');
+  const user = getCurrentUser();
+  const isAdmin = user?.role === 'admin';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FFF8FA] via-[#F8FAFC] to-[#F0FDF4] text-slate-800 font-sans pb-24">
@@ -38,7 +40,7 @@ export const ProPartnerLandingPage: React.FC<ProPartnerLandingPageProps> = ({
           className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-sm hover:bg-slate-800 transition-all cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Master Consoleに戻る</span>
+          <span>{isAdmin ? 'Master Consoleに戻る' : 'トップに戻る'}</span>
         </button>
       </header>
 
@@ -638,22 +640,13 @@ export const ProPartnerLandingPage: React.FC<ProPartnerLandingPageProps> = ({
 
       {/* Bottom CTA */}
       <section className="max-w-3xl mx-auto px-4 pt-6 text-center space-y-4">
-        <div className="bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 rounded-3xl p-8 text-white space-y-4 shadow-lg">
+        <div className="bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 rounded-3xl p-8 text-white space-y-3 shadow-lg">
           <h3 className="text-xl sm:text-2xl font-black">
             あなたの顧客を、毎日もっと元気に。
           </h3>
-          <p className="text-xs sm:text-sm text-white/90 max-w-lg mx-auto">
-            Cheer Master Consoleから新しい事業者（Partner）を今すぐ無料で追加し、動作を体験いただけます。
+          <p className="text-xs sm:text-sm text-white/90 max-w-lg mx-auto leading-relaxed">
+            Cheerは、専門職・事業者の皆さまと大切な顧客をつなぐ伴走プラットフォームです。日々の記録を通じて、信頼と成果を育みましょう。
           </p>
-          <div className="pt-2">
-            <button
-              onClick={onBackToAdmin}
-              className="px-6 py-3 rounded-2xl bg-white text-slate-900 font-extrabold text-xs sm:text-sm shadow-md hover:bg-slate-100 transition-all cursor-pointer inline-flex items-center gap-2"
-            >
-              <span>Master Consoleで事業者を新規作成する</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
         </div>
       </section>
     </div>
