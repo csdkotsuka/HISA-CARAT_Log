@@ -17,6 +17,7 @@ import {
 import { setCurrentUser } from './authStorage';
 import { saveUserPassword } from '../firebase/credentialService';
 import { saveTenantToFirestore, saveCustomerToFirestore } from '../firebase/firestoreService';
+import { generateSecureUuid } from './uuid';
 
 export interface ConsumerRegistrationParams {
   name: string;
@@ -43,6 +44,8 @@ export async function registerConsumerAccount(
   const tenantId = `tenant-consumer-${timestamp}`;
   const customerId = `cust-${timestamp}`;
   const userId = `user-${timestamp}`;
+  const tenantUuid = generateSecureUuid();
+  const customerUuid = generateSecureUuid();
 
   // 1. パスワード登録（入力されている場合）
   if (password && password.trim()) {
@@ -56,6 +59,7 @@ export async function registerConsumerAccount(
   // 2. テンプレート設定をベースにした個人専用テナント（閲覧・セルフログ専用）
   const newTenant: Tenant = {
     id: tenantId,
+    uuid: tenantUuid,
     adminId: 'admin-master',
     name: `${trimmedName}さんのプライベートスペース`,
     email: normalizedEmail,
@@ -79,6 +83,7 @@ export async function registerConsumerAccount(
   // 3. 顧客レコード
   const newCustomer: Customer = {
     id: customerId,
+    uuid: customerUuid,
     tenantId: tenantId,
     name: trimmedName,
     nickname: trimmedName,

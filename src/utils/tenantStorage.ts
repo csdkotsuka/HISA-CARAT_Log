@@ -1,6 +1,7 @@
 import type { Tenant, Customer, GenericDailyLog, GenericEvalRecord } from '../types/tenant';
 import { INITIAL_TENANTS, INITIAL_CUSTOMERS } from '../data/tenantPresets';
 import { getDailyLogs, getPTDocks } from './storage';
+import { ensureTenantUuid, ensureCustomerUuid } from './uuid';
 
 const TENANTS_KEY = 'omni_saas_tenants_v1';
 const CUSTOMERS_KEY = 'omni_saas_customers_v1';
@@ -23,11 +24,18 @@ export const getTenants = (): Tenant[] => {
     const parsed: Tenant[] = JSON.parse(raw);
     if (!parsed || parsed.length === 0) return INITIAL_TENANTS;
 
-    // Ensure chat settings and email are populated for default tenants
+    // Ensure chat settings, email, and uuid are populated for tenants
     let modified = false;
     const migrated = parsed.map((t) => {
       let updated = { ...t };
       const init = INITIAL_TENANTS.find((i) => i.id === t.id);
+
+      // UUID補完
+      if (!updated.uuid) {
+        updated.uuid = init?.uuid || ensureTenantUuid(updated).uuid;
+        modified = true;
+      }
+
       if (!updated.email && init?.email) {
         updated.email = init.email;
         modified = true;
@@ -89,6 +97,13 @@ export const getCustomers = (): Customer[] => {
     const migrated = parsed.map((c) => {
       let updated = { ...c };
       const init = INITIAL_CUSTOMERS.find((i) => i.id === c.id);
+
+      // UUID補完
+      if (!updated.uuid) {
+        updated.uuid = init?.uuid || ensureCustomerUuid(updated).uuid;
+        modified = true;
+      }
+
       if (!updated.email && init?.email) {
         updated.email = init.email;
         modified = true;

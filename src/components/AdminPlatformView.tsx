@@ -27,6 +27,7 @@ import type { Tenant, Customer, IndustryType, PublicTemplate } from '../types/te
 import { COLOR_THEMES } from '../data/tenantPresets';
 import { getPublicTemplates, savePublicTemplates } from '../data/publicTemplates';
 import { saveAllPublicTemplatesToFirestore } from '../firebase/firestoreService';
+import { generateSecureUuid } from '../utils/uuid';
 
 import {
   getGeminiApiKey,
@@ -44,8 +45,8 @@ interface AdminPlatformViewProps {
   onOpenCustomerPage: (tenantId: string, customerId?: string) => void;
   onCreateTenant: (newTenant: Tenant) => void;
   activeTenantId: string;
-  onOpenPrPartnerPage: () => void;
-  onOpenMyLoungeGuidePage: () => void;
+  onOpenPrPartnerPage?: () => void;
+  onOpenMyLoungeGuidePage?: () => void;
 }
 
 export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
@@ -56,8 +57,6 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
   onOpenCustomerPage,
   onCreateTenant,
   activeTenantId,
-  onOpenPrPartnerPage,
-  onOpenMyLoungeGuidePage,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndustry, setSelectedIndustry] = useState<string>('all');
@@ -168,6 +167,7 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
 
     const createdTenant: Tenant = {
       id: newId.trim().toLowerCase(),
+      uuid: generateSecureUuid(),
       adminId: 'admin-master',
       name: newName.trim(),
       email: newEmail.trim() || undefined,
@@ -355,18 +355,10 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
             </button>
             <button
               type="button"
-              onClick={onOpenPrPartnerPage}
-              className="text-xs font-bold text-slate-600 hover:text-amber-800 bg-white hover:bg-amber-50 px-3 py-1.5 rounded-xl border border-slate-200 transition-all cursor-pointer"
-              title="この画面内で直接開く"
-            >
-              このタブで表示
-            </button>
-            <button
-              type="button"
               onClick={() => window.open(`${window.location.origin}/?page=pr-partner`, '_blank')}
               className="text-xs font-bold text-amber-700 hover:text-amber-800 flex items-center gap-1 bg-white hover:bg-amber-50 px-3.5 py-1.5 rounded-xl border border-amber-200 shadow-xs transition-all cursor-pointer"
             >
-              <span>一般公開URLを開く</span>
+              <span>別ページで開く</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -415,18 +407,10 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
             </button>
             <button
               type="button"
-              onClick={onOpenMyLoungeGuidePage}
-              className="text-xs font-bold text-slate-600 hover:text-pink-800 bg-white hover:bg-pink-50 px-3 py-1.5 rounded-xl border border-slate-200 transition-all cursor-pointer"
-              title="この画面内で直接開く"
-            >
-              このタブで表示
-            </button>
-            <button
-              type="button"
               onClick={() => window.open(`${window.location.origin}/?page=guide-lounge`, '_blank')}
               className="text-xs font-bold text-pink-700 hover:text-pink-800 flex items-center gap-1 bg-white hover:bg-pink-50 px-3.5 py-1.5 rounded-xl border border-pink-200 shadow-xs transition-all cursor-pointer"
             >
-              <span>一般公開URLを開く</span>
+              <span>別ページで開く</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </button>
           </div>

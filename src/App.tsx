@@ -61,7 +61,7 @@ import {
   syncAllLocalDataToFirestore,
 } from './firebase/firestoreService';
 import { savePublicTemplates } from './data/publicTemplates';
-
+import { generateSecureUuid, ensureTenantUuid, ensureCustomerUuid } from './utils/uuid';
 
 export const App: React.FC = () => {
   // Current Authenticated User
@@ -96,12 +96,17 @@ export const App: React.FC = () => {
   const [tenants, setTenants] = useState<Tenant[]>(getTenants());
   const [customers, setCustomers] = useState<Customer[]>(getCustomers());
 
-  // Active Selected IDs (URL query has precedence)
+  // Active Selected IDs (URL query has precedence, supports both UUID and legacy ID)
   const [activeTenantId, setActiveTenantId] = useState<string>(() => {
     try {
       const params = new URLSearchParams(window.location.search);
       const t = params.get('tenant');
-      if (t) return t;
+      if (t) {
+        const allTenants = getTenants();
+        const matched = allTenants.find((item) => item.uuid === t || item.id === t);
+        if (matched) return matched.id;
+        return t;
+      }
     } catch {}
     const user = getCurrentUser();
     if (user?.tenantId) return user.tenantId;
@@ -112,7 +117,12 @@ export const App: React.FC = () => {
     try {
       const params = new URLSearchParams(window.location.search);
       const c = params.get('customer') || params.get('user');
-      if (c) return c;
+      if (c) {
+        const allCusts = getCustomers();
+        const matched = allCusts.find((item) => item.uuid === c || item.id === c);
+        if (matched) return matched.id;
+        return c;
+      }
     } catch {}
     const user = getCurrentUser();
     if (user?.customerId) return user.customerId;
@@ -142,9 +152,9 @@ export const App: React.FC = () => {
     tenantCustomers[0] ||
     customers[0];
 
-  // Sync state to URL with tenant & customer IDs for shareable/bookmarkable URLs
+  // Sync state to URL with tenant & customer UUIDs (never leak raw ID/text in URL)
   const updateUrl = useCallback(
-    (page: string, mode: string, tenantId: string, customerId: string) => {
+    (page: string, mode: string, tenant: Tenant, customer: Customer) => {
       try {
         const url = new URL(window.location.href);
         if (page !== 'none') {
@@ -157,12 +167,14 @@ export const App: React.FC = () => {
           url.searchParams.delete('page');
           url.searchParams.set('mode', mode);
           if (mode === 'provider' || mode === 'customer') {
-            url.searchParams.set('tenant', tenantId);
+            const tenantParam = tenant.uuid || tenant.id;
+            url.searchParams.set('tenant', tenantParam);
           } else {
             url.searchParams.delete('tenant');
           }
           if (mode === 'customer') {
-            url.searchParams.set('customer', customerId);
+            const customerParam = customer.uuid || customer.id;
+            url.searchParams.set('customer', customerParam);
           } else {
             url.searchParams.delete('customer');
           }
@@ -176,8 +188,44 @@ export const App: React.FC = () => {
   );
 
   useEffect(() => {
-    updateUrl(subPage, appMode, activeTenant.id, activeCustomer.id);
-  }, [subPage, appMode, activeTenant.id, activeCustomer.id, updateUrl]);
+    updateUrl(subPage, appMode, activeTenant, activeCustomer);
+  }, [subPage, appMode, activeTenant, activeCustomer, updateUrl]);
+
+  // Listen to browser popstate (back/forward) with UUID resolution
+  useEffect(() => {
+    const handlePopState = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const tParam = params.get('tenant');
+        const cParam = params.get('customer') || params.get('user');
+        const mParam = params.get('mode');
+        const pParam = params.get('page');
+
+        if (pParam === 'pr-partner' || pParam === 'guide-lounge') {
+          setSubPage(pParam);
+        } else {
+          setSubPage('none');
+        }
+
+        if (mParam === 'admin' || mParam === 'provider' || mParam === 'customer') {
+          setAppMode(mParam);
+        }
+
+        if (tParam) {
+          const matchedTenant = tenants.find((t) => t.uuid === tParam || t.id === tParam);
+          if (matchedTenant) setActiveTenantId(matchedTenant.id);
+        }
+
+        if (cParam) {
+          const matchedCust = customers.find((c) => c.uuid === cParam || c.id === cParam);
+          if (matchedCust) setActiveCustomerId(matchedCust.id);
+        }
+      } catch {}
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [tenants, customers]);
 
   // Refresh logs when active customer or tenant changes
   useEffect(() => {
@@ -195,8 +243,15 @@ export const App: React.FC = () => {
     const unsubTenants = subscribeTenants(
       (remoteTenants) => {
         if (remoteTenants && remoteTenants.length > 0) {
-          setTenants(remoteTenants);
-          saveTenants(remoteTenants);
+          const withUuid = remoteTenants.map((t) => {
+            const ensured = ensureTenantUuid(t);
+            if (!t.uuid) {
+              saveTenantToFirestore(ensured).catch(() => {});
+            }
+            return ensured;
+          });
+          setTenants(withUuid);
+          saveTenants(withUuid);
           setCloudStatus('synced');
         }
       },
@@ -207,8 +262,15 @@ export const App: React.FC = () => {
     const unsubCustomers = subscribeCustomers(
       (remoteCustomers) => {
         if (remoteCustomers && remoteCustomers.length > 0) {
-          setCustomers(remoteCustomers);
-          saveCustomers(remoteCustomers);
+          const withUuid = remoteCustomers.map((c) => {
+            const ensured = ensureCustomerUuid(c);
+            if (!c.uuid) {
+              saveCustomerToFirestore(ensured).catch(() => {});
+            }
+            return ensured;
+          });
+          setCustomers(withUuid);
+          saveCustomers(withUuid);
           setCloudStatus('synced');
         }
       },
@@ -424,16 +486,18 @@ export const App: React.FC = () => {
 
   // Create new tenant (from Admin view)
   const handleCreateTenant = async (newTenant: Tenant) => {
-    const updated = [newTenant, ...tenants];
+    const tenantWithUuid = ensureTenantUuid(newTenant);
+    const updated = [tenantWithUuid, ...tenants];
     setTenants(updated);
     saveTenants(updated);
-    setActiveTenantId(newTenant.id);
-    saveActiveTenantId(newTenant.id);
+    setActiveTenantId(tenantWithUuid.id);
+    saveActiveTenantId(tenantWithUuid.id);
 
     const defaultCust: Customer = {
-      id: `cust-${newTenant.id.replace('tenant-', '')}-01`,
-      tenantId: newTenant.id,
-      name: `${newTenant.name} 会員1号`,
+      id: `cust-${tenantWithUuid.id.replace('tenant-', '')}-01`,
+      uuid: generateSecureUuid(),
+      tenantId: tenantWithUuid.id,
+      name: `${tenantWithUuid.name} 会員1号`,
       nickname: '会員さま',
       joinedDate: new Date().toISOString().slice(0, 10),
       customGoal: '毎日の記録を続けて目標達成！',
@@ -446,7 +510,7 @@ export const App: React.FC = () => {
     saveActiveCustomerId(defaultCust.id);
 
     try {
-      await saveTenantToFirestore(newTenant);
+      await saveTenantToFirestore(tenantWithUuid);
       await saveCustomerToFirestore(defaultCust);
       setCloudStatus('synced');
     } catch (err) {
@@ -456,13 +520,14 @@ export const App: React.FC = () => {
 
   // Create new customer (from Provider view)
   const handleCreateCustomer = async (newCustomer: Customer) => {
-    const updated = [...customers, newCustomer];
+    const customerWithUuid = ensureCustomerUuid(newCustomer);
+    const updated = [...customers, customerWithUuid];
     setCustomers(updated);
     saveCustomers(updated);
-    setActiveCustomerId(newCustomer.id);
-    saveActiveCustomerId(newCustomer.id);
+    setActiveCustomerId(customerWithUuid.id);
+    saveActiveCustomerId(customerWithUuid.id);
     try {
-      await saveCustomerToFirestore(newCustomer);
+      await saveCustomerToFirestore(customerWithUuid);
       setCloudStatus('synced');
     } catch (err) {
       console.warn('Firestore customer create notice:', err);

@@ -151,6 +151,7 @@ export interface Tenant {
   evalConfig: PeriodicEvalConfig;
   loungeLinks?: LoungeLinkItem[]; // 推し活ラウンジ・外部コンテンツリンク一覧
   customerIds: string[];      // 紐づく顧客IDリスト
+  uuid?: string;              // 推測防止用の公開UUID (URLパラメータ制御用)
   isConsumerPersonal?: boolean; // 一般コンシューマー自己登録による個人スペースか
   templateId?: string;        // 選択された公開テンプレートID
   status: 'active' | 'trial' | 'suspended';
@@ -162,6 +163,7 @@ export interface Tenant {
 export interface Customer {
   id: string;                 // 顧客ID (例: 'cust-hisa-01', 'cust-tanaka-02')
   tenantId: string;           // 所属する業者ID
+  uuid?: string;              // 推測防止用の公開UUID (URLパラメータ制御用)
   name: string;               // 顧客氏名
   email?: string;             // ログイン・メンバーアカウントメールアドレス (例: 'hisako@user.cheer.app')
   nickname?: string;          // 呼称 (例: 'ひさこさん', '田中さん')

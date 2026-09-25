@@ -175,6 +175,7 @@ export const INITIAL_TENANTS: Tenant[] = [
   // 1. CARAT 推し活＆リハビリケア（現在のアプリ内容を100%踏襲）
   {
     id: 'tenant-carat-hisa',
+    uuid: '8f2e4a1b-3c5d-4e92-a7b8-1d2e3f4a5b6c',
     adminId: 'admin-master',
     name: 'CARAT ヘルス＆オフィシャルケア',
     email: 'kotsuka@creativesd.net',
@@ -260,6 +261,7 @@ export const INITIAL_TENANTS: Tenant[] = [
   // 2. NEXT-FITNESS パーソナルトレーニングジム
   {
     id: 'tenant-fitness-pro',
+    uuid: '7c1d3e5f-2a4b-4c91-9e8a-0f1e2d3c4b5a',
     adminId: 'admin-master',
     name: 'NEXT-FITNESS パーソナルジム',
     email: 'fitness@partner.cheer.app',
@@ -338,6 +340,7 @@ export const INITIAL_TENANTS: Tenant[] = [
   // 3. 未来アカデミー 個別指導スクール（先生＆生徒）
   {
     id: 'tenant-study-academy',
+    uuid: '6b0c2d4e-1f3a-4b90-8d7e-9e0f1a2b3c4d',
     adminId: 'admin-master',
     name: '未来アカデミー 個別指導スクール',
     email: 'academy@partner.cheer.app',
@@ -413,6 +416,7 @@ export const INITIAL_TENANTS: Tenant[] = [
   // 4. 元気コミュニティ・あるこう会（仲間・サークル）
   {
     id: 'tenant-community-hub',
+    uuid: '5a9b1c3d-0e2f-4a89-7c6d-8d9e0f1a2b3c',
     adminId: 'admin-master',
     name: 'あるこう会・健やかコミュニティ',
     email: 'community@partner.cheer.app',
@@ -487,6 +491,7 @@ export const INITIAL_TENANTS: Tenant[] = [
 export const INITIAL_CUSTOMERS: Customer[] = [
   {
     id: 'cust-hisa-01',
+    uuid: '9a3b5c7d-1e2f-4a90-8c1d-3e5f7a9b1c3d',
     tenantId: 'tenant-carat-hisa',
     name: 'ひさこ',
     email: 'hisako@user.cheer.app',
@@ -498,6 +503,7 @@ export const INITIAL_CUSTOMERS: Customer[] = [
   },
   {
     id: 'cust-fit-tanaka',
+    uuid: '8b2c4d6e-0f1a-4b89-7d0e-2f4a6b8c0d2e',
     tenantId: 'tenant-fitness-pro',
     name: '田中 健太郎',
     email: 'tanaka@user.cheer.app',
@@ -509,6 +515,7 @@ export const INITIAL_CUSTOMERS: Customer[] = [
   },
   {
     id: 'cust-edu-souta',
+    uuid: '7a1b3c5d-9e0f-4a78-6c9d-1e3f5a7b9c1d',
     tenantId: 'tenant-study-academy',
     name: '佐藤 颯太',
     email: 'souta@user.cheer.app',
@@ -520,6 +527,7 @@ export const INITIAL_CUSTOMERS: Customer[] = [
   },
   {
     id: 'cust-comm-yamada',
+    uuid: '6f0a2b4c-8d9e-4a67-5b8c-0d2e4f6a8b0c',
     tenantId: 'tenant-community-hub',
     name: '山田 花子',
     email: 'yamada@user.cheer.app',

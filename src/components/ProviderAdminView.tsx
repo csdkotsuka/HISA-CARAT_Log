@@ -39,6 +39,8 @@ import {
   saveGenericEvalRecordToFirestore,
   deleteGenericEvalRecordFromFirestore,
 } from '../firebase/firestoreService';
+import { generateSecureUuid } from '../utils/uuid';
+
 
 interface ProviderAdminViewProps {
   tenant: Tenant;
@@ -221,6 +223,7 @@ export const ProviderAdminView: React.FC<ProviderAdminViewProps> = ({
     const randomSuffix = Math.floor(100 + Math.random() * 900);
     const newCustomer: Customer = {
       id: `cust-${currentTenant.id.replace('tenant-', '')}-${randomSuffix}`,
+      uuid: generateSecureUuid(),
       tenantId: currentTenant.id,
       name: newCustName.trim(),
       email: newCustEmail.trim() || undefined,
