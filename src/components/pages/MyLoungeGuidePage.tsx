@@ -1,22 +1,18 @@
 import React from 'react';
 import {
-  ArrowLeft,
   Heart,
   CheckCircle2,
   Smile,
   Zap,
   Smartphone,
-  ChevronRight,
   Sparkles,
 } from 'lucide-react';
 
 interface MyLoungeGuidePageProps {
-  onBackToApp: () => void;
+  onBackToApp?: () => void;
 }
 
-export const MyLoungeGuidePage: React.FC<MyLoungeGuidePageProps> = ({
-  onBackToApp,
-}) => {
+export const MyLoungeGuidePage: React.FC<MyLoungeGuidePageProps> = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FFF5F7] via-[#FFF9FA] to-[#F2F6FC] text-slate-800 font-sans pb-24">
       {/* Top sticky nav */}
@@ -30,14 +26,6 @@ export const MyLoungeGuidePage: React.FC<MyLoungeGuidePageProps> = ({
             メンバー向け使い方ガイド
           </span>
         </div>
-
-        <button
-          onClick={onBackToApp}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-sm hover:bg-slate-800 transition-all cursor-pointer"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>マイラウンジに戻る</span>
-        </button>
       </header>
 
       {/* Hero Section */}
@@ -437,17 +425,6 @@ export const MyLoungeGuidePage: React.FC<MyLoungeGuidePageProps> = ({
             <span>オフライン・電波微弱時も安心</span>
           </div>
         </div>
-      </section>
-
-      {/* Bottom CTA */}
-      <section className="max-w-xl mx-auto px-4 pt-6 text-center">
-        <button
-          onClick={onBackToApp}
-          className="w-full py-4 rounded-2xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 text-white font-extrabold text-sm shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
-        >
-          <span>マイラウンジを開いて記録してみる</span>
-          <ChevronRight className="w-4 h-4" />
-        </button>
       </section>
     </div>
   );

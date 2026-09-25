@@ -8,10 +8,11 @@ import {
 } from 'firebase/firestore';
 import { db } from './config';
 import type { DailyLog, PTEvalDock } from '../types';
-import type { Tenant, Customer, GenericDailyLog, GenericEvalRecord } from '../types/tenant';
+import type { Tenant, Customer, GenericDailyLog, GenericEvalRecord, PublicTemplate } from '../types/tenant';
 import type { ConcertGoal } from '../utils/storage';
 import { INITIAL_DAILY_LOGS, INITIAL_PT_DOCKS } from '../data/initialData';
 import { INITIAL_TENANTS, INITIAL_CUSTOMERS } from '../data/tenantPresets';
+import { PUBLIC_TEMPLATES } from '../data/publicTemplates';
 import {
   getTenants,
   getCustomers,
@@ -22,6 +23,7 @@ import {
 // Firestore Collection Names
 const TENANTS_COL = 'tenants';
 const CUSTOMERS_COL = 'customers';
+const PUBLIC_TEMPLATES_COL = 'public_templates';
 const GENERIC_DAILY_LOGS_COL = 'daily_logs';
 const GENERIC_EVALS_COL = 'eval_records';
 const SETTINGS_COL = 'settings';
@@ -98,6 +100,44 @@ export const saveCustomerToFirestore = async (customer: Customer): Promise<void>
 export const saveAllCustomersToFirestore = async (customers: Customer[]): Promise<void> => {
   for (const c of customers) {
     await saveCustomerToFirestore(c);
+  }
+};
+
+/* ---------------- PUBLIC TEMPLATES SYNC ---------------- */
+export const subscribePublicTemplates = (
+  onData: (templates: PublicTemplate[]) => void,
+  onError?: (err: Error) => void
+) => {
+  const colRef = collection(db, PUBLIC_TEMPLATES_COL);
+  return onSnapshot(
+    colRef,
+    (snapshot) => {
+      const templates: PublicTemplate[] = [];
+      snapshot.forEach((d) => {
+        templates.push(d.data() as PublicTemplate);
+      });
+      if (templates.length > 0) {
+        templates.sort((a, b) => a.sortOrder - b.sortOrder);
+        onData(templates);
+      }
+    },
+    (error) => {
+      console.warn('Firestore public_templates subscription notice:', error);
+      if (onError) onError(error);
+    }
+  );
+};
+
+export const savePublicTemplateToFirestore = async (template: PublicTemplate): Promise<void> => {
+  const docRef = doc(db, PUBLIC_TEMPLATES_COL, template.id);
+  await setDoc(docRef, template, { merge: true });
+};
+
+export const saveAllPublicTemplatesToFirestore = async (
+  templates: PublicTemplate[]
+): Promise<void> => {
+  for (const t of templates) {
+    await savePublicTemplateToFirestore(t);
   }
 };
 
@@ -210,6 +250,9 @@ export const syncAllLocalDataToFirestore = async (): Promise<{
   // 2. Customers
   const currentCustomers = getCustomers().length > 0 ? getCustomers() : INITIAL_CUSTOMERS;
   await saveAllCustomersToFirestore(currentCustomers);
+
+  // 2.5 Public Templates
+  await saveAllPublicTemplatesToFirestore(PUBLIC_TEMPLATES);
 
   // 3. Daily Logs across all customers
   let dailyLogsCount = 0;

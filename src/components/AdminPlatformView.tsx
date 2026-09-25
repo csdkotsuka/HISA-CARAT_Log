@@ -21,10 +21,12 @@ import {
   ToggleRight,
   ChevronDown,
   ChevronUp,
+  Copy,
 } from 'lucide-react';
 import type { Tenant, Customer, IndustryType, PublicTemplate } from '../types/tenant';
 import { COLOR_THEMES } from '../data/tenantPresets';
 import { getPublicTemplates, savePublicTemplates } from '../data/publicTemplates';
+import { saveAllPublicTemplatesToFirestore } from '../firebase/firestoreService';
 
 import {
   getGeminiApiKey,
@@ -71,6 +73,7 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
     );
     setPublicTemplates(updated);
     savePublicTemplates(updated);
+    saveAllPublicTemplatesToFirestore(updated).catch((e) => console.warn('Template firestore sync:', e));
   };
 
   const handleMoveSortOrder = (id: string, direction: 'up' | 'down') => {
@@ -83,6 +86,7 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
     updated.forEach((t, i) => { t.sortOrder = i + 1; });
     setPublicTemplates(updated);
     savePublicTemplates(updated);
+    saveAllPublicTemplatesToFirestore(updated).catch((e) => console.warn('Template firestore sync:', e));
   };
 
   const handleResetTemplates = () => {
@@ -90,6 +94,17 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
     localStorage.removeItem('cheer_public_templates_v1');
     const fresh = getPublicTemplates();
     setPublicTemplates(fresh);
+    saveAllPublicTemplatesToFirestore(fresh).catch((e) => console.warn('Template firestore sync:', e));
+  };
+
+  // URL copy status for public pages
+  const [copiedPage, setCopiedPage] = useState<string | null>(null);
+  const handleCopyPageUrl = (pageKey: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/?page=${pageKey}`;
+    navigator.clipboard.writeText(url);
+    setCopiedPage(pageKey);
+    setTimeout(() => setCopiedPage(null), 2000);
   };
 
   // Gemini settings
@@ -295,21 +310,18 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
         </div>
       </div>
 
-      {/* Guide Pages Navigation Cards (PR & User Guide) */}
+      {/* Guide Pages Navigation Cards (PR & User Guide - General Public URLs) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Card 1: Pro Partner PR Page */}
-        <div
-          onClick={onOpenPrPartnerPage}
-          className="cursor-pointer p-5 rounded-3xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 border border-amber-200/80 hover:border-amber-400 hover:shadow-md transition-all flex items-center justify-between group"
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition-transform">
+        <div className="p-5 rounded-3xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 border border-amber-200/80 hover:border-amber-400 hover:shadow-md transition-all flex flex-col justify-between gap-4 group">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition-transform shrink-0">
               🏢
             </div>
-            <div>
+            <div className="flex-1 min-w-0">
               <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-extrabold uppercase mb-1">
                 <span>Pro Partner 向け</span>
-                <span>✨ PR・導入案内</span>
+                <span>✨ 一般公開PRページ</span>
               </div>
               <h3 className="text-sm font-extrabold text-slate-800 group-hover:text-amber-800 transition-colors">
                 事業者向けPR・ソリューション紹介ページ
@@ -317,27 +329,59 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
               <p className="text-[11px] text-slate-500 mt-0.5">
                 推し活・パーソナルトレーニング・個別指導・仲間サークル・セルフケア向け導入メリットとUIプレビュー
               </p>
+              <div className="mt-2 flex items-center gap-1 text-[11px] font-mono text-amber-800 bg-amber-500/10 px-2 py-1 rounded-lg w-fit">
+                <span>公開URL:</span>
+                <span className="font-bold">/?page=pr-partner</span>
+              </div>
             </div>
           </div>
-          <span className="text-xs font-bold text-amber-700 flex items-center gap-1 bg-white px-3 py-1.5 rounded-xl border border-amber-200 shadow-xs flex-shrink-0">
-            <span>ページを開く</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </span>
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-amber-200/50">
+            <button
+              type="button"
+              onClick={(e) => handleCopyPageUrl('pr-partner', e)}
+              className="text-xs font-bold text-slate-600 hover:text-amber-800 flex items-center gap-1 bg-white hover:bg-amber-50 px-3 py-1.5 rounded-xl border border-slate-200 transition-all cursor-pointer"
+            >
+              {copiedPage === 'pr-partner' ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="text-emerald-700">コピー完了！</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5 text-slate-500" />
+                  <span>URLをコピー</span>
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={onOpenPrPartnerPage}
+              className="text-xs font-bold text-slate-600 hover:text-amber-800 bg-white hover:bg-amber-50 px-3 py-1.5 rounded-xl border border-slate-200 transition-all cursor-pointer"
+              title="この画面内で直接開く"
+            >
+              このタブで表示
+            </button>
+            <button
+              type="button"
+              onClick={() => window.open(`${window.location.origin}/?page=pr-partner`, '_blank')}
+              className="text-xs font-bold text-amber-700 hover:text-amber-800 flex items-center gap-1 bg-white hover:bg-amber-50 px-3.5 py-1.5 rounded-xl border border-amber-200 shadow-xs transition-all cursor-pointer"
+            >
+              <span>一般公開URLを開く</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
         {/* Card 2: My Lounge Guide Page */}
-        <div
-          onClick={onOpenMyLoungeGuidePage}
-          className="cursor-pointer p-5 rounded-3xl bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-indigo-500/5 border border-pink-200/80 hover:border-pink-400 hover:shadow-md transition-all flex items-center justify-between group"
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-500 to-purple-500 text-white flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition-transform">
+        <div className="p-5 rounded-3xl bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-indigo-500/5 border border-pink-200/80 hover:border-pink-400 hover:shadow-md transition-all flex flex-col justify-between gap-4 group">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-500 to-purple-500 text-white flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition-transform shrink-0">
               💎
             </div>
-            <div>
+            <div className="flex-1 min-w-0">
               <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-pink-100 text-pink-800 text-[10px] font-extrabold uppercase mb-1">
                 <span>My Lounge 向け</span>
-                <span>🌸 使い方＆居心地ガイド</span>
+                <span>🌸 一般公開ガイド</span>
               </div>
               <h3 className="text-sm font-extrabold text-slate-800 group-hover:text-pink-800 transition-colors">
                 メンバー向け使い方・セルフケア案内ページ
@@ -345,12 +389,47 @@ export const AdminPlatformView: React.FC<AdminPlatformViewProps> = ({
               <p className="text-[11px] text-slate-500 mt-0.5">
                 30秒の簡単記録、AIパートナーとの触れ合い、安心のプライベート空間の魅力
               </p>
+              <div className="mt-2 flex items-center gap-1 text-[11px] font-mono text-pink-800 bg-pink-500/10 px-2 py-1 rounded-lg w-fit">
+                <span>公開URL:</span>
+                <span className="font-bold">/?page=guide-lounge</span>
+              </div>
             </div>
           </div>
-          <span className="text-xs font-bold text-pink-700 flex items-center gap-1 bg-white px-3 py-1.5 rounded-xl border border-pink-200 shadow-xs flex-shrink-0">
-            <span>ページを開く</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </span>
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-pink-200/50">
+            <button
+              type="button"
+              onClick={(e) => handleCopyPageUrl('guide-lounge', e)}
+              className="text-xs font-bold text-slate-600 hover:text-pink-800 flex items-center gap-1 bg-white hover:bg-pink-50 px-3 py-1.5 rounded-xl border border-slate-200 transition-all cursor-pointer"
+            >
+              {copiedPage === 'guide-lounge' ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="text-emerald-700">コピー完了！</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5 text-slate-500" />
+                  <span>URLをコピー</span>
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={onOpenMyLoungeGuidePage}
+              className="text-xs font-bold text-slate-600 hover:text-pink-800 bg-white hover:bg-pink-50 px-3 py-1.5 rounded-xl border border-slate-200 transition-all cursor-pointer"
+              title="この画面内で直接開く"
+            >
+              このタブで表示
+            </button>
+            <button
+              type="button"
+              onClick={() => window.open(`${window.location.origin}/?page=guide-lounge`, '_blank')}
+              className="text-xs font-bold text-pink-700 hover:text-pink-800 flex items-center gap-1 bg-white hover:bg-pink-50 px-3.5 py-1.5 rounded-xl border border-pink-200 shadow-xs transition-all cursor-pointer"
+            >
+              <span>一般公開URLを開く</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </div>
 

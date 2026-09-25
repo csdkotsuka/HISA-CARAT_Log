@@ -57,8 +57,11 @@ import {
   saveGenericDailyLogToFirestore,
   subscribeAllGenericEvalRecords,
   saveGenericEvalRecordToFirestore,
+  subscribePublicTemplates,
   syncAllLocalDataToFirestore,
 } from './firebase/firestoreService';
+import { savePublicTemplates } from './data/publicTemplates';
+
 
 export const App: React.FC = () => {
   // Current Authenticated User
@@ -146,6 +149,10 @@ export const App: React.FC = () => {
         const url = new URL(window.location.href);
         if (page !== 'none') {
           url.searchParams.set('page', page);
+          url.searchParams.delete('mode');
+          url.searchParams.delete('tenant');
+          url.searchParams.delete('customer');
+          url.searchParams.delete('user');
         } else {
           url.searchParams.delete('page');
           url.searchParams.set('mode', mode);
@@ -228,6 +235,16 @@ export const App: React.FC = () => {
       () => setCloudStatus('offline')
     );
 
+    // 4.5 Sync & listen Public Templates
+    const unsubTemplates = subscribePublicTemplates(
+      (remoteTemplates) => {
+        if (remoteTemplates && remoteTemplates.length > 0) {
+          savePublicTemplates(remoteTemplates);
+        }
+      },
+      (err) => console.warn('Public templates listen notice:', err)
+    );
+
     // 5. Legacy HISA-CARAT listeners
     const unsubDaily = subscribeDailyLogs(
       (remoteLogs) => {
@@ -271,6 +288,7 @@ export const App: React.FC = () => {
       unsubCustomers();
       unsubDailyLogs();
       unsubEvalRecords();
+      unsubTemplates();
       unsubDaily();
       unsubPT();
       unsubGoal();
@@ -303,6 +321,30 @@ export const App: React.FC = () => {
       setAppMode('admin');
       saveAppMode('admin');
     }
+  };
+
+  // Handle Consumer Self-Registration
+  const handleRegisterConsumer = ({
+    user,
+    tenant,
+    customer,
+  }: {
+    user: AuthUser;
+    tenant: Tenant;
+    customer: Customer;
+  }) => {
+    setTenants((prev) => [tenant, ...prev]);
+    setCustomers((prev) => [customer, ...prev]);
+    setCurrentUserState(user);
+    setCurrentUser(user);
+    setSubPage('none');
+    setAppMode('customer');
+    saveAppMode('customer');
+    setActiveTenantId(tenant.id);
+    saveActiveTenantId(tenant.id);
+    setActiveCustomerId(customer.id);
+    saveActiveCustomerId(customer.id);
+    setIsLoginModalOpen(false);
   };
 
   const handleLogout = () => {
@@ -681,6 +723,7 @@ export const App: React.FC = () => {
         onClose={() => setIsLoginModalOpen(false)}
         onLogin={handleLogin}
         currentUser={currentUser}
+        onRegisterConsumer={handleRegisterConsumer}
       />
 
       {/* 4. My Page & Password Modal */}

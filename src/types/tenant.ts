@@ -151,6 +151,8 @@ export interface Tenant {
   evalConfig: PeriodicEvalConfig;
   loungeLinks?: LoungeLinkItem[]; // 推し活ラウンジ・外部コンテンツリンク一覧
   customerIds: string[];      // 紐づく顧客IDリスト
+  isConsumerPersonal?: boolean; // 一般コンシューマー自己登録による個人スペースか
+  templateId?: string;        // 選択された公開テンプレートID
   status: 'active' | 'trial' | 'suspended';
   createdAt: string;
   updatedAt: string;
@@ -166,6 +168,8 @@ export interface Customer {
   joinedDate: string;
   customGoal?: string;        // 顧客の個別目標
   medicalCondition?: string;  // 主疾患・健康管理区分・注力テーマ (例: '好酸球性多発血管炎性肉芽腫症 (EGPA)', '腰痛改善', '体脂肪燃焼')
+  isConsumer?: boolean;       // 一般コンシューマーユーザーか
+  templateId?: string;        // 利用中の公開テンプレートID
   status: 'active' | 'inactive';
 }
 

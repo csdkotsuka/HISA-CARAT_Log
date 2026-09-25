@@ -1,16 +1,33 @@
 import React, { useState } from 'react';
-import { LogIn, Mail, Lock, ShieldCheck, Building2, User, Sparkles, ArrowRight, AlertCircle, KeyRound } from 'lucide-react';
+import {
+  LogIn,
+  Mail,
+  Lock,
+  ShieldCheck,
+  Building2,
+  Sparkles,
+  ArrowRight,
+  AlertCircle,
+  KeyRound,
+  UserPlus,
+  CheckCircle2,
+  User,
+} from 'lucide-react';
 import type { AuthUser } from '../types/auth';
 import { DEMO_ACCOUNTS, ROLE_DEFINITIONS } from '../types/auth';
 import { triggerSparkleConfetti } from '../utils/confetti';
 import { getTenants, getCustomers } from '../utils/tenantStorage';
 import { verifyUserPassword, getUserCredential } from '../firebase/credentialService';
+import type { PublicTemplate, Tenant, Customer } from '../types/tenant';
+import { getPublicTemplates } from '../data/publicTemplates';
+import { registerConsumerAccount } from '../utils/consumerRegistration';
 
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   onLogin: (user: AuthUser) => void;
   currentUser: AuthUser | null;
+  onRegisterConsumer?: (result: { user: AuthUser; tenant: Tenant; customer: Customer }) => void;
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({
@@ -18,13 +35,29 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   onClose,
   onLogin,
   currentUser,
+  onRegisterConsumer,
 }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'quick' | 'email'>('quick');
+  const [activeTab, setActiveTab] = useState<'quick' | 'email' | 'register'>('quick');
   const [isVerifying, setIsVerifying] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [multipleCandidates, setMultipleCandidates] = useState<AuthUser[] | null>(null);
+
+  // Self-Registration State
+  const [regName, setRegName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [availableTemplates] = useState<PublicTemplate[]>(() =>
+    getPublicTemplates().filter((t) => t.isActive)
+  );
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>(() => {
+    const list = getPublicTemplates().filter((t) => t.isActive);
+    return list[0]?.id || 'tmpl-health-basic';
+  });
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [regError, setRegError] = useState('');
+
 
   if (!isOpen) return null;
 
@@ -98,18 +131,45 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       return;
     }
 
-    // Dynamic customer user creation
-    const newUser: AuthUser = {
-      id: `user-${Date.now()}`,
-      email: normalized,
-      name: email.split('@')[0],
-      role: 'customer',
-      tenantId: 'tenant-carat-hisa',
-      customerId: 'cust-hisa-01',
-      description: '一般メンバーアカウント',
-    };
-    completeLogin(newUser);
+    // Account not found - Guide to register tab with prefilled email
+    setErrorMessage('このメールアドレスのアカウントは見つかりませんでした。「新規登録」タブからログスタイルを選んでアカウントを作成してください。');
+    setRegEmail(normalized);
+    setRegName(email.split('@')[0]);
     setIsVerifying(false);
+  };
+
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!regEmail.trim()) {
+      setRegError('メールアドレスを入力してください。');
+      return;
+    }
+    const tmpl = availableTemplates.find((t) => t.id === selectedTemplateId) || availableTemplates[0];
+    if (!tmpl) {
+      setRegError('利用するログスタイル（テンプレート）を選択してください。');
+      return;
+    }
+
+    setRegError('');
+    setIsRegistering(true);
+
+    try {
+      const result = await registerConsumerAccount({
+        name: regName.trim() || regEmail.split('@')[0],
+        email: regEmail.trim(),
+        password: regPassword.trim() || undefined,
+        template: tmpl,
+      });
+
+      if (onRegisterConsumer) {
+        onRegisterConsumer(result);
+      }
+      completeLogin(result.user);
+    } catch (err: any) {
+      setRegError(err?.message || '登録処理中にエラーが発生しました。');
+    } finally {
+      setIsRegistering(false);
+    }
   };
 
   const completeLogin = (user: AuthUser) => {
@@ -169,7 +229,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         </div>
 
         {/* Tab switch */}
-        <div className="flex rounded-xl bg-slate-100 p-1 text-xs font-bold">
+        <div className="flex rounded-xl bg-slate-100 p-1 text-xs font-bold gap-1">
           <button
             type="button"
             onClick={() => {
@@ -181,7 +241,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             }`}
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            <span>ワンクリック切替 (デモ)</span>
+            <span>クイック体験</span>
           </button>
           <button
             type="button"
@@ -194,7 +254,20 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             }`}
           >
             <Mail className="w-3.5 h-3.5 text-indigo-500" />
-            <span>メール＆パスワード</span>
+            <span>ログイン</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('register');
+              setMultipleCandidates(null);
+            }}
+            className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+              activeTab === 'register' ? 'bg-gradient-to-r from-pink-500 to-indigo-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+            <span>新規登録 (無料)</span>
           </button>
         </div>
 
@@ -413,7 +486,21 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             {errorMessage && (
               <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
-                <span>{errorMessage}</span>
+                <div className="flex-1">
+                  <span>{errorMessage}</span>
+                  {errorMessage.includes('新規登録') && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab('register');
+                        setErrorMessage('');
+                      }}
+                      className="block mt-1 text-xs text-pink-600 underline font-extrabold cursor-pointer"
+                    >
+                      ▶︎ 今すぐ新規登録画面へ進む
+                    </button>
+                  )}
+                </div>
               </div>
             )}
 
@@ -431,6 +518,176 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 </>
               )}
             </button>
+
+            <div className="text-center pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('register');
+                  setErrorMessage('');
+                }}
+                className="text-xs text-pink-600 hover:text-pink-700 font-bold underline underline-offset-2 cursor-pointer"
+              >
+                アカウントをお持ちでない方はこちら（無料新規登録）
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* TAB 3: SELF-REGISTRATION WITH TEMPLATE PICKER */}
+        {activeTab === 'register' && !multipleCandidates && (
+          <form onSubmit={handleRegisterSubmit} className="space-y-4 max-h-[65vh] overflow-y-auto pr-1">
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-indigo-500/10 border border-pink-200/80 text-xs text-slate-700 space-y-1">
+              <div className="font-extrabold text-slate-800 flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-pink-500" />
+                <span>コンシューマー向け セルフアカウント登録</span>
+              </div>
+              <p className="text-[11px] text-slate-500">
+                お好みのログスタイル（テンプレート）を選ぶだけで、あなた専用のプライベート手帳がすぐに使えます。
+              </p>
+            </div>
+
+            {/* Account Info Inputs */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  お名前・ニックネーム <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={regName}
+                    onChange={(e) => setRegName(e.target.value)}
+                    required
+                    placeholder="例: ひさこ、田中"
+                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  メールアドレス <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="email"
+                    value={regEmail}
+                    onChange={(e) => setRegEmail(e.target.value)}
+                    required
+                    placeholder="you@example.com"
+                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-bold text-slate-700">
+                  パスワード（次回ログイン用）
+                </label>
+                <span className="text-[10px] text-slate-400">
+                  任意・後から設定変更可能
+                </span>
+              </div>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="password"
+                  value={regPassword}
+                  onChange={(e) => setRegPassword(e.target.value)}
+                  placeholder="8文字以上の英数字（省略可）"
+                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500"
+                />
+              </div>
+            </div>
+
+            {/* Template Picker */}
+            <div className="space-y-2 pt-1">
+              <label className="block text-xs font-bold text-slate-700">
+                利用するログスタイル（テンプレート）を選択 <span className="text-rose-500">*</span>
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {availableTemplates.map((tmpl) => {
+                  const isSelected = selectedTemplateId === tmpl.id;
+                  return (
+                    <div
+                      key={tmpl.id}
+                      onClick={() => setSelectedTemplateId(tmpl.id)}
+                      className={`cursor-pointer p-3 rounded-2xl border-2 transition-all relative flex flex-col justify-between gap-2 hover:scale-[1.01] ${
+                        isSelected
+                          ? 'border-pink-500 bg-pink-50/50 shadow-sm ring-2 ring-pink-500/20'
+                          : 'border-slate-200 bg-white hover:border-pink-300 hover:bg-slate-50/80'
+                      }`}
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-2xl shrink-0 mt-0.5">{tmpl.emoji}</span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="font-extrabold text-xs text-slate-800 line-clamp-1">
+                              {tmpl.name}
+                            </span>
+                            {isSelected && (
+                              <span className="w-4 h-4 rounded-full bg-pink-500 text-white flex items-center justify-center text-[10px] shrink-0 font-bold">
+                                ✓
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-slate-500 line-clamp-2 mt-0.5 leading-snug">
+                            {tmpl.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[10px] pt-1.5 border-t border-slate-100 text-slate-400">
+                        <span className="truncate">AI: {tmpl.aiPersona.name}</span>
+                        <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-bold shrink-0">
+                          {tmpl.category}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {regError && (
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
+                <span>{regError}</span>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={isRegistering}
+              className="w-full py-3 rounded-2xl bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:opacity-95 text-white text-xs sm:text-sm font-extrabold shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 transition-all"
+            >
+              {isRegistering ? (
+                <span>アカウント作成中...</span>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>このスタイルで利用を開始する ✨</span>
+                </>
+              )}
+            </button>
+
+            <div className="text-center pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('email');
+                  setRegError('');
+                }}
+                className="text-xs text-slate-500 hover:text-slate-700 underline underline-offset-2 cursor-pointer"
+              >
+                既にアカウントをお持ちの方はこちら（ログイン）
+              </button>
+            </div>
           </form>
         )}
       </div>
