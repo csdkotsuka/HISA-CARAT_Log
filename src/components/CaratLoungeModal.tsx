@@ -160,10 +160,9 @@ export const CaratLoungeModal: React.FC<CaratLoungeModalProps> = ({
 
               <div className="flex-1">
                 <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
-                  <span className="text-xs font-extrabold text-pink-600 bg-pink-100 px-2 py-0.5 rounded-md">
-                    ジョンハンからのメッセージ
+                  <span className="text-xs font-bold text-pink-600 bg-pink-100 px-2 py-0.5 rounded-md">
+                    メッセージ
                   </span>
-                  <span className="text-xs text-slate-400">ハニへ〜 👼</span>
                 </div>
                 <h3 className="text-sm sm:text-base font-extrabold text-slate-800 leading-snug mb-2">
                   「{currentQuote.quote}」
@@ -176,10 +175,10 @@ export const CaratLoungeModal: React.FC<CaratLoungeModalProps> = ({
                   <button
                     type="button"
                     onClick={handleNextHaniCheer}
-                    className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-pink-400 to-rose-400 text-white text-xs font-bold shadow-sm hover:shadow hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
+                    className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-pink-400 to-rose-400 text-white text-xs font-bold shadow-xs hover:shadow hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>ハニへ〜パワーをチャージ 💖</span>
+                    <span>メッセージ更新</span>
                   </button>
                 </div>
               </div>
@@ -191,20 +190,20 @@ export const CaratLoungeModal: React.FC<CaratLoungeModalProps> = ({
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
                 <PartyPopper className="w-4 h-4 text-purple-600" />
-                <span>次のライブ目標 ＆ カウントダウン 🎤</span>
+                <span>ライブ目標</span>
               </h3>
               <button
                 onClick={() => setIsEditingGoal(!isEditingGoal)}
-                className="text-xs text-purple-600 font-bold hover:underline"
+                className="text-xs text-purple-600 font-bold hover:underline cursor-pointer"
               >
-                {isEditingGoal ? 'キャンセル' : '目標を編集 ✏️'}
+                {isEditingGoal ? 'キャンセル' : '編集'}
               </button>
             </div>
 
             {isEditingGoal ? (
               <form onSubmit={handleSaveGoal} className="space-y-3 bg-white/80 p-4 rounded-2xl border border-purple-100">
                 <div>
-                  <label className="text-[11px] font-bold text-slate-600 block mb-1">イベント名 / コンサート:</label>
+                  <label className="text-[11px] font-bold text-slate-600 block mb-1">イベント名:</label>
                   <input
                     type="text"
                     value={eventName}
@@ -213,7 +212,7 @@ export const CaratLoungeModal: React.FC<CaratLoungeModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-slate-600 block mb-1">目標日程:</label>
+                  <label className="text-[11px] font-bold text-slate-600 block mb-1">日程:</label>
                   <input
                     type="date"
                     value={targetDate}
@@ -222,7 +221,7 @@ export const CaratLoungeModal: React.FC<CaratLoungeModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-slate-600 block mb-1">ひさこの意気込みモットー:</label>
+                  <label className="text-[11px] font-bold text-slate-600 block mb-1">モットー:</label>
                   <input
                     type="text"
                     value={targetMotto}
@@ -232,9 +231,9 @@ export const CaratLoungeModal: React.FC<CaratLoungeModalProps> = ({
                 </div>
                 <button
                   type="submit"
-                  className="w-full py-2 bg-purple-600 text-white text-xs font-bold rounded-xl shadow-sm hover:bg-purple-700"
+                  className="w-full py-2 bg-purple-600 text-white text-xs font-bold rounded-xl shadow-xs hover:bg-purple-700 cursor-pointer"
                 >
-                  目標を保存する ✨
+                  保存する
                 </button>
               </form>
             ) : (
@@ -252,7 +251,7 @@ export const CaratLoungeModal: React.FC<CaratLoungeModalProps> = ({
                 </div>
 
                 <div className="text-center bg-white/90 px-4 py-2 rounded-2xl border border-purple-200 shadow-xs flex-shrink-0">
-                  <div className="text-[10px] font-bold text-slate-400">本番まであと</div>
+                  <div className="text-[10px] font-bold text-slate-400">あと</div>
                   <div className="text-2xl font-black text-purple-700">
                     {diffDays > 0 ? `${diffDays}日` : '開催中・達成！'}
                   </div>

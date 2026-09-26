@@ -139,52 +139,46 @@ export const DynamicDailyLogTab: React.FC<DynamicDailyLogTabProps> = ({
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
       {/* View Switcher Pill */}
-      <div className="flex items-center justify-between bg-white/90 p-2 rounded-2xl border border-slate-200/80 shadow-xs">
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center justify-between bg-white/90 p-1.5 rounded-2xl border border-slate-200/80 shadow-xs">
+        <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={() => setViewMode('form')}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
               viewMode === 'form'
-                ? 'bg-slate-900 text-white shadow-sm'
+                ? 'bg-slate-900 text-white shadow-xs'
                 : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
             <Edit3 className="w-3.5 h-3.5" />
-            <span>記録入力フォーム</span>
+            <span>入力</span>
           </button>
 
           <button
             type="button"
             onClick={() => setViewMode('calendar')}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
               viewMode === 'calendar'
-                ? 'bg-slate-900 text-white shadow-sm'
+                ? 'bg-slate-900 text-white shadow-xs'
                 : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
             <Calendar className="w-3.5 h-3.5" />
-            <span>記録カレンダー ({logs.length}日分)</span>
+            <span>カレンダー</span>
           </button>
-        </div>
-
-        <div className="text-xs font-bold text-slate-500 pr-2 flex items-center gap-1">
-          <span>{customer.nickname || customer.name} 専用ノート</span>
         </div>
       </div>
 
       {/* SUCCESS BANNER */}
       {savedSuccess && (
         <div
-          className="p-4 rounded-2xl text-white text-sm font-bold flex items-center justify-between shadow-lg animate-bounce"
+          className="p-3.5 rounded-2xl text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md animate-fade-in"
           style={{
             background: `linear-gradient(135deg, ${tenant.theme.primaryColor}, ${tenant.theme.accentColor})`,
           }}
         >
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-amber-300" />
-            <span>{date} の記録を保存しました！素晴らしい継続力です✨</span>
-          </div>
+          <Sparkles className="w-4 h-4 text-amber-300" />
+          <span>保存しました</span>
         </div>
       )}
 
@@ -250,7 +244,6 @@ export const DynamicDailyLogTab: React.FC<DynamicDailyLogTabProps> = ({
                       >
                         <div className="text-2xl mb-1">{cond.emoji}</div>
                         <div className="text-xs font-bold text-slate-800">{cond.label}</div>
-                        <div className="text-[10px] text-slate-400">{cond.desc}</div>
                       </button>
                     );
                   })}
@@ -264,7 +257,7 @@ export const DynamicDailyLogTab: React.FC<DynamicDailyLogTabProps> = ({
             <div className="glass-card rounded-3xl p-5 sm:p-6 bg-white border border-slate-200 shadow-sm space-y-3">
               <h3 className="text-xs font-extrabold text-slate-700 flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                <span>日々のチェック項目 ({tenant.dailyConfig.checkItems.length}項目)</span>
+                <span>チェック項目</span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -311,7 +304,7 @@ export const DynamicDailyLogTab: React.FC<DynamicDailyLogTabProps> = ({
             <div className="glass-card rounded-3xl p-5 sm:p-6 bg-white border border-pink-200 shadow-sm space-y-3">
               <h3 className="text-xs font-extrabold text-pink-700 flex items-center gap-2">
                 <span>🦶</span>
-                <span>足裏・下肢アロディニア＆しびれマップ (HISA-CARAT特有ケア)</span>
+                <span>足裏マップ</span>
               </h3>
               <FootSoleMap
                 selectedZones={caratFootZones}
@@ -325,7 +318,7 @@ export const DynamicDailyLogTab: React.FC<DynamicDailyLogTabProps> = ({
             <div className="glass-card rounded-3xl p-5 sm:p-6 bg-white border border-slate-200 shadow-sm space-y-4">
               <h3 className="text-xs font-extrabold text-slate-700 flex items-center gap-2">
                 <Activity className="w-4 h-4 text-amber-500" />
-                <span>コンディション・度合いチェック</span>
+                <span>度合い</span>
               </h3>
 
               <div className="space-y-4">
@@ -369,7 +362,7 @@ export const DynamicDailyLogTab: React.FC<DynamicDailyLogTabProps> = ({
             <div className="glass-card rounded-3xl p-5 sm:p-6 bg-white border border-slate-200 shadow-sm space-y-3">
               <h3 className="text-xs font-extrabold text-slate-700 flex items-center gap-2">
                 <span>🔢</span>
-                <span>日々の数値測定値</span>
+                <span>測定値</span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -432,7 +425,7 @@ export const DynamicDailyLogTab: React.FC<DynamicDailyLogTabProps> = ({
           <div className="glass-card rounded-3xl p-5 sm:p-6 bg-white border border-slate-200 shadow-sm space-y-3">
             <h3 className="text-xs font-extrabold text-slate-700 flex items-center gap-2">
               <span>✍️</span>
-              <span>{tenant.dailyConfig.memoLabel}</span>
+              <span>メモ</span>
             </h3>
 
             {/* Quick tags */}
@@ -468,13 +461,13 @@ export const DynamicDailyLogTab: React.FC<DynamicDailyLogTabProps> = ({
           <div className="flex items-center justify-end">
             <button
               type="submit"
-              className="w-full sm:w-auto px-8 py-3.5 rounded-2xl text-white text-sm font-extrabold shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-8 py-3 rounded-2xl text-white text-xs sm:text-sm font-bold shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
               style={{
                 background: `linear-gradient(135deg, ${tenant.theme.primaryColor}, ${tenant.theme.accentColor})`,
               }}
             >
-              <CheckCircle2 className="w-5 h-5 text-white" />
-              <span>本日の記録を保存する</span>
+              <CheckCircle2 className="w-4 h-4 text-white" />
+              <span>保存する</span>
             </button>
           </div>
         </form>

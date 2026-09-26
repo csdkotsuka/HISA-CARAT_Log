@@ -196,15 +196,15 @@ export const DynamicDashboardTab: React.FC<DynamicDashboardTabProps> = ({
     <div className="w-full max-w-4xl mx-auto space-y-6">
       {/* 1. Customer Goal & Focus Banner */}
       <div
-        className="glass-card rounded-3xl p-5 sm:p-6 border shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+        className="glass-card rounded-2xl p-4 sm:p-5 border shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3"
         style={{
           borderColor: `${tenant.theme.primaryColor}50`,
           background: `linear-gradient(135deg, ${tenant.theme.primaryColor}15, ${tenant.theme.secondaryColor}15)`,
         }}
       >
-        <div className="flex items-center gap-3.5">
+        <div className="flex items-center gap-3">
           <div
-            className="w-12 h-12 rounded-2xl text-white flex items-center justify-center text-2xl shadow-md flex-shrink-0"
+            className="w-10 h-10 rounded-xl text-white flex items-center justify-center text-xl shadow-xs flex-shrink-0"
             style={{
               background: `linear-gradient(135deg, ${tenant.theme.primaryColor}, ${tenant.theme.accentColor})`,
             }}
@@ -212,16 +212,11 @@ export const DynamicDashboardTab: React.FC<DynamicDashboardTabProps> = ({
             🎯
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-white text-slate-700 border border-slate-200">
-                {customer.nickname || customer.name} 様の達成目標
-              </span>
-              <span className="text-xs text-slate-500 font-bold">
-                記録日数: {sortedDaily.length}日
-              </span>
+            <div className="text-[11px] text-slate-500 font-bold">
+              目標 ({sortedDaily.length}日記録)
             </div>
-            <h2 className="text-base sm:text-lg font-extrabold text-slate-800 mt-1">
-              {customer.customGoal || `${tenant.headerTitle} を通じた継続的な自己実現！`}
+            <h2 className="text-sm sm:text-base font-extrabold text-slate-800">
+              {customer.customGoal || `${tenant.headerTitle} を通じた継続的な自己実現`}
             </h2>
           </div>
         </div>
@@ -229,19 +224,19 @@ export const DynamicDashboardTab: React.FC<DynamicDashboardTabProps> = ({
         <div className="flex items-center gap-2 w-full md:w-auto justify-end">
           <button
             onClick={handleExportCsv}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-xs transition-all"
-            title="CSV形式で記録をエクスポート"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-xs transition-all cursor-pointer"
+            title="CSVエクスポート"
           >
             <Download className="w-3.5 h-3.5 text-indigo-500" />
-            <span>CSV出力</span>
+            <span>CSV</span>
           </button>
 
           <button
             onClick={onOpenReport}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:to-pink-700 text-white text-xs font-black shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-pink-600 text-white text-xs font-bold shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
           >
-            <FileText className="w-4 h-4 text-white" />
-            <span>定期サマリー 📊</span>
+            <FileText className="w-3.5 h-3.5 text-white" />
+            <span>サマリー</span>
           </button>
         </div>
       </div>
@@ -249,14 +244,11 @@ export const DynamicDashboardTab: React.FC<DynamicDashboardTabProps> = ({
       {/* 2. Interactive Main Trend Chart */}
       <div className="glass-card rounded-3xl p-5 sm:p-6 bg-white border border-slate-200 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-          <div>
-            <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" style={{ color: tenant.theme.accentColor }} />
-              <span>日々の記録トレンド推移</span>
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4" style={{ color: tenant.theme.accentColor }} />
+            <h3 className="text-xs sm:text-sm font-extrabold text-slate-800">
+              推移グラフ
             </h3>
-            <p className="text-[11px] text-slate-400">
-              あなたが求める目標に合わせて、グラフに表示する項目を自由に切り替えられます。
-            </p>
           </div>
 
           {/* Metric Selector Selectors */}
@@ -346,14 +338,11 @@ export const DynamicDashboardTab: React.FC<DynamicDashboardTabProps> = ({
       {sortedEvals.length > 0 && (
         <div className="glass-card rounded-3xl p-5 sm:p-6 bg-white border border-slate-200 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div>
-              <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
-                <Award className="w-4 h-4 text-amber-500" />
-                <span>{tenant.evalConfig.title} の推移トレンド</span>
+            <div className="flex items-center gap-2">
+              <Award className="w-4 h-4 text-amber-500" />
+              <h3 className="text-xs sm:text-sm font-extrabold text-slate-800">
+                {tenant.evalConfig.title}
               </h3>
-              <p className="text-[11px] text-slate-400">
-                定期測定ごとの各指標（{evalDefs.map((m) => m.label).join(', ')}）の向上度合いです。
-              </p>
             </div>
           </div>
 
@@ -380,9 +369,9 @@ export const DynamicDashboardTab: React.FC<DynamicDashboardTabProps> = ({
 
       {/* 4. Dynamic History Table (Daily Logs & Periodic Evaluations) */}
       <div className="glass-card rounded-3xl p-5 sm:p-6 bg-white border border-slate-200 shadow-sm space-y-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-indigo-500" />
+            <Calendar className="w-4 h-4 text-indigo-500" />
             <div className="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200">
               <button
                 type="button"
@@ -393,7 +382,7 @@ export const DynamicDashboardTab: React.FC<DynamicDashboardTabProps> = ({
                     : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
-                📅 日々の記録一覧 ({sortedDaily.length}件)
+                記録 ({sortedDaily.length})
               </button>
               <button
                 type="button"
@@ -404,13 +393,9 @@ export const DynamicDashboardTab: React.FC<DynamicDashboardTabProps> = ({
                     : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
-                🏆 定期評価・測定履歴 ({sortedEvals.length > 0 ? sortedEvals.length : legacyPtDocks.length}件)
+                定期評価 ({sortedEvals.length > 0 ? sortedEvals.length : legacyPtDocks.length})
               </button>
             </div>
-          </div>
-
-          <div className="text-[11px] text-slate-400 bg-slate-50 px-2.5 py-1 rounded-xl border border-slate-200/60">
-            💡 過去記録の修正・更新は「Pro Partner (事業者)」画面で行えます
           </div>
         </div>
 
@@ -418,7 +403,7 @@ export const DynamicDashboardTab: React.FC<DynamicDashboardTabProps> = ({
         {historySubTab === 'daily' && (
           sortedDaily.length === 0 ? (
             <div className="py-10 text-center text-slate-400 text-xs border border-slate-200 rounded-2xl">
-              まだ日々の記録がありません。
+              記録がありません
             </div>
           ) : (
             <div className="overflow-x-auto border border-slate-200 rounded-2xl max-h-[28rem]">
@@ -445,7 +430,6 @@ export const DynamicDashboardTab: React.FC<DynamicDashboardTabProps> = ({
                     <tr className="hover:bg-slate-50">
                       <td className="py-2.5 px-3 font-bold text-slate-700 sticky left-0 bg-white border-r border-slate-100 max-w-[170px] break-words leading-snug">
                         体調
-                        <div className="text-[10px] text-slate-400 font-normal">5段階</div>
                       </td>
                       {sortedDaily.slice().reverse().map((l) => (
                         <td key={l.id} className="py-2.5 px-2 text-center">

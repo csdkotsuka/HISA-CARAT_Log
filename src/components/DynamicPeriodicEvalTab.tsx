@@ -75,15 +75,15 @@ export const DynamicPeriodicEvalTab: React.FC<DynamicPeriodicEvalTabProps> = ({
     <div className="w-full max-w-4xl mx-auto space-y-6">
       {/* Intro Header */}
       <div
-        className="glass-card rounded-3xl p-5 sm:p-6 border shadow-sm"
+        className="glass-card rounded-2xl p-4 sm:p-5 border shadow-xs"
         style={{
           borderColor: `${tenant.theme.primaryColor}50`,
           background: `linear-gradient(135deg, ${tenant.theme.primaryColor}15, ${tenant.theme.secondaryColor}15)`,
         }}
       >
-        <div className="flex items-start gap-4">
+        <div className="flex items-center gap-3">
           <div
-            className="w-12 h-12 rounded-2xl text-white flex items-center justify-center text-2xl shadow-md flex-shrink-0"
+            className="w-10 h-10 rounded-xl text-white flex items-center justify-center text-xl shadow-xs flex-shrink-0"
             style={{
               background: `linear-gradient(135deg, ${tenant.theme.primaryColor}, ${tenant.theme.accentColor})`,
             }}
@@ -91,25 +91,9 @@ export const DynamicPeriodicEvalTab: React.FC<DynamicPeriodicEvalTabProps> = ({
             📊
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span
-                className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase text-white shadow-xs"
-                style={{
-                  background: `linear-gradient(90deg, ${tenant.theme.primaryColor}, ${tenant.theme.accentColor})`,
-                }}
-              >
-                {tenant.evalConfig.title}
-              </span>
-              <span className="text-xs text-slate-500 font-bold">
-                対象: {customer.nickname || customer.name} 様
-              </span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-800 mt-1">
-              {tenant.evalConfig.title} シート
+            <h2 className="text-sm sm:text-base font-extrabold text-slate-800">
+              {tenant.evalConfig.title}
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              {tenant.name} が設定した指標に基づき、定期的な進捗・測定値・アドバイスを記録します。
-            </p>
           </div>
         </div>
       </div>
@@ -117,15 +101,13 @@ export const DynamicPeriodicEvalTab: React.FC<DynamicPeriodicEvalTabProps> = ({
       {/* Success Notice */}
       {savedSuccess && (
         <div
-          className="p-4 rounded-2xl text-white text-sm font-bold flex items-center justify-between shadow-lg animate-bounce"
+          className="p-3.5 rounded-2xl text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md animate-fade-in"
           style={{
             background: `linear-gradient(135deg, ${tenant.theme.primaryColor}, ${tenant.theme.accentColor})`,
           }}
         >
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-amber-300" />
-            <span>評価測定シートを保存しました！お疲れ様でした🎉</span>
-          </div>
+          <Sparkles className="w-4 h-4 text-amber-300" />
+          <span>保存しました</span>
         </div>
       )}
 
@@ -135,7 +117,7 @@ export const DynamicPeriodicEvalTab: React.FC<DynamicPeriodicEvalTabProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-slate-100 pb-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                測定・評価実施日
+                実施日
               </label>
               <input
                 type="date"
@@ -239,13 +221,13 @@ export const DynamicPeriodicEvalTab: React.FC<DynamicPeriodicEvalTabProps> = ({
           <div className="pt-2 flex items-center justify-end">
             <button
               type="submit"
-              className="w-full sm:w-auto px-8 py-3 rounded-2xl text-white text-xs font-bold shadow-md hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-8 py-3 rounded-2xl text-white text-xs font-bold shadow-md hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
               style={{
                 background: `linear-gradient(135deg, ${tenant.theme.primaryColor}, ${tenant.theme.accentColor})`,
               }}
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>定期評価を記録・保存する</span>
+              <span>保存する</span>
             </button>
           </div>
         </div>
@@ -260,7 +242,7 @@ export const DynamicPeriodicEvalTab: React.FC<DynamicPeriodicEvalTabProps> = ({
           >
             <h3 className="text-xs font-extrabold text-slate-700 flex items-center gap-2">
               <Clock className="w-4 h-4 text-indigo-500" />
-              <span>過去の定期測定履歴 ({records.length}件)</span>
+              <span>履歴 ({records.length})</span>
             </h3>
             {showHistory ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </div>

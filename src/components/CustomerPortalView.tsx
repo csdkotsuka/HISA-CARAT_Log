@@ -206,13 +206,8 @@ export const CustomerPortalView: React.FC<CustomerPortalViewProps> = ({
               }}
             />
           </div>
-          <div className="text-left pr-0.5 sm:pr-1">
-            <div className="text-[9px] text-white/90 font-medium leading-none hidden sm:block">
-              本人と会話
-            </div>
-            <div className="text-[11px] sm:text-xs font-black drop-shadow-xs leading-tight">
-              {tenant.aiPersona.name.split(' ')[0]}とチャット 💬
-            </div>
+          <div className="text-xs font-bold drop-shadow-xs pr-1">
+            チャット 💬
           </div>
         </button>
       </div>

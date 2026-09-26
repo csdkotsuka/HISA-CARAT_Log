@@ -26,7 +26,7 @@ interface RoleNavigationHeaderProps {
 export const RoleNavigationHeader: React.FC<RoleNavigationHeaderProps> = ({
   currentMode,
   onSwitchMode,
-  activeCustomer,
+  activeCustomer: _activeCustomer,
   currentUser,
   onOpenLoginModal,
   onOpenPasswordModal,
@@ -45,14 +45,12 @@ export const RoleNavigationHeader: React.FC<RoleNavigationHeaderProps> = ({
         <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 flex items-center justify-between gap-2">
           {/* Left: App Logo & User space name */}
           <div className="flex items-center gap-2">
-            <span className="text-sm">✨</span>
             <span className="font-extrabold tracking-tight bg-gradient-to-r from-pink-400 to-indigo-300 bg-clip-text text-transparent">
               Cheer
             </span>
-            <span className="text-slate-500">|</span>
-            <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1">
-              <span>{ROLE_DEFINITIONS.customer.label}</span>
-              <span className="text-[10px] text-pink-400 font-normal">({activeCustomer.nickname || activeCustomer.name} 専用)</span>
+            <span className="text-slate-600">|</span>
+            <span className="text-xs font-bold text-slate-300">
+              {ROLE_DEFINITIONS.customer.label}
             </span>
           </div>
 
@@ -63,7 +61,7 @@ export const RoleNavigationHeader: React.FC<RoleNavigationHeaderProps> = ({
                 type="button"
                 onClick={onOpenPasswordModal}
                 className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 hover:text-white text-[11px] font-bold transition-all shadow-xs cursor-pointer"
-                title="マイページ（表示名・お名前・パスワード設定）"
+                title="マイページ"
               >
                 <User className="w-3 h-3 text-pink-400" />
                 <span>マイページ</span>
@@ -103,15 +101,15 @@ export const RoleNavigationHeader: React.FC<RoleNavigationHeaderProps> = ({
       <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 flex flex-col md:flex-row items-center justify-between gap-3">
         
         {/* Left: STUDIO切替 Framed Container enclosing 3 Mode Buttons with Clear Boundaries */}
-        <div className="flex items-stretch border-2 border-slate-700 rounded-xl overflow-hidden bg-slate-950/80 shadow-sm">
+        <div className="flex items-stretch border border-slate-700 rounded-xl overflow-hidden bg-slate-950/80 shadow-sm">
           {/* Label inside the frame */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 text-indigo-300 font-black text-xs tracking-wider border-r-2 border-slate-700 select-none">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 text-indigo-300 font-bold text-xs tracking-wider border-r border-slate-700 select-none">
             <ArrowRightLeft className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-            <span>STUDIO切替</span>
+            <span>切替</span>
           </div>
 
-          {/* Buttons with distinct 2px border dividers */}
-          <div className="flex items-stretch divide-x-2 divide-slate-700 bg-slate-900">
+          {/* Buttons with distinct border dividers */}
+          <div className="flex items-stretch divide-x divide-slate-700 bg-slate-900">
             {/* 1. Cheer Master (Admin Tab): ONLY visible to Admin */}
             {userRole === 'admin' && (
               <button
@@ -122,10 +120,10 @@ export const RoleNavigationHeader: React.FC<RoleNavigationHeaderProps> = ({
                     ? 'bg-indigo-600 text-white font-extrabold shadow-inner ring-1 ring-inset ring-indigo-400'
                     : 'bg-slate-900/90 text-slate-300 hover:bg-slate-800 hover:text-white'
                 }`}
-                title="最高統括・プラットフォーム管理画面 (Cheer Master)"
+                title="Cheer Master"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-indigo-300 shrink-0" />
-                <span>👑 {ROLE_DEFINITIONS.admin.label}</span>
+                <span>{ROLE_DEFINITIONS.admin.label}</span>
               </button>
             )}
 
@@ -138,10 +136,10 @@ export const RoleNavigationHeader: React.FC<RoleNavigationHeaderProps> = ({
                   ? 'bg-amber-600 text-white font-extrabold shadow-inner ring-1 ring-inset ring-amber-400'
                   : 'bg-slate-900/90 text-slate-300 hover:bg-slate-800 hover:text-white'
               }`}
-              title="事業者・コーチ専用画面 (Pro Partner)"
+              title="Pro Partner"
             >
               <Building2 className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-              <span>🏢 {ROLE_DEFINITIONS.provider.label}</span>
+              <span>{ROLE_DEFINITIONS.provider.label}</span>
             </button>
 
             {/* 3. My Lounge (Customer Tab): Visible to Admin, Provider, and Customer */}
@@ -153,10 +151,10 @@ export const RoleNavigationHeader: React.FC<RoleNavigationHeaderProps> = ({
                   ? 'bg-emerald-600 text-white font-extrabold shadow-inner ring-1 ring-inset ring-emerald-400'
                   : 'bg-slate-900/90 text-slate-300 hover:bg-slate-800 hover:text-white'
               }`}
-              title="メンバー専用ダイアリー画面 (My Lounge)"
+              title="My Lounge"
             >
               <User className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
-              <span>💎 {ROLE_DEFINITIONS.customer.label}</span>
+              <span>{ROLE_DEFINITIONS.customer.label}</span>
             </button>
           </div>
         </div>
